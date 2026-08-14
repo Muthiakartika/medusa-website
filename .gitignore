@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# mirrored source HTML used to regenerate src/content/pages.json (~70MB).
+# Recreate with: npm run content:fetch
+/.cache

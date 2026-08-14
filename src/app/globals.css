@@ -1,26 +1,420 @@
 @import "tailwindcss";
 
+@theme {
+  /* ── Brand palette (taken verbatim from the live site) ───────────────── */
+  --color-gold: #c19231;
+  --color-gold-dark: #c18305;
+  --color-gold-bright: #edb326;
+  --color-ink: #000000;
+  --color-ink-soft: #111111;
+  --color-ink-panel: #0d0d0d;
+  --color-body: #d0d0d0;
+  --color-muted: #717171;
+  --color-hairline: #eaeaea;
+
+  /* ── Type ramp (matches the live site's computed styles) ─────────────── */
+  --font-display: var(--font-bungee);      /* h1 */
+  --font-heading: var(--font-exo2);        /* h2 */
+  --font-sub: var(--font-oswald);          /* h4 */
+  --font-ui: var(--font-open-sans);        /* h3, buttons */
+  --font-body: var(--font-nunito-sans);    /* body copy */
+  --font-nav: var(--font-audiowide);       /* navigation */
+}
+
+/* ── Motion & geometry system ───────────────────────────────────────────
+   The brand reads as motorsport applied to car care, so the system owns one
+   slant angle and one easing curve. Every diagonal edge, stripe and accent
+   derives from `--slant`; every transition uses the exponential ease-out so
+   motion arrives fast and settles, the way something braking does. */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --slant: 4deg;
+  --slant-steep: 18deg;
+  /* Vertical rise of a full-bleed diagonal section edge. */
+  --cut: 3rem;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@media (min-width: 1024px) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --cut: 5rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  /* Horizontal containment must live on <html>, not <body>: putting it on
+     <body> turns the body into the scroll container, which zeroes out
+     window.scrollY and breaks the header's scrolled state. */
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: #ffffff;
+    font-family: var(--font-body), sans-serif;
+    font-size: 16px;
+    font-weight: 200;
+    line-height: 26px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1 {
+    font-family: var(--font-display), sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
+    line-height: 1.11;
+  }
+
+  h2 {
+    font-family: var(--font-heading), sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  h3 {
+    font-family: var(--font-ui), sans-serif;
+    font-weight: 600;
+    line-height: 1.625;
+  }
+
+  h4 {
+    font-family: var(--font-sub), sans-serif;
+    font-weight: 600;
+    line-height: 1.167;
+  }
+
+  p {
+    font-family: var(--font-body), sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 24px;
+    color: var(--color-body);
+  }
+}
+
+@layer components {
+  /* The site's signature gold wash — used on the "Why Choose" and
+     testimonial rows. Live CSS: linear-gradient(90deg,#c19231 0%,#c18305 100%)
+
+     Longhand, not the `background` shorthand: `.livery` also sets a
+     background-image, and a shorthand here would let that override reset the
+     colour to transparent — which rendered these bands black. With the colour
+     set separately, the stripes simply layer over the gold. */
+  .bg-gold-wash {
+    background-color: var(--color-gold);
+    background-image: linear-gradient(
+      90deg,
+      var(--color-gold) 0%,
+      var(--color-gold-dark) 100%
+    );
+  }
+
+  /* Salient's .nectar-button, rebuilt */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-ui), sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 28px;
+    border-radius: 3px;
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease,
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  /* Ink on gold, not white. White on #c19231 measures 2.83:1 — the primary
+     call to action was the least legible text on the site. Ink on the same
+     gold is 7.42:1, and black-on-gold is the more motorsport reading anyway. */
+  .btn-gold {
+    background-color: var(--color-gold);
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .btn-gold:hover {
+    background-color: var(--color-gold-bright);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px -6px rgb(193 146 49 / 0.55);
+  }
+
+  .btn-outline {
+    background-color: transparent;
+    color: #ffffff;
+    box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.75);
+  }
+
+  .btn-outline:hover {
+    background-color: #ffffff;
+    color: var(--color-ink);
+    transform: translateY(-2px);
+  }
+
+  .btn-dark {
+    background-color: var(--color-ink-soft);
+    color: #ffffff;
+  }
+
+  .btn-dark:hover {
+    background-color: var(--color-gold);
+    transform: translateY(-2px);
+  }
+
+  /* Section shell — the live grid, measured off medusaautodetailing.co.uk:
+     `.container` is max-width 88% below 1000px, and max-width 2000px with
+     90px gutters from 1000px up. The header uses the same container, so the
+     logo and the section content share one left edge. */
+  .shell {
+    width: 100%;
+    max-width: 88%;
+    margin-inline: auto;
+  }
+
+  @media (min-width: 1000px) {
+    .shell {
+      max-width: 2000px;
+      padding-inline: 90px;
+    }
+  }
+
+  /* Reading measure. Body copy ran the full 1245px grid before, which is
+     roughly 140 characters — twice a comfortable line. */
+  .measure {
+    max-width: 68ch;
+  }
+
+  /* Content pages share the header and footer grid exactly, so the page has
+     one frame: the first word of a heading starts on the same vertical as the
+     logo, and a full-width grid ends where the navigation does. A narrower
+     centred column read as a floating box inset ~400px from the page edges.
+
+     Prose still takes a reading measure inside that frame — a line is capped,
+     not the container — so long copy never runs 170 characters wide. */
+  .shell-article {
+    width: 100%;
+    max-width: 88%;
+    margin-inline: auto;
+  }
+
+  @media (min-width: 1000px) {
+    .shell-article {
+      max-width: 2000px;
+      padding-inline: 90px;
+    }
+  }
+
+  /* Quiet secondary link. The negative margin keeps the type where it sits
+     optically while giving the control a 40px-tall hit area. */
+  .link-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding-block: 9px;
+    margin-block: -9px;
+    font-family: var(--font-ui), sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.72);
+    transition: color 0.2s ease;
+  }
+
+  .link-inline:hover {
+    color: var(--color-gold-bright);
+  }
+
+  /* ── Surfaces ─────────────────────────────────────────────────────────
+     The page reads by elevation rather than by slabs of colour: a radius, a
+     hairline drawn as an inset shadow, and a real offset shadow beneath. */
+  .surface {
+    border-radius: 14px;
+    background-color: var(--color-ink-panel);
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.08),
+      0 18px 44px -28px rgb(0 0 0 / 0.95);
+  }
+
+  /* Same panel, for use on the gold bands — the tile goes dark so its own
+     copy can stay white instead of fighting the gold underneath. */
+  .surface-on-gold {
+    border-radius: 14px;
+    background-color: var(--color-ink);
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.08),
+      0 20px 44px -26px rgb(0 0 0 / 0.5);
+  }
+
+  /* ── Speed rule ───────────────────────────────────────────────────────
+     The system's section marker: a gold bar cut off at the slant, like a
+     livery stripe terminating on a body panel. It replaces the eyebrow
+     label the old layout leaned on. */
+  .speed-rule {
+    display: block;
+    height: 6px;
+    width: 74px;
+    background: linear-gradient(90deg, var(--color-gold-bright), var(--color-gold-dark));
+    clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  }
+
+  .speed-rule-sm {
+    height: 4px;
+    width: 46px;
+  }
+
+  /* Racing stripes, used as a texture on accent bands. */
+  .livery {
+    background-image: repeating-linear-gradient(
+      calc(90deg + var(--slant-steep)),
+      transparent 0 22px,
+      rgb(193 146 49 / 0.14) 22px 24px,
+      transparent 24px 34px,
+      rgb(193 146 49 / 0.07) 34px 39px
+    );
+  }
+
+  /* Diagonal section edges. Sections carrying a cut need extra padding on
+     that side so content never lands inside the removed wedge. */
+  .cut-top {
+    clip-path: polygon(0 var(--cut), 100% 0, 100% 100%, 0 100%);
+  }
+
+  .cut-bottom {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), 0 100%);
+  }
+
+  .cut-both {
+    clip-path: polygon(0 var(--cut), 100% 0, 100% calc(100% - var(--cut)), 0 100%);
+  }
+
+  /* ── Reveal ───────────────────────────────────────────────────────────
+     Content renders visible. `data-shown="false"` is only ever set by the
+     client after mount, so a crawler, a no-JS visitor, or a failed bundle
+     all get the finished page — nothing is hidden by the server output. */
+  .reveal[data-shown="false"] {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+
+  .reveal {
+    transition:
+      opacity 0.7s var(--ease-out-expo),
+      transform 0.9s var(--ease-out-expo);
+    transition-delay: calc(var(--i, 0) * 70ms);
+  }
+
+  /* ── Hero: the one authored moment ────────────────────────────────────
+     The scrim retracts while the headline is wiped in along the slant —
+     the car emerging from under the cover, which is the service itself. */
+  @keyframes scrim-retract {
+    from {
+      opacity: 0.92;
+    }
+    to {
+      opacity: 0.62;
+    }
+  }
+
+  @keyframes livery-wipe {
+    from {
+      clip-path: polygon(0 0, 0 0, -8% 100%, -8% 100%);
+    }
+    to {
+      clip-path: polygon(0 0, 108% 0, 100% 100%, -8% 100%);
+    }
+  }
+
+  @keyframes rule-launch {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  /* `backwards`, never `both`. The hidden start state then exists only inside
+     each animation's own delay window — once it finishes, the element falls
+     back to its ordinary style, which is fully visible. With `both` the
+     resting state was the hidden keyframe, so anything that stopped the
+     animation advancing left the headline permanently invisible. */
+  .hero-scrim {
+    animation: scrim-retract 1.4s var(--ease-out-expo) backwards;
+  }
+
+  .hero-wipe {
+    animation: livery-wipe 1s var(--ease-out-quint) backwards;
+    animation-delay: calc(var(--i, 0) * 110ms + 150ms);
+  }
+
+  .hero-rule {
+    transform-origin: left center;
+    animation: rule-launch 0.8s var(--ease-out-expo) backwards;
+    animation-delay: 120ms;
+  }
+}
+
+/* Printing never runs the entrance; make sure it never inherits its start. */
+@media print {
+  .hero-scrim,
+  .hero-wipe,
+  .hero-rule {
+    animation: none !important;
+  }
+}
+
+/* Motion is an enhancement, never a requirement. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal[data-shown="false"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .hero-scrim,
+  .hero-wipe,
+  .hero-rule {
+    animation: none !important;
+  }
+
+  .hero-scrim {
+    opacity: 0.62;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scrollbar styling to stay on-brand in dark UI */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0d0d;
+}
+::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold);
 }
