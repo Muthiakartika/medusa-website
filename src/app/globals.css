@@ -45,10 +45,16 @@
 @layer base {
   /* Horizontal containment must live on <html>, not <body>: putting it on
      <body> turns the body into the scroll container, which zeroes out
-     window.scrollY and breaks the header's scrolled state. */
+     window.scrollY and breaks the header's scrolled state.
+
+     `clip`, not `hidden`. `overflow-x: hidden` makes <html> a scroll
+     container, and a scroll container silently disables `position: sticky`
+     for everything inside it — which is why the FAQ heading, the terms
+     contents list and the About photograph all scrolled away instead of
+     holding. `clip` contains the same overflow without that side effect. */
   html {
     scroll-behavior: smooth;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   body {

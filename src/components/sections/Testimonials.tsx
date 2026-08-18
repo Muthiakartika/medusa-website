@@ -45,7 +45,7 @@ export default function Testimonials() {
 
   return (
     <section
-      className="bg-gold-wash w-full py-20 lg:py-28"
+      className="bg-gold-wash w-full py-16 lg:py-[104px]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}

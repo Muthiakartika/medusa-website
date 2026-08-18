@@ -28,7 +28,7 @@ export default function Valeting() {
   const open = (p: Package) => setModal(INCLUDED[p.included]);
 
   return (
-    <section id="services" className="relative w-full bg-black py-20 lg:py-28">
+    <section id="services" className="relative w-full bg-black py-16 lg:py-[104px]">
       <div className="shell">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
           <SectionHead

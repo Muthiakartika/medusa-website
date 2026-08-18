@@ -17,7 +17,7 @@ export default function Portfolio() {
   const items = expanded ? PORTFOLIO : PORTFOLIO.slice(0, 8);
 
   return (
-    <section className="w-full overflow-hidden bg-black py-20 lg:py-24">
+    <section className="w-full bg-black py-16 lg:py-[104px]">
       <div className="shell">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <SectionHead title="Portfolio" />
@@ -35,7 +35,13 @@ export default function Portfolio() {
         </div>
       </div>
 
-      <div className="mt-12 grid grid-cols-2 gap-2.5 px-2.5 sm:grid-cols-4">
+      {/*
+        Inside the page grid, not edge to edge. The source images are 400px
+        square; run full-bleed at four across they were painted at ~470px and
+        visibly soft. Held to the shell and stepped to five columns on a wide
+        screen, each tile lands under 300px and stays sharp.
+      */}
+      <div className="shell mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {items.map((src, i) => (
           <Reveal
             key={src}
@@ -53,7 +59,7 @@ export default function Portfolio() {
                 src={src}
                 alt=""
                 fill
-                sizes="(min-width: 640px) 25vw, 50vw"
+                sizes="(min-width: 1024px) 18vw, (min-width: 640px) 30vw, 46vw"
                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
               />
               <span className="absolute inset-0 bg-gold/0 transition-colors duration-300 group-hover:bg-gold/20" />

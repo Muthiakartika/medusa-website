@@ -10,7 +10,7 @@ import { BOOK_URL, EXTRA_SERVICES } from "@/lib/site";
  */
 export default function ExtraServices() {
   return (
-    <section className="w-full bg-black py-20 lg:py-24">
+    <section className="w-full bg-black py-16 lg:py-[104px]">
       <div className="shell">
         <SectionHead title="Add To Any Service" />
 

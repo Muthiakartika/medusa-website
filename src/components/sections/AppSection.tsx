@@ -14,7 +14,7 @@ import { APP, BOOK_URL, CONTACT } from "@/lib/site";
 export default function AppSection() {
   return (
     <>
-      <section className="w-full bg-black py-20 lg:py-28">
+      <section className="w-full bg-black py-16 lg:py-[104px]">
         <div className="shell">
           <div className="surface grid items-center gap-10 overflow-hidden p-8 lg:grid-cols-12 lg:p-14">
             <Reveal className="relative lg:col-span-5">

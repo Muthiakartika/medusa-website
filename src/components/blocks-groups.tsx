@@ -514,17 +514,26 @@ export function Gallery({
 }: {
   images: Extract<Block, { type: "image" }>[];
 }) {
-  // Pairs read better side by side; longer runs go three up.
-  const cols = images.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3";
+  /*
+    Pairs read better side by side; longer runs step up to five, matching the
+    homepage portfolio. At three across these 576px source images were painted
+    at ~380px and went soft — the same problem the portfolio had.
+  */
+  const cols =
+    images.length === 2
+      ? "sm:grid-cols-2"
+      : images.length <= 4
+        ? "grid-cols-2 lg:grid-cols-4"
+        : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5";
   return (
-    <ul className={`mt-7 grid grid-cols-1 gap-3 ${cols}`}>
+    <ul className={`mt-7 grid gap-3 ${cols}`}>
       {images.map((img, i) => (
         <li key={i} className="relative aspect-4/3 overflow-hidden rounded-[12px]">
           <Image
             src={img.src}
             alt={img.alt}
             fill
-            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            sizes="(min-width: 1024px) 18vw, (min-width: 640px) 30vw, 46vw"
             className="object-cover"
           />
         </li>
@@ -551,14 +560,14 @@ export function PriceGrid({ items }: { items: PriceItem[] }) {
       their neighbours. `@container` plus an auto-fit track means the same
       component reads correctly at 250px and at 1250px.
     */
-    <div className="bg-gold-wash @container mt-9 overflow-hidden rounded-[14px] p-2 sm:p-3">
+    <div className="@container mt-9">
       {/*
-        Narrow: a picker, because four tiers stacked read as one unbroken run
-        of gold. Wide: the row, because seeing all four prices at once is the
-        point of a price table. Both are rendered and the container query
-        chooses — four items is too little markup to be worth measuring for.
+        Narrow: tabs, because four cards stacked is four screens of scrolling
+        inside a card that is a third of a column. Wide: one card per class,
+        because seeing all four prices at once is the point of a price table.
+        Both are rendered and the container query chooses.
       */}
-      <div className="@min-[560px]:hidden">
+      <div className="bg-gold-wash overflow-hidden rounded-[14px] @min-[560px]:hidden">
         <PriceTabs
           items={items.map((it) => ({
             icon: it.icon ? { src: it.icon.src, w: it.icon.w, h: it.icon.h } : undefined,
@@ -569,11 +578,16 @@ export function PriceGrid({ items }: { items: PriceItem[] }) {
         />
       </div>
 
-      <ul className="hidden gap-px [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))] @min-[560px]:grid">
+      {/*
+        A card per vehicle, with air between them. Run together as one slab of
+        gold the four classes read as a single block you have to parse; apart,
+        each is its own price you can point at.
+      */}
+      <ul className="hidden gap-3 [grid-template-columns:repeat(auto-fit,minmax(160px,1fr))] @min-[560px]:grid">
         {items.map((it, i) => (
           <li
             key={i}
-            className="flex flex-col items-center px-3 py-5 text-center @min-[620px]:px-6 @min-[620px]:py-7"
+            className="bg-gold-wash flex flex-col items-center rounded-[14px] px-4 py-6 text-center @min-[620px]:px-6 @min-[620px]:py-8"
           >
             {it.icon && (
               <Image
@@ -581,7 +595,7 @@ export function PriceGrid({ items }: { items: PriceItem[] }) {
                 alt=""
                 width={it.icon.w ?? 339}
                 height={it.icon.h ?? 339}
-                className="h-[44px] w-auto brightness-0 @min-[620px]:h-[62px]"
+                className="h-[42px] w-auto brightness-0 @min-[620px]:h-[56px]"
               />
             )}
             <h3 className="mt-3 font-[family-name:var(--font-sub)] text-[15px] tracking-[0.04em] text-ink uppercase @min-[620px]:mt-4 @min-[620px]:text-[17px]">
@@ -593,7 +607,7 @@ export function PriceGrid({ items }: { items: PriceItem[] }) {
                 dangerouslySetInnerHTML={{ __html: it.note }}
               />
             )}
-            <p className="mt-auto pt-4 font-[family-name:var(--font-display)] text-[24px] leading-none text-ink @min-[620px]:pt-5 @min-[620px]:text-[36px]">
+            <p className="mt-auto pt-4 font-[family-name:var(--font-display)] text-[26px] leading-none text-ink @min-[620px]:pt-5 @min-[620px]:text-[34px]">
               {it.price}
             </p>
           </li>

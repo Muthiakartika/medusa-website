@@ -5,8 +5,12 @@ import { Sections } from "@/components/Blocks";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import JsonLd from "@/components/JsonLd";
+import LocationPage from "@/components/LocationPage";
+import ServicePage from "@/components/ServicePage";
 import { ALL_SLUGS, getPage } from "@/lib/blocks";
 import { pageSchema } from "@/lib/schema";
+import { isLocationSlug } from "@/lib/location-frame";
+import { SERVICE_SLUGS } from "@/lib/service-frame";
 
 export const dynamicParams = false;
 
@@ -37,6 +41,37 @@ export default async function CatchAllPage({ params }: PageProps<"/[...slug]">) 
   const { slug } = await params;
   const page = getPage(slug.join("/"));
   if (!page) notFound();
+
+  /*
+    Every service page shares one hand-built frame — see `lib/service-frame.ts`.
+    A layout rather than forty-one bespoke routes, because these pages differ
+    in their copy and their prices, not in their shape.
+  */
+  if (SERVICE_SLUGS.has(page.slug)) {
+    return (
+      <>
+        <JsonLd data={pageSchema(page)} />
+        <Header />
+        <ServicePage page={page} />
+        <Footer />
+      </>
+    );
+  }
+
+  /*
+    The borough hubs and the three service-in-a-place families — 146 pages —
+    share their own frame. See `lib/location-frame.ts`.
+  */
+  if (isLocationSlug(page.slug)) {
+    return (
+      <>
+        <JsonLd data={pageSchema(page)} />
+        <Header />
+        <LocationPage page={page} />
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>

@@ -183,12 +183,23 @@ function isDecorativeIcon(src) {
 
 /* ── block walker ─────────────────────────────────────────────────────── */
 
-/** One accordion answer: its paragraphs, else its list, else its bare text. */
+/**
+ * One accordion answer, in document order.
+ *
+ * This used to take the paragraphs *or* the list items, never both, so any
+ * answer that opened with a lead-in and then listed something lost the list:
+ * "we offer the following packages:" and then nothing. 70 list items went that
+ * way across 14 pages, including the whole price table on /detailing.
+ */
 function answerOf($, $panel) {
-  const body = $panel.find('p').map((_, p) => inlineHtml($, p)).get().filter(Boolean);
-  if (body.length) return body;
-  const items = $panel.find('li').map((_, li) => inlineHtml($, li)).get().filter(Boolean);
-  if (items.length) return items;
+  const out = [];
+  $panel.find('p, li').each((_, el) => {
+    // A <p> inside an <li> would otherwise be counted twice.
+    if (el.tagName === 'p' && $(el).parents('li').length) return;
+    const html = inlineHtml($, el);
+    if (html && html.replace(/<[^>]+>/g, '').trim()) out.push(html);
+  });
+  if (out.length) return out;
   const text = clean($panel.text());
   return text ? [text] : [];
 }
@@ -246,6 +257,34 @@ function walk($, root) {
       }
     }
 
+    /*
+      A hand-written FAQ block — `<details class="faq-item">` with the question
+      in the `<summary>`. Two pages use it, /aircraft-cleaning and
+      /motorcycle-valeting-detailing, and neither had a single question in
+      `pages.json` because no branch here claimed it.
+    */
+    if ($el.hasClass('faq-item') || (tag === 'details' && $el.find('> summary').length)) {
+      const $q = $el.find('> summary').first().clone();
+      $q.find('.faq-qicon').remove();
+      const q = clean($q.text());
+      const $a = $el.find('.faq-answer').first();
+      const a = $a.length ? answerOf($, $a) : [];
+      if (q) faqBuf.push({ q, a: a.length ? a : [clean($el.find('> summary').first().next().text())].filter(Boolean) });
+      return;
+    }
+
+    /*
+      Salient's icon-with-text row: a tick in `.iwt-icon` and the label beside
+      it in `.iwt-text`, which is a bare <div> nothing below claims. The
+      commercial page lists the nine kinds of fleet it cleans this way, and
+      `pages.json` held nine tick images and not one word of what they ticked.
+    */
+    if ($el.hasClass('iwithtext')) {
+      const label = clean($el.find('.iwt-text').first().text());
+      if (label) push({ type: 'paragraph', html: label });
+      return;
+    }
+
     // Salient FAQ accordion
     if ($el.hasClass('toggle')) {
       const q = clean($el.find('> h3, > h4, .toggle-title').first().text());
@@ -275,9 +314,33 @@ function walk($, root) {
       return;
     }
 
+    /*
+      A leaf <div> inside a raw-HTML block. The wash cards put the duration and
+      the price there — "(40-60 Mins)" and "£37-£48" — as styled bare divs, so
+      eight wash pages advertised packages with no price on them at all. Kept
+      deliberately narrow: styled, short, and no markup of its own.
+    */
+    if (tag === 'div' && $el.closest('.wpb_raw_code').length && !$el.children().length) {
+      const text = clean($el.text());
+      if (text && text.length <= 40 && $el.attr('style') && !text.includes('<')) {
+        push({ type: 'paragraph', html: text });
+      }
+      return;
+    }
+
     if (/^h[1-6]$/.test(tag)) {
       const text = clean($el.text());
-      if (text) push({ type: 'heading', level: Number(tag[1]), text });
+      if (!text) return;
+      /*
+        A heading that is nothing but one link keeps it. 479 headings across
+        103 pages are exactly that — the "LEVEL 1 … LEVEL 5" ladders that walk
+        you through the detailing packages, and the "📲 Book Your …" calls to
+        action — and every one of them arrived as dead text.
+      */
+      const $a = $el.children('a');
+      const href =
+        $a.length === 1 && clean($a.text()) === text ? localHref($a.attr('href')) : undefined;
+      push({ type: 'heading', level: Number(tag[1]), text, ...(href ? { href } : {}) });
       return;
     }
 

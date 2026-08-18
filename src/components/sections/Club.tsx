@@ -13,8 +13,10 @@ import { CLUB } from "@/lib/site";
  * the thing it was introducing.
  */
 export default function Club() {
+  // Top padding as well as bottom: without it the card sat straight against
+  // the gold testimonial band above, with no seam between the two.
   return (
-    <section className="w-full bg-black pb-20 lg:pb-28">
+    <section className="w-full bg-black py-16 lg:py-[104px]">
       <div className="shell">
         <div className="relative isolate overflow-hidden rounded-[14px]">
           <div

@@ -30,7 +30,7 @@ function byRegion(text: string) {
 
 export default function Areas() {
   return (
-    <section className="bg-gold-wash w-full py-20 lg:py-28">
+    <section className="bg-gold-wash w-full py-16 lg:py-[104px]">
       <div className="shell">
         <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
           <div className="lg:col-span-5">
@@ -58,7 +58,8 @@ export default function Areas() {
           </Reveal>
         </div>
 
-        <div className="mt-5 grid gap-5 md:grid-cols-3">
+        {/* 5px of air under a 420px map read as the cards being glued to it. */}
+        <div className="mt-10 grid gap-5 md:grid-cols-3 lg:mt-14">
           {AREAS.map((a, i) => {
             const groups = byRegion(a.body);
             return (

@@ -67,7 +67,9 @@ export default function VehicleClassPicker({
       */}
       {/* Grid, not flex-wrap: wrapping four chips on a narrow screen left the
           last one alone on its row and stretched to full width. */}
-      <div className="grid grid-cols-2 gap-1 bg-ink p-1 ring-1 ring-white/10 sm:grid-cols-4">
+      {/* A 2px gold edge rather than a white hairline: at ring-1/10 the control
+          dissolved into the black behind it and read as four loose icons. */}
+      <div className="grid grid-cols-2 gap-1 overflow-hidden rounded-[12px] bg-ink p-1 ring-2 ring-gold/45 sm:grid-cols-4">
         {CAR_SIZES.map((size, i) => {
           const active = i === index;
           return (
@@ -76,7 +78,9 @@ export default function VehicleClassPicker({
               type="button"
               onClick={() => setIndex(i)}
               aria-pressed={active}
-              className={`group relative flex flex-col items-center gap-1 px-3 py-2.5 transition-colors duration-200 sm:min-w-[104px] ${
+              /* Rounded to match the frame: a square gold chip in the first
+                 or last slot cut the corner off the control. */
+              className={`group relative flex flex-col items-center gap-1 rounded-[8px] px-3 py-2.5 transition-colors duration-200 sm:min-w-[104px] ${
                 active
                   ? "bg-gold text-ink"
                   : "text-white/80 hover:bg-white/[0.08]"

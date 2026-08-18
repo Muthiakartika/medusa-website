@@ -12,7 +12,7 @@ import { BOOK_URL, DETAILING, DETAILING_INTRO } from "@/lib/site";
  */
 export default function Detailing() {
   return (
-    <section className="cut-top bg-gold-wash relative w-full pt-[calc(var(--cut)+5rem)] pb-20 lg:pb-28">
+    <section className="cut-top bg-gold-wash relative w-full pt-[calc(var(--cut)+5rem)] pb-16 lg:pb-[104px]">
       <div className="shell">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
           <SectionHead

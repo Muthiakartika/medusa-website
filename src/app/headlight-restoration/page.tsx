@@ -215,7 +215,7 @@ function Proof() {
 
 function Signs() {
   return (
-    <section className="w-full py-20 lg:py-28">
+    <section className="w-full py-16 lg:py-[104px]">
       <div className="shell">
         <SectionHead
           title={HEADLIGHT.signs.heading}
@@ -261,7 +261,7 @@ function Signs() {
 
 function Matters() {
   return (
-    <section className="bg-gold-wash w-full py-20 lg:py-28">
+    <section className="bg-gold-wash w-full py-16 lg:py-[104px]">
       <div className="shell">
         <SectionHead
           title={HEADLIGHT.matters.heading}
@@ -293,7 +293,7 @@ function Matters() {
 
 function Process() {
   return (
-    <section className="w-full py-20 lg:py-28">
+    <section className="w-full py-16 lg:py-[104px]">
       <div className="shell grid gap-14 lg:grid-cols-12 lg:gap-16">
         <Reveal className="lg:col-span-5">
           <div className="lg:sticky lg:top-[130px]">
@@ -358,7 +358,7 @@ function Process() {
 
 function WhyUs() {
   return (
-    <section className="w-full py-20 lg:py-28">
+    <section className="w-full py-16 lg:py-[104px]">
       <div className="shell grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
         <Reveal className="lg:col-span-5">
           <div className="relative overflow-hidden rounded-[14px] ring-1 ring-white/[0.08]">
@@ -401,7 +401,7 @@ function WhyUs() {
 
 function Areas() {
   return (
-    <section className="w-full border-t border-white/[0.07] py-20 lg:py-24">
+    <section className="w-full border-t border-white/[0.07] py-16 lg:py-[104px]">
       <div className="shell grid gap-10 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-5">
           <SectionHead title={HEADLIGHT.areas.heading} />
@@ -437,7 +437,7 @@ function Areas() {
 
 function Cta() {
   return (
-    <section className="cut-top relative w-full overflow-hidden bg-ink-panel pt-[calc(var(--cut)+4rem)] pb-20 lg:pb-28">
+    <section className="cut-top relative w-full overflow-hidden bg-ink-panel pt-[calc(var(--cut)+4rem)] pb-16 lg:pb-[104px]">
       <div
         aria-hidden
         className="absolute inset-0"

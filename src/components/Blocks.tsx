@@ -24,6 +24,102 @@ import Reveal from "@/components/Reveal";
 import { type Block, getForms, type Section } from "@/lib/blocks";
 import { BOOK_URL } from "@/lib/site";
 
+/**
+ * A block that is only a card flag — "MOST POPULAR" over a package name.
+ *
+ * 107 pages carry one, and the source is inconsistent about it: 60 write it as
+ * an `<h3>` above the package's own `<h3>`, 39 as a paragraph, the rest as a
+ * paragraph over a list. Rendered literally it is a heading with nothing under
+ * it, which is how it read on the location and valeting pages — a shouty line
+ * of its own above the card title instead of a flag on the card.
+ *
+ * Nothing but this one label qualifies: a short, fully capitalised phrase that
+ * says popular. Anything longer is a real heading.
+ */
+const BADGE = /^\s*(most\s+popular|popular|best\s+seller|bestseller)\s*$/i;
+
+const isBadge = (text: string) => {
+  const t = text.replace(/&nbsp;/gi, " ").replace(/\s+/g, " ").trim();
+  return Boolean(t) && t === t.toUpperCase() && BADGE.test(t);
+};
+
+function Badge({ text, onGold }: { text: string; onGold?: boolean }) {
+  return (
+    <p className="mt-6 first:mt-0">
+      <span
+        className={`inline-flex rounded-full px-3 py-1.5 font-[family-name:var(--font-ui)] text-[10px] font-semibold tracking-[0.14em] uppercase ${
+          onGold ? "bg-ink text-gold" : "bg-gold text-ink"
+        }`}
+      >
+        {text.replace(/&nbsp;/gi, " ").trim()}
+      </span>
+    </p>
+  );
+}
+
+/**
+ * A paragraph that is really a heading.
+ *
+ * Eleven blog posts and a handful of service pages are written as one long run
+ * of paragraphs with their section titles typed inside them — bold on their
+ * own line ("Comprehensive Detailing on the Go"), numbered ("1. Why London
+ * Winters Damage Your Car"), or flagged with the author's own bullet ("• Road
+ * Salt & Grit", "✔ Full Decontamination"). The live site prints them as body
+ * copy too, which is why those posts scroll for four thousand characters with
+ * a single heading in them.
+ *
+ * Nothing is moved or reworded — the line is set as the heading it already is.
+ * The three tests are deliberately narrow: short, no sentence-ending
+ * punctuation, and a marker the author put there on purpose. 103 all-bold
+ * lines across 33 pages match, and every one of them is a section title.
+ */
+const NUMBERED = /^\d{1,2}\.\s+\S/;
+/** An emoji or a keycap digit, which is how four of the posts flag a title. */
+const PICTOGRAPH = /^(?:\p{Extended_Pictographic}|\d️?⃣)/u;
+const FLAGGED = /^[•✔✓]\s*\S/u;
+const ALL_BOLD = /^\s*<(?:strong|b)>[\s\S]*<\/(?:strong|b)>\s*$/i;
+
+function asLeadIn(html: string): { text: string; flagged?: boolean } | null {
+  const text = clean(html)
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text || /[.!?]$/.test(text)) return null;
+
+  if (ALL_BOLD.test(clean(html)) && text.length >= 6 && text.length <= 90) return { text };
+  if (NUMBERED.test(text) && text.length <= 90) return { text };
+  if (PICTOGRAPH.test(text) && text.length <= 90) return { text };
+  if (FLAGGED.test(text) && text.length <= 70) {
+    return { text: text.replace(FLAGGED, (m) => m.replace(/^[•✔✓]\s*/u, "")), flagged: true };
+  }
+  return null;
+}
+
+function LeadIn({
+  text,
+  flagged,
+  light,
+}: {
+  text: string;
+  flagged?: boolean;
+  light?: boolean;
+}) {
+  return (
+    <p
+      className={`mt-9 flex items-start gap-2.5 text-[18px] leading-snug font-semibold first:mt-0 lg:text-[19px] ${
+        light ? "text-ink" : "text-white"
+      }`}
+    >
+      {flagged && (
+        <Icon name="check" size={18} strokeWidth={2.4} className="mt-[3px] shrink-0 text-gold" />
+      )}
+      {text}
+    </p>
+  );
+}
+
 /* Shared inline-link styling for any HTML we inject from the source site. */
 /*
   `break-words` because nine posts paste a bare URL as the link text —
@@ -58,6 +154,12 @@ type Ctx = {
   drop?: Set<Block>;
   /** Extra `<h1>`s, rendered as the section headings they actually are. */
   demote?: Set<Block>;
+  /**
+   * Paragraphs that are section titles the author typed into the prose.
+   * Decided in `Sections`, where the following block can be looked at — a
+   * marker alone is not enough, because the same "✅ …" opens a list item.
+   */
+  leadIn?: Set<Block>;
 };
 
 /**
@@ -156,6 +258,8 @@ export function Sections({
   bands = "content",
   pageH1,
   h1Taken = false,
+  opensPage = true,
+  panel,
 }: {
   sections: Section[];
   slug: string;
@@ -163,12 +267,26 @@ export function Sections({
    * `content` puts gold where the page has a moment worth marking.
    * `alternate` bands every other eligible section — a louder rhythm, used by
    * the editorial preview.
+   * `none` leaves every row alone, for callers whose sections are not the
+   * source's own — the location frame cuts five borough pages into rows
+   * itself, and banding rows we invented would invent a design decision too.
    */
-  bands?: "content" | "alternate";
+  bands?: "content" | "alternate" | "none";
   /** The page's own title, for spotting a content heading that repeats it. */
   pageH1?: string;
   /** The page has already rendered an h1 of its own — the post header does. */
   h1Taken?: boolean;
+  /**
+   * These sections open the page. False when a hand-built header sits above
+   * them — the valeting frame does — so the first row is a body row and does
+   * not take the 190px header padding or the opening light source.
+   */
+  opensPage?: boolean;
+  /**
+   * Sections to set inside a panel rather than flat on the page — used for
+   * the merged price-and-extras row, which has to be findable at a glance.
+   */
+  panel?: Set<Section>;
 }) {
   /*
     Some source posts mark every section heading as an <h1>: one carries
@@ -212,11 +330,29 @@ export function Sections({
     if (h1Taken || b !== first) demote.add(b);
   });
 
-  const ctx: Ctx = { slug, forms: getForms(slug), drop, demote };
+  /*
+    A typed section title is a marker *and* a paragraph of real prose under it.
+    Without the second half, "✅ The difference between valeting and detailing"
+    — one of four bulleted lines in a row on the valeting guide — would be set
+    as a heading over the next bullet.
+  */
+  const leadIn = new Set<Block>();
+  ordered.forEach((b, i) => {
+    if (b.type !== "paragraph" || !asLeadIn(b.html)) return;
+    const next = ordered[i + 1];
+    if (next?.type !== "paragraph" || asLeadIn(next.html)) return;
+    // 40 characters is enough: the test that matters is the line above —
+    // the next block must be prose, not another marker line.
+    if (clean(next.html).replace(/<[^>]+>/g, "").trim().length >= 40) leadIn.add(b);
+  });
+
+  const ctx: Ctx = { slug, forms: getForms(slug), drop, demote, leadIn };
   const gold =
-    bands === "alternate"
-      ? sections.map((s, i) => i > 0 && i % 2 === 0 && !s.bg?.image && !isLightBackground(s.bg))
-      : goldBands(sections);
+    bands === "none"
+      ? sections.map(() => false)
+      : bands === "alternate"
+        ? sections.map((s, i) => i > 0 && i % 2 === 0 && !s.bg?.image && !isLightBackground(s.bg))
+        : goldBands(sections);
   // A gold band is its own surface, so the seam either side keeps full padding.
   const surface = (i: number) => (gold[i] ? "gold" : surfaceOf(sections[i].bg));
 
@@ -226,7 +362,8 @@ export function Sections({
         <SectionBlock
           key={i}
           section={s}
-          first={i === 0}
+          first={opensPage && i === 0}
+          panel={panel?.has(s)}
           gold={gold[i]}
           // Generous padding only where the surface actually changes.
           openSurface={i > 0 && surface(i - 1) === surface(i)}
@@ -244,10 +381,13 @@ function SectionBlock({
   gold,
   openSurface,
   closeSurface,
+  panel,
   ctx,
 }: {
   section: Section;
   first: boolean;
+  /** Set the row inside a bordered panel with a gold edge along its top. */
+  panel?: boolean;
   /** Render this section as a gold band. */
   gold?: boolean;
   /** Previous section shares this background — do not re-pad the seam. */
@@ -286,6 +426,26 @@ function SectionBlock({
     : isHero
       ? "pb-14 lg:pb-20"
       : "pb-12 lg:pb-16";
+
+  if (panel) {
+    /*
+      A panel, not a band. The row holds the price table — which is itself
+      gold — so banding it would put gold on gold; the frame and the gold rule
+      along its top do the work of marking it instead.
+    */
+    return (
+      <section className="w-full py-12 lg:py-[72px]">
+        <div className="shell">
+          <div className="surface overflow-hidden border-t-[3px] border-gold px-6 py-10 lg:px-12 lg:py-14">
+            <BlockList
+              blocks={section.blocks}
+              ctx={{ ...ctx, ruleOn: leadHeading(section.blocks) }}
+            />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -396,10 +556,12 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
   switch (block.type) {
     case "heading":
       if (ctx.drop?.has(block)) return null;
+      if (isBadge(block.text)) return <Badge text={block.text} onGold={ctx.onGold} />;
       return (
         <Heading
           level={ctx.demote?.has(block) ? 2 : block.level}
           text={block.text}
+          href={block.href}
           rule={ctx.ruleOn === block}
           light={ctx.light}
         />
@@ -413,9 +575,19 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
       */
       if (!hasContent(block.html)) return null;
 
+      // The card flag, wherever the source chose to put it.
+      const flat = block.html.replace(/<[^>]+>/g, "");
+      if (isBadge(flat)) return <Badge text={flat} onGold={ctx.onGold} />;
+
       // A paragraph that is only links and commas is a list, not prose.
       const chips = asLinkChips(block.html);
       if (chips) return <LinkChips chips={chips} onGold={ctx.onGold} />;
+
+      // A section title the author typed into a paragraph.
+      if (ctx.leadIn?.has(block)) {
+        const lead = asLeadIn(block.html);
+        if (lead) return <LeadIn text={lead.text} flagged={lead.flagged} light={ctx.light} />;
+      }
 
       // …and one with ticks scattered through it is a checklist typed flat.
       const inline = asInlineTicks(block.html);
@@ -770,16 +942,32 @@ const SPAN: Record<number, string> = {
 function Heading({
   level,
   text,
+  href,
   rule,
   light,
 }: {
   level: number;
   text: string;
+  /** Set when the source's heading was one link and nothing else. */
+  href?: string;
   rule?: boolean;
   light?: boolean;
 }) {
   const head = light ? "text-ink" : "text-white";
   const accent = light ? "text-ink" : "text-gold";
+
+  /*
+    A heading that was a link stays one. These are the package ladders — "LEVEL
+    1" through "LEVEL 5", each pointing at the page it names — and the calls to
+    action inside the blog posts.
+  */
+  const label = href ? (
+    <a href={href} className="underline-offset-[6px] transition-colors hover:text-gold hover:underline">
+      {text}
+    </a>
+  ) : (
+    text
+  );
 
   /*
     132 of the h5s on this site run past 90 characters — `car-lovers-club`
@@ -821,7 +1009,7 @@ function Heading({
     case 1:
       return (
         <h1 className={`text-[32px] leading-[0.99] sm:text-[40px] lg:text-[52px] ${head}`}>
-          {text}
+          {label}
         </h1>
       );
     case 2:
@@ -840,21 +1028,21 @@ function Heading({
               rule ? "mt-6" : ""
             }`}
           >
-            {text}
+            {label}
           </h2>
         </div>
       );
     case 3:
       return (
         <h3 className={`mt-8 text-[18px] font-semibold lg:text-[20px] ${head}`}>
-          {text}
+          {label}
         </h3>
       );
     case 4:
-      return <h4 className={`mt-5 ${prose ? body : `text-[20px] lg:text-[22px] ${accent}`}`}>{text}</h4>;
+      return <h4 className={`mt-5 ${prose ? body : `text-[20px] lg:text-[22px] ${accent}`}`}>{label}</h4>;
     case 5:
-      return <h5 className={`mt-4 ${prose ? body : `text-[17px] font-semibold ${head}`}`}>{text}</h5>;
+      return <h5 className={`mt-4 ${prose ? body : `text-[17px] font-semibold ${head}`}`}>{label}</h5>;
     default:
-      return <h6 className={`mt-4 ${prose ? body : `text-[15px] font-semibold ${accent}`}`}>{text}</h6>;
+      return <h6 className={`mt-4 ${prose ? body : `text-[15px] font-semibold ${accent}`}`}>{label}</h6>;
   }
 }

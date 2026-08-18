@@ -17,7 +17,7 @@ export default function WhyChoose() {
   const [lead, ...rest] = WHY.items;
 
   return (
-    <section className="bg-gold-wash w-full py-20 lg:py-28">
+    <section className="bg-gold-wash w-full py-16 lg:py-[104px]">
       <div className="shell">
         <div className="grid gap-5 lg:grid-cols-12">
           <Reveal className="flex flex-col justify-center lg:col-span-7">

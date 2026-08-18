@@ -15,7 +15,7 @@ const SPAN = [2, 2, 2, 3, 3, 3, 3];
 
 export default function CarWash() {
   return (
-    <section className="w-full bg-black py-20 lg:py-28">
+    <section className="w-full bg-black py-16 lg:py-[104px]">
       <div className="shell">
         <SectionHead title={CARWASH_INTRO.heading} lede={CARWASH_INTRO.body} />
 

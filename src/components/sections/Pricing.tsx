@@ -35,7 +35,7 @@ export default function Pricing() {
   );
 
   return (
-    <section id="services" className="w-full bg-black py-20 lg:py-28">
+    <section id="services" className="w-full bg-black py-16 lg:py-[104px]">
       <div className="shell">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
           <SectionHead
@@ -52,7 +52,9 @@ export default function Pricing() {
           <div
             role="tablist"
             aria-label="Service type"
-            className="mt-14 grid grid-cols-3 gap-1 bg-ink p-1 ring-1 ring-white/10 sm:inline-grid sm:auto-cols-max sm:grid-flow-col"
+            /* Same 2px gold edge the vehicle-class picker carries, so the two
+               controls in this row read as a matching pair. */
+            className="mt-14 grid grid-cols-3 gap-1 overflow-hidden rounded-[12px] bg-ink p-1 ring-2 ring-gold/45 sm:inline-grid sm:auto-cols-max sm:grid-flow-col"
           >
             {TABS.map((k) => {
               const active = k === tab;
@@ -64,7 +66,7 @@ export default function Pricing() {
                   aria-selected={active}
                   aria-controls={`panel-${k}`}
                   onClick={() => setTab(k)}
-                  className={`flex items-center justify-center gap-2 px-4 py-3.5 font-[family-name:var(--font-sub)] text-[13px] tracking-[0.06em] uppercase transition-colors duration-200 sm:px-8 sm:text-[14px] ${
+                  className={`flex items-center justify-center gap-2 rounded-[8px] px-4 py-3.5 font-[family-name:var(--font-sub)] text-[13px] tracking-[0.06em] uppercase transition-colors duration-200 sm:px-8 sm:text-[14px] ${
                     active ? "bg-gold text-ink" : "text-white/80 hover:bg-white/[0.08]"
                   }`}
                 >

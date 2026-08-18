@@ -10,30 +10,46 @@ export default function Faq() {
   const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <section className="w-full bg-black py-20 lg:py-28">
+    <section className="w-full bg-black py-16 lg:py-[104px]">
       <div className="shell">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-4">
             <div className="lg:sticky lg:top-32">
               <SectionHead title="FAQs" />
+              {/* Two rows, each with its own mark. Run together as one
+                  sentence the number and the address were the smallest thing
+                  in the column and the email wrapped mid-domain. */}
               <Reveal delay={3}>
-                <p className="measure mt-6 text-[15px] leading-[25px] font-normal text-white/65">
-                  Something not covered here? Call{" "}
-                  <a
-                    href={`tel:${CONTACT.phone}`}
-                    className="text-gold transition-colors hover:text-gold-bright"
-                  >
-                    {CONTACT.phone}
-                  </a>{" "}
-                  or email{" "}
-                  <a
-                    href={`mailto:${CONTACT.email}`}
-                    className="break-all text-gold transition-colors hover:text-gold-bright"
-                  >
-                    {CONTACT.email}
-                  </a>
-                  .
+                <p className="mt-6 text-[15px] leading-[25px] font-normal text-white/65">
+                  Something not covered here?
                 </p>
+              </Reveal>
+
+              <Reveal delay={4}>
+                <ul className="mt-6 flex flex-col gap-4">
+                  <li>
+                    <a
+                      href={`tel:${CONTACT.phone}`}
+                      className="group flex items-center gap-3.5 text-[19px] leading-none font-semibold text-white transition-colors hover:text-gold lg:text-[21px]"
+                    >
+                      <span className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full bg-gold/12 ring-1 ring-gold/35 transition-colors group-hover:bg-gold/20">
+                        <Icon name="phone" size={20} className="text-gold" />
+                      </span>
+                      {CONTACT.phone}
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={`mailto:${CONTACT.email}`}
+                      className="group flex items-center gap-3.5 text-[16px] leading-tight font-semibold break-all text-white transition-colors hover:text-gold lg:text-[17px]"
+                    >
+                      <span className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full bg-gold/12 ring-1 ring-gold/35 transition-colors group-hover:bg-gold/20">
+                        <Icon name="mail" size={20} className="text-gold" />
+                      </span>
+                      {CONTACT.email}
+                    </a>
+                  </li>
+                </ul>
               </Reveal>
             </div>
           </div>
