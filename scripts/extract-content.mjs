@@ -36,7 +36,16 @@ function localHref(h) {
 /** keep a safe subset of inline markup inside paragraphs / list items */
 function inlineHtml($, el) {
   const $el = $(el).clone();
-  $el.find('script,style,noscript').remove();
+  /*
+    `svg` has to be removed outright, not left to the unwrap loop below.
+    Unwrapping replaces a node with its own inner HTML, so an <svg> becomes its
+    <path> children — but the loop iterates a snapshot taken before that
+    happened, so those paths are already detached when their turn comes and
+    their unwrap is a no-op against the live tree. The result was Elementor's
+    icon geometry stored as content: every tick-marked list item on the site
+    began with `<path d="M173.898 439.404l-166.4-166.4c-9.997…"></path>`.
+  */
+  $el.find('script,style,noscript,svg').remove();
   $el.find('*').each((_, n) => {
     const tag = n.tagName?.toLowerCase();
     if (!['a', 'strong', 'b', 'em', 'i', 'br', 'span', 'u', 'sup', 'sub'].includes(tag)) {
@@ -174,6 +183,16 @@ function isDecorativeIcon(src) {
 
 /* ── block walker ─────────────────────────────────────────────────────── */
 
+/** One accordion answer: its paragraphs, else its list, else its bare text. */
+function answerOf($, $panel) {
+  const body = $panel.find('p').map((_, p) => inlineHtml($, p)).get().filter(Boolean);
+  if (body.length) return body;
+  const items = $panel.find('li').map((_, li) => inlineHtml($, li)).get().filter(Boolean);
+  if (items.length) return items;
+  const text = clean($panel.text());
+  return text ? [text] : [];
+}
+
 function walk($, root) {
   const blocks = [];
   let faqBuf = [];
@@ -231,9 +250,28 @@ function walk($, root) {
     if ($el.hasClass('toggle')) {
       const q = clean($el.find('> h3, > h4, .toggle-title').first().text());
       const a = $el.find('> div').last();
-      const body = a.find('p').map((_, p) => inlineHtml($, p)).get().filter(Boolean);
-      const items = a.find('li').map((_, li) => inlineHtml($, li)).get().filter(Boolean);
-      if (q) faqBuf.push({ q, a: body.length ? body : items.length ? items : [clean(a.text())] });
+      if (q) faqBuf.push({ q, a: answerOf($, a) });
+      return;
+    }
+
+    /*
+      Elementor's accordion and toggle widgets — the other half of the site's
+      FAQs, and the ones the extractor used to lose.
+
+      The question lives in a plain <a> or <div> that no branch below claims,
+      so it was dropped; the answer's <p> tags fell through to the paragraph
+      branch and landed in the page as loose prose. 107 pages ended up with a
+      "Frequently Asked Questions" heading followed by answers to questions
+      that were nowhere on the page.
+    */
+    if ($el.hasClass('elementor-accordion-item') || $el.hasClass('elementor-toggle-item')) {
+      const $title = $el.find('.elementor-tab-title').first().clone();
+      $title.find('.elementor-accordion-icon, .elementor-toggle-icon, svg').remove();
+      const q =
+        clean($el.find('.elementor-accordion-title, .elementor-toggle-title').first().text()) ||
+        clean($title.text());
+      const a = $el.find('.elementor-tab-content').first();
+      if (q && a.length) faqBuf.push({ q, a: answerOf($, a) });
       return;
     }
 
@@ -478,7 +516,26 @@ function extract(file) {
 
 /* ── run ──────────────────────────────────────────────────────────────── */
 
-const files = fs.readdirSync(HTML).filter((f) => f.endsWith('.html'));
+/*
+  `--dry <slug…>` extracts only the pages named and prints their blocks
+  without writing anything. The mirror is 70MB and gitignored, so a checkout
+  usually has an empty .cache and a full pages.json — running the extractor
+  there would replace 254 pages with whatever few files happen to be cached.
+  The guard below refuses that outright; --dry is how you test a change
+  against a handful of pages you fetched by hand.
+*/
+const DRY = process.argv.includes('--dry')
+  ? process.argv.slice(process.argv.indexOf('--dry') + 1).filter((a) => !a.startsWith('-'))
+  : null;
+
+const all = fs.readdirSync(HTML).filter((f) => f.endsWith('.html'));
+const files = DRY ? all.filter((f) => DRY.includes(f.replace(/\.html$/, '').replace(/__/g, '/'))) : all;
+
+if (DRY && !files.length) {
+  console.log(`nothing cached for: ${DRY.join(', ')}\ncached pages: ${all.length}`);
+  process.exit(1);
+}
+
 const pages = {};
 let emptyPages = [];
 
@@ -498,6 +555,48 @@ for (const f of files) {
   } catch (e) {
     console.log('FAIL ' + f + ' :: ' + e.message);
   }
+}
+
+if (DRY) {
+  for (const p of Object.values(pages)) {
+    console.log(`\n##### ${p.slug}  (${p.sections.length} sections)`);
+    const show = (blocks, ind = '  ') => {
+      for (const b of blocks) {
+        if (b.type === 'columns') {
+          console.log(ind + 'columns');
+          b.cols.forEach((c) => show(c, ind + '  '));
+          continue;
+        }
+        if (b.type === 'faq') {
+          console.log(`${ind}faq (${b.items.length} items)`);
+          b.items.forEach((it) => console.log(`${ind}   Q: ${it.q}\n${ind}   A: ${(it.a[0] ?? '').slice(0, 90)}`));
+          continue;
+        }
+        const gist = String(b.text ?? b.html ?? b.items?.join(' ~ ') ?? b.src ?? b.label ?? '');
+        console.log(`${ind}${b.type}${b.level ?? ''}: ${gist.slice(0, 160)}`);
+      }
+    };
+    p.sections.forEach((s, i) => { console.log(` — section ${i}`); show(s.blocks); });
+  }
+  const json = JSON.stringify(pages);
+  const faqs = Object.values(pages).flatMap((p) => JSON.stringify(p.sections).match(/"type":"faq"/g) ?? []);
+  console.log(`\ndry run — nothing written`);
+  console.log(`  faq blocks: ${faqs.length}`);
+  console.log(`  leftover <path> fragments: ${(json.match(/<path/g) ?? []).length}`);
+  console.log(`  leftover <svg> fragments:  ${(json.match(/<svg/g) ?? []).length}`);
+  process.exit(0);
+}
+
+/* Never trade a full pages.json for a partial cache. */
+const existing = fs.existsSync(PAGES_JSON)
+  ? Object.keys(JSON.parse(fs.readFileSync(PAGES_JSON, 'utf8'))).length
+  : 0;
+if (existing && Object.keys(pages).length < existing * 0.9) {
+  console.error(
+    `refusing to write: cache holds ${Object.keys(pages).length} pages but pages.json has ${existing}.\n` +
+      `run "npm run content:fetch" to refill .cache/html first, or use --dry <slug> to test.`,
+  );
+  process.exit(1);
 }
 
 fs.writeFileSync(PAGES_JSON, JSON.stringify(pages, null, 1), 'utf8');

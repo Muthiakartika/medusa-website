@@ -44,7 +44,13 @@ export default async function CatchAllPage({ params }: PageProps<"/[...slug]">) 
       <Header />
       <main className="flex-1">
         {page.post && <PostHeader page={page} />}
-        <Sections sections={page.sections} slug={page.slug} />
+        <Sections
+          sections={page.sections}
+          slug={page.slug}
+          pageH1={page.h1}
+          // The post header has already set this page's one <h1>.
+          h1Taken={Boolean(page.post)}
+        />
       </main>
       <Footer />
     </>

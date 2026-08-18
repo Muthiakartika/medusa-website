@@ -62,9 +62,12 @@ export default function Header() {
               <DesktopItem key={item.label} item={item} />
             ))}
             <li>
+              {/* `whitespace-nowrap` to match every other nav link — without
+                  it this is the one item that can break mid-label, and "BOOK
+                  NOW" split across two lines pushed the row out of alignment. */}
               <a
                 href={BOOK_URL}
-                className="font-[family-name:var(--font-nav)] text-[14px] uppercase text-white transition-colors hover:text-gold"
+                className="font-[family-name:var(--font-nav)] text-[14px] whitespace-nowrap text-white uppercase transition-colors hover:text-gold"
               >
                 Book Now
               </a>

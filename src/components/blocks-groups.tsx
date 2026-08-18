@@ -1,5 +1,57 @@
 import Image from "next/image";
+import Icon from "@/components/Icon";
+import PriceTabs from "@/components/PriceTabs";
 import type { Block } from "@/lib/blocks";
+
+/**
+ * The extractor unwraps tags it does not keep by replacing them with their own
+ * inner HTML, which turned every inline `<svg>` icon into its bare `<path>`.
+ * 382 of those sit inside `pages.json` today, at the head of most tick-marked
+ * list items. `scripts/extract-content.mjs` no longer produces them, but the
+ * content file is only rewritten by a full re-crawl, so the renderer has to
+ * cope with what is actually there.
+ */
+export const clean = (html: string) =>
+  html
+    .replace(/<svg[\s\S]*?<\/svg>/gi, "")
+    .replace(/<path\b[^>]*>\s*<\/path>/gi, "")
+    .replace(/<path\b[^>]*\/?>/gi, "")
+    .trim();
+
+/**
+ * The bullet the author typed.
+ *
+ * 171 list items across nine pages open with a literal "✔" — the wash pages
+ * write their contents as "✔ Wash", "✔ Buff". The renderer draws its own tick
+ * in front of every item, so those lines came out double-ticked. The glyph is
+ * the source's bullet, not part of the sentence, so it goes.
+ *
+ * Only a leading one, and only when something follows it: "✔" alone would
+ * leave an empty item, and a tick used mid-sentence is real punctuation.
+ */
+export const unbullet = (html: string) =>
+  html.replace(
+    /^(\s*(?:<(?:strong|b|em|i|span)>\s*)*)[✔✓✅☑✖✗✘×•·●▪▫◦▶►‣➔➜→»–—-]+\s+(?=\S)/u,
+    "$1",
+  );
+
+/**
+ * Plain text for somewhere React will escape it again — a card title, say.
+ * The entities have to be decoded here or `&amp;` reaches the page verbatim:
+ * "Engine Bay Steam Clean &amp; Dressing".
+ */
+const textOnly = (html: string) =>
+  clean(html)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#0?39;|&apos;/gi, "'")
+    .replace(/&#8217;|&rsquo;/gi, "’")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\s+/g, " ")
+    .trim();
 
 /**
  * The service pages are extracted from WordPress, so genuinely structured
@@ -145,20 +197,274 @@ export function asAddonCards(
   block: Extract<Block, { type: "columns" }>,
 ): AddonCard[] | null {
   const cards = block.cols.map((col) => {
-    const priceBlock = col.find(isPrice);
-    const iconBlock = col.find(isIcon);
+    /*
+      Only look for the card's own price and icon *above* any price ladder.
+
+      `find` over the whole column took the first £ heading and the first icon
+      wherever they were — and on /car-lovers-club the first of each belongs to
+      the Small Car rung of the tier's own ladder. Lifting them into the card
+      header put "£55 p/m" on the card as though it were the package price, and
+      left the ladder starting at Medium: the Small tier vanished off the page.
+    */
+    const ladder = ladderStart(col);
+    const pool = ladder === -1 ? col : col.slice(0, ladder);
+    const priceBlock = pool.find(isPrice);
+    const iconBlock = pool.find(isIcon);
     return {
       price: text(priceBlock),
       icon: iconBlock as Extract<Block, { type: "image" }> | undefined,
       rest: col.filter((b) => b !== priceBlock && b !== iconBlock),
       hasTitle: col.some((b) => b.type === "heading" && !isPrice(b)),
+      hasLadder: ladder !== -1,
     };
   });
 
-  // Only treat it as a card row when the cells genuinely share that shape.
-  const solid = cards.filter((c) => c.price && c.hasTitle).length;
+  // Only treat it as a card row when the cells genuinely share that shape. A
+  // cell that prices itself through a ladder counts as priced.
+  const solid = cards.filter((c) => (c.price || c.hasLadder) && c.hasTitle).length;
   if (solid < 2 || solid < block.cols.length - 1) return null;
   return cards.map(({ price, icon, rest }) => ({ price, icon, rest }));
+}
+
+/**
+ * Where a column's vehicle-class ladder begins — the first `icon → h3 →
+ * (note) → £heading` run long enough for `group` to collapse into a table.
+ * Returns -1 when the column has no ladder.
+ */
+function ladderStart(col: Block[]): number {
+  for (let i = 0; i < col.length; i++) {
+    let j = i;
+    let rungs = 0;
+    for (;;) {
+      const icon = col[j];
+      const label = col[j + 1];
+      if (!isIcon(icon) || label?.type !== "heading" || label.level !== 3) break;
+      const maybeNote = col[j + 2];
+      const hasNote = maybeNote?.type === "paragraph" && !isPrice(maybeNote);
+      if (!isPrice(col[j + (hasNote ? 3 : 2)])) break;
+      rungs++;
+      j += hasNote ? 4 : 3;
+    }
+    if (rungs >= 2) return i;
+  }
+  return -1;
+}
+
+/* ── Lists that are not lists ─────────────────────────────────────────────
+   Three quarters of the bullet lists on this site are structured content the
+   source had no component for. Rendered as bullets they are a wall of grey
+   sentences; recognising the shape is what turns a page into a layout.
+
+     "<b>Cloudy or Dull Lenses:</b><br> If your headlights still look…"
+     "<strong>Wet Sanding:</strong> Using a multi-stage process…"
+     "Enhanced Safety: Cloudy or damaged headlights reduce…"
+
+   All three are one idea — a short label and its explanation. */
+
+export type Feature = { title: string; body: string };
+
+function titleBody(itemHtml: string): Feature | null {
+  const s = unbullet(clean(itemHtml));
+
+  const tagged = s.match(/^\s*<(b|strong)>([\s\S]*?)<\/\1>\s*(?:<br\s*\/?>)?\s*([\s\S]*)$/i);
+  if (tagged) {
+    const title = textOnly(tagged[2]).replace(/\s*[:–—-]\s*$/, "");
+    // The separator sits inside the label on some pages and outside it on
+    // others — "<strong>Wet Sanding:</strong> …" against
+    // "<strong>Interior Light Clean</strong> – …". Either way it is punctuation
+    // between the two, not the first word of the explanation.
+    const body = clean(tagged[3]).replace(/^\s*(?:&[a-z]+;\s*)?[:–—-]\s*/i, "");
+    if (title && textOnly(body)) return { title, body };
+  }
+
+  // The same shape with no markup at all. Capped at 64 characters so a
+  // sentence that merely contains a colon is not mistaken for a label.
+  const flat = textOnly(s);
+  const colon = flat.match(/^([^:]{3,64}):\s+(\S[\s\S]{12,})$/);
+  if (colon && !/^https?/i.test(colon[1])) return { title: colon[1].trim(), body: colon[2].trim() };
+
+  return null;
+}
+
+/**
+ * A list whose items are mostly label + explanation. Two is not a pattern and
+ * a single stray label among plain bullets is not either, so it takes at least
+ * three items with two thirds of them carrying a label.
+ */
+export function asFeatures(block: Extract<Block, { type: "list" }>): Feature[] | null {
+  if (block.items.length < 3) return null;
+  const parsed = block.items.map(titleBody);
+  const found = parsed.filter(Boolean).length;
+  if (found < 3 || found < block.items.length * 0.66) return null;
+  // Items that did not parse keep their text as an untitled card rather than
+  // being dropped.
+  return parsed.map((p, i) => p ?? { title: "", body: unbullet(clean(block.items[i])) });
+}
+
+/**
+ * A list of one- and two-word items — "Wash, Buff, In/Out Glass Shine, Light
+ * Vacuum, Dashboard". Stacked one per line they take a third of the hero to
+ * say five words; on one wrapped row they read as the summary they are.
+ */
+export function asTicks(block: Extract<Block, { type: "list" }>): string[] | null {
+  if (block.ordered || block.items.length < 3) return null;
+  const items = block.items.map((it) => unbullet(clean(it)));
+  /*
+    Deliberately tight. At five words and 34 characters this also swallowed
+    the lists inside the blog posts — "Swirl marks from poor washing",
+    "Pet hair embedded in seats" — which are sentences doing a list's job and
+    belong stacked in an article. A label is four words at most.
+  */
+  const short = (s: string) => {
+    const t = textOnly(s);
+    return t.length > 0 && t.length <= 28 && t.split(/\s+/).length <= 4;
+  };
+  return items.every(short) ? items : null;
+}
+
+/** Does this fragment put anything on the page at all? */
+export const hasContent = (html: string) =>
+  Boolean(textOnly(html)) || /<(img|iframe|video|a\b)/i.test(clean(html));
+
+/**
+ * A paragraph that is a checklist typed on one line: "✅ Fully mobile across
+ * London ✅ Expert technicians ✅ Free quotes". Ten of these across the blog,
+ * and each rendered as a single run-on sentence with ticks buried in it.
+ */
+export function asInlineTicks(html: string): string[] | null {
+  const s = clean(html);
+  if ((s.match(/[✅✔✓]/gu) ?? []).length < 3) return null;
+  // Only when the glyph is doing the work of a bullet — a paragraph that
+  // merely mentions a tick has other text before the first one.
+  if (textOnly(s.split(/[✅✔✓]/u)[0]).length > 12) return null;
+  const parts = s
+    .split(/[✅✔✓]️?/u)
+    .map((p) => p.replace(/^\s*(?:<br\s*\/?>)?\s*/i, "").replace(/\s*(?:<br\s*\/?>)?\s*$/i, "").trim())
+    .filter((p) => textOnly(p));
+  return parts.length >= 3 ? parts : null;
+}
+
+/** Headings that mean the list under them is a sequence, not a set. */
+const PROCESS =
+  /\b(process|procedure|how (it|we|our|the)|step[s]?\b|stages?\b|what happens|our method|works)\b/i;
+
+/** A sequence: an ordered list, or a labelled list under a process heading. */
+export function isSequence(block: Extract<Block, { type: "list" }>, heading?: string) {
+  return block.ordered || (Boolean(heading) && PROCESS.test(heading!));
+}
+
+/**
+ * Label-and-explanation items as a card grid.
+ *
+ * The column count follows the item count rather than a fixed grid: four cards
+ * across is right for four, and wrong for five, which lands one alone on a
+ * second row.
+ */
+export function FeatureCards({
+  items,
+  onGold,
+  numbered,
+}: {
+  items: Feature[];
+  onGold?: boolean;
+  /** Ordinals instead of ticks — for sets that read as a progression. */
+  numbered?: boolean;
+}) {
+  const cols =
+    items.length === 3
+      ? "sm:grid-cols-3"
+      : items.length === 4
+        ? "sm:grid-cols-2 lg:grid-cols-4"
+        : items.length <= 6
+          ? "sm:grid-cols-2 lg:grid-cols-3"
+          : "sm:grid-cols-2 lg:grid-cols-3";
+
+  return (
+    <ul className={`mt-7 grid gap-4 ${cols}`}>
+      {items.map((it, i) => (
+        <li
+          key={i}
+          className={`group relative flex flex-col overflow-hidden p-6 ${
+            onGold ? "surface-on-gold" : "surface"
+          }`}
+        >
+          {numbered ? (
+            <span
+              aria-hidden
+              className="font-[family-name:var(--font-display)] text-[26px] leading-none text-white/[0.11] transition-colors duration-500 group-hover:text-gold/40"
+            >
+              {String(i + 1).padStart(2, "0")}
+            </span>
+          ) : (
+            <Icon name="check" size={19} strokeWidth={2.4} className="text-gold" />
+          )}
+
+          {it.title && (
+            <h3 className="mt-4 text-[17px] leading-snug font-semibold text-white">{it.title}</h3>
+          )}
+          <p
+            className={`text-[15px] leading-[24px] font-normal text-body ${it.title ? "mt-2.5" : "mt-4"} [&_a]:text-gold [&_a:hover]:underline [&_strong]:text-white`}
+            dangerouslySetInnerHTML={{ __html: it.body }}
+          />
+
+          <span
+            aria-hidden
+            className="absolute inset-x-0 bottom-0 h-[3px] origin-left scale-x-0 bg-gold transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:scale-x-100"
+          />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * The same items as a sequence, on a rail.
+ *
+ * A five-stage service written as five bullets tells you what happens; written
+ * as a numbered run it tells you it is a process with an order, which is the
+ * thing the page is actually selling.
+ */
+export function Steps({ items, light }: { items: Feature[]; light?: boolean }) {
+  return (
+    <ol className="relative mt-8">
+      <span
+        aria-hidden
+        className={`absolute top-2 bottom-10 left-[23px] w-px ${
+          light
+            ? "bg-[linear-gradient(to_bottom,rgba(0,0,0,0.45),rgba(0,0,0,0.08))]"
+            : "bg-[linear-gradient(to_bottom,rgba(193,146,49,0.55),rgba(255,255,255,0.06))]"
+        }`}
+      />
+      {items.map((it, i) => (
+        <li key={i} className="relative flex gap-5 pb-9 last:pb-0 sm:gap-6">
+          <span
+            className={`relative z-10 flex h-[47px] w-[47px] shrink-0 items-center justify-center rounded-full font-[family-name:var(--font-sub)] text-[16px] ${
+              light ? "bg-ink text-gold ring-1 ring-ink/20" : "bg-ink-panel text-gold ring-1 ring-gold/40"
+            }`}
+          >
+            {String(i + 1).padStart(2, "0")}
+          </span>
+          <div className="pt-2">
+            {it.title && (
+              <h3
+                className={`text-[17px] leading-snug font-semibold lg:text-[18px] ${
+                  light ? "text-ink" : "text-white"
+                }`}
+              >
+                {it.title}
+              </h3>
+            )}
+            <p
+              className={`max-w-[62ch] text-[15.5px] leading-[25px] font-normal ${
+                it.title ? "mt-1.5" : ""
+              } ${light ? "text-ink/80" : "text-body"} [&_a]:text-gold [&_a:hover]:underline`}
+              dangerouslySetInnerHTML={{ __html: it.body }}
+            />
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
 }
 
 /**
@@ -235,12 +541,39 @@ export function Gallery({
  */
 export function PriceGrid({ items }: { items: PriceItem[] }) {
   return (
-    <div className="bg-gold-wash mt-9 rounded-[14px] p-2 sm:p-3">
-      <ul className="grid gap-px sm:grid-cols-2 lg:grid-cols-4">
+    /*
+      Sized off its own container, not the window.
+
+      `lg:grid-cols-4` asks how wide the *viewport* is, but this grid is not
+      always the width of the page: on /car-lovers-club the three subscription
+      tiers each carry their own price ladder inside a 253px card, and four
+      columns there gave 56px cells — "MEDIUM CAR" and "£60 p/m" printed over
+      their neighbours. `@container` plus an auto-fit track means the same
+      component reads correctly at 250px and at 1250px.
+    */
+    <div className="bg-gold-wash @container mt-9 overflow-hidden rounded-[14px] p-2 sm:p-3">
+      {/*
+        Narrow: a picker, because four tiers stacked read as one unbroken run
+        of gold. Wide: the row, because seeing all four prices at once is the
+        point of a price table. Both are rendered and the container query
+        chooses — four items is too little markup to be worth measuring for.
+      */}
+      <div className="@min-[560px]:hidden">
+        <PriceTabs
+          items={items.map((it) => ({
+            icon: it.icon ? { src: it.icon.src, w: it.icon.w, h: it.icon.h } : undefined,
+            label: it.label,
+            note: it.note,
+            price: it.price,
+          }))}
+        />
+      </div>
+
+      <ul className="hidden gap-px [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))] @min-[560px]:grid">
         {items.map((it, i) => (
           <li
             key={i}
-            className="flex flex-col items-center px-5 py-7 text-center sm:px-6"
+            className="flex flex-col items-center px-3 py-5 text-center @min-[620px]:px-6 @min-[620px]:py-7"
           >
             {it.icon && (
               <Image
@@ -248,19 +581,19 @@ export function PriceGrid({ items }: { items: PriceItem[] }) {
                 alt=""
                 width={it.icon.w ?? 339}
                 height={it.icon.h ?? 339}
-                className="h-[62px] w-auto brightness-0"
+                className="h-[44px] w-auto brightness-0 @min-[620px]:h-[62px]"
               />
             )}
-            <h3 className="mt-4 font-[family-name:var(--font-sub)] text-[17px] tracking-[0.04em] text-ink uppercase">
+            <h3 className="mt-3 font-[family-name:var(--font-sub)] text-[15px] tracking-[0.04em] text-ink uppercase @min-[620px]:mt-4 @min-[620px]:text-[17px]">
               {it.label}
             </h3>
             {it.note && (
               <p
-                className="mt-2 text-[13px] leading-[20px] font-normal text-ink/85"
+                className="mt-2 text-[12.5px] leading-[19px] font-normal text-ink/85 @min-[620px]:text-[13px] @min-[620px]:leading-[20px]"
                 dangerouslySetInnerHTML={{ __html: it.note }}
               />
             )}
-            <p className="mt-auto pt-5 font-[family-name:var(--font-display)] text-[36px] leading-none text-ink">
+            <p className="mt-auto pt-4 font-[family-name:var(--font-display)] text-[24px] leading-none text-ink @min-[620px]:pt-5 @min-[620px]:text-[36px]">
               {it.price}
             </p>
           </li>
@@ -282,7 +615,15 @@ export function AddonCards({
   onGold?: boolean;
 }) {
   return (
-    <ul className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    /*
+      `items-start`, so a card is only as tall as what is in it.
+
+      A grid stretches its cells by default, and these four cards are wildly
+      uneven — "Congestion Zone Surcharge" is one sentence, "Excessive Soiled
+      Interior" is six. Stretched, the long one set the height for all four and
+      the other three carried several hundred pixels of nothing underneath.
+    */
+    <ul className="mt-7 grid items-start gap-4 sm:grid-cols-2 lg:[grid-template-columns:repeat(auto-fit,minmax(250px,1fr))]">
       {cards.map((c, i) => (
         <li
           key={i}
@@ -311,8 +652,18 @@ export function AddonCards({
             )}
           </div>
 
-          {/* Tightens the first heading against the card header. */}
-          <div className="[&>*:first-child]:mt-4 [&_h3]:text-[16px] [&_h4]:text-[15px]">
+          {/*
+            Tightens the first heading against the card header, and steps the
+            body copy down: a card is a ~400px column, and the page's 16.5/28
+            prose setting turned a six-sentence add-on into a 900px tower.
+          */}
+          {/*
+            Direct children only. As descendant rules (`[&_p]`) these reached
+            into anything the card happened to contain — a card holding a price
+            ladder had its £60 set in 14.5px body type instead of the 24px
+            display face the grid asks for.
+          */}
+          <div className="[&>*:first-child]:mt-4 [&>h3]:text-[16px] [&>h4]:text-[15px] [&>p]:mt-3 [&>p]:text-[14.5px] [&>p]:leading-[23px]">
             {renderBlocks(c.rest)}
           </div>
         </li>

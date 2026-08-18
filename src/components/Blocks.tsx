@@ -2,20 +2,36 @@ import Image from "next/image";
 import {
   AddonCards,
   asAddonCards,
+  asFeatures,
+  asInlineTicks,
   asLinkChips,
+  asTicks,
+  clean,
+  FeatureCards,
   Gallery,
   group,
+  hasContent,
+  isSequence,
   LinkChips,
   PriceGrid,
+  Steps,
+  unbullet,
 } from "@/components/blocks-groups";
 import EnquiryForm from "@/components/EnquiryForm";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import Reveal from "@/components/Reveal";
 import { type Block, getForms, type Section } from "@/lib/blocks";
+import { BOOK_URL } from "@/lib/site";
 
 /* Shared inline-link styling for any HTML we inject from the source site. */
-const PROSE = "[&_a]:text-gold [&_a:hover]:underline [&_strong]:text-white";
+/*
+  `break-words` because nine posts paste a bare URL as the link text —
+  "https://medusaautodetailing.co.uk/detailing/" is 44 characters with nothing
+  to break on, so on a phone it ran past the edge of its column.
+*/
+const PROSE =
+  "break-words [&_a]:text-gold [&_a:hover]:underline [&_strong]:text-white";
 
 /**
  * Forms need to know which page and which form-on-that-page they are, so the
@@ -31,6 +47,17 @@ type Ctx = {
   light?: boolean;
   /** Rendering on a gold band — cards and chips invert. */
   onGold?: boolean;
+  /**
+   * Text of the nearest heading above the block being rendered. A list of
+   * labelled items is a grid of cards under "Signs Your Headlights Need
+   * Restoration" and a numbered sequence under "The Restoration Process" —
+   * same markup, different thing, and only the heading says which.
+   */
+  heading?: string;
+  /** Headings that repeat the page title and should not render at all. */
+  drop?: Set<Block>;
+  /** Extra `<h1>`s, rendered as the section headings they actually are. */
+  demote?: Set<Block>;
 };
 
 /**
@@ -110,10 +137,25 @@ function goldBands(sections: Section[]): boolean[] {
   });
 }
 
+/** Every block on the page in document order, columns flattened into place. */
+function inOrder(blocks: Block[], into: Block[]) {
+  for (const b of blocks) {
+    if (b.type === "columns") b.cols.forEach((c) => inOrder(c, into));
+    else into.push(b);
+  }
+  return into;
+}
+
+const sameText = (a: string, b: string) =>
+  a.replace(/[^\p{L}\p{N}]+/gu, " ").trim().toLowerCase() ===
+  b.replace(/[^\p{L}\p{N}]+/gu, " ").trim().toLowerCase();
+
 export function Sections({
   sections,
   slug,
   bands = "content",
+  pageH1,
+  h1Taken = false,
 }: {
   sections: Section[];
   slug: string;
@@ -123,8 +165,54 @@ export function Sections({
    * the editorial preview.
    */
   bands?: "content" | "alternate";
+  /** The page's own title, for spotting a content heading that repeats it. */
+  pageH1?: string;
+  /** The page has already rendered an h1 of its own — the post header does. */
+  h1Taken?: boolean;
 }) {
-  const ctx: Ctx = { slug, forms: getForms(slug) };
+  /*
+    Some source posts mark every section heading as an <h1>: one carries
+    thirteen, and the first of them repeats the post title the header has
+    already set. Rendered faithfully that is thirteen 52px display headings
+    down one article, and the title twice in a row at the top.
+
+    So the first h1 stands and the rest step down to h2 — except one that is
+    simply the page title again, which is dropped. Nothing else moves; these
+    are section headings that were tagged wrong, and treating them as such is
+    both the better outline and the better page.
+  */
+  const drop = new Set<Block>();
+  const demote = new Set<Block>();
+  const ordered = sections.reduce<Block[]>((acc, s) => inOrder(s.blocks, acc), []);
+  const headings = ordered.filter((b) => b.type === "heading");
+
+  // The post header has already printed the title; a copy of it opening the
+  // article is the same words twice. Two posts lead with it as an h1 and again
+  // as an h2, so this takes both.
+  if (h1Taken && pageH1) {
+    for (const h of headings.slice(0, 2)) {
+      if (h.type === "heading" && sameText(h.text, pageH1)) drop.add(h);
+      else break;
+    }
+  }
+
+  // A heading with nothing under it but the same heading again. Four of these
+  // across the site — /aircraft-cleaning prints "Disinfection Services" twice
+  // in a row. The second one owns the content, so the first goes.
+  for (let i = 0; i < ordered.length - 1; i++) {
+    const a = ordered[i];
+    const b = ordered[i + 1];
+    if (a.type === "heading" && b.type === "heading" && sameText(a.text, b.text)) drop.add(a);
+  }
+
+  // Extra <h1>s render as the section headings they actually are.
+  headings.forEach((b) => {
+    if (b.type !== "heading" || b.level !== 1 || drop.has(b)) return;
+    const first = headings.find((h) => h.type === "heading" && h.level === 1 && !drop.has(h));
+    if (h1Taken || b !== first) demote.add(b);
+  });
+
+  const ctx: Ctx = { slug, forms: getForms(slug), drop, demote };
   const gold =
     bands === "alternate"
       ? sections.map((s, i) => i > 0 && i % 2 === 0 && !s.bg?.image && !isLightBackground(s.bg))
@@ -235,6 +323,20 @@ function SectionBlock({
         />
       )}
 
+      {/* Most service pages open on flat black because the source row carried
+          no photograph. One light source behind the headline gives the page
+          somewhere to start without inventing imagery it does not have. */}
+      {first && !hasImage && !gold && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(70% 55% at 12% 22%, rgba(193,146,49,0.15) 0%, rgba(193,146,49,0.05) 38%, transparent 70%)",
+          }}
+        />
+      )}
+
       <Reveal className="shell-article relative">
         <BlockList
           blocks={section.blocks}
@@ -252,9 +354,21 @@ function SectionBlock({
 
 export function BlockList({ blocks, ctx }: { blocks: Block[]; ctx: Ctx }) {
   // Repeating price runs collapse into a single grid before rendering.
+  const groups = group(blocks);
+
+  // The heading in force at each position, resolved up front — a list needs to
+  // know what it sits under, and threading it through the map body would mean
+  // mutating during render.
+  const headings: (string | undefined)[] = [];
+  let current = ctx.heading;
+  for (const g of groups) {
+    if (g.kind === "block" && g.block.type === "heading") current = g.block.text;
+    headings.push(current);
+  }
+
   return (
     <>
-      {group(blocks).map((g, i) => {
+      {groups.map((g, i) => {
         if (g.kind === "priceGrid") return <PriceGrid key={i} items={g.items} />;
         if (g.kind === "gallery") return <Gallery key={i} images={g.images} />;
         if (g.kind === "addonCards") {
@@ -272,7 +386,7 @@ export function BlockList({ blocks, ctx }: { blocks: Block[]; ctx: Ctx }) {
             />
           );
         }
-        return <BlockView key={i} block={g.block} ctx={ctx} />;
+        return <BlockView key={i} block={g.block} ctx={{ ...ctx, heading: headings[i] }} />;
       })}
     </>
   );
@@ -281,9 +395,10 @@ export function BlockList({ blocks, ctx }: { blocks: Block[]; ctx: Ctx }) {
 function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
   switch (block.type) {
     case "heading":
+      if (ctx.drop?.has(block)) return null;
       return (
         <Heading
-          level={block.level}
+          level={ctx.demote?.has(block) ? 2 : block.level}
           text={block.text}
           rule={ctx.ruleOn === block}
           light={ctx.light}
@@ -291,41 +406,132 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
       );
 
     case "paragraph": {
+      /*
+        88 paragraphs across 11 pages hold nothing but `&nbsp;` — spacer rows
+        the page builder left behind. Each rendered as an empty <p> with a
+        16px top margin, so they showed up as gaps in the middle of a passage.
+      */
+      if (!hasContent(block.html)) return null;
+
       // A paragraph that is only links and commas is a list, not prose.
       const chips = asLinkChips(block.html);
       if (chips) return <LinkChips chips={chips} onGold={ctx.onGold} />;
+
+      // …and one with ticks scattered through it is a checklist typed flat.
+      const inline = asInlineTicks(block.html);
+      if (inline) {
+        return (
+          <ul className="mt-6 grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
+            {inline.map((t, i) => (
+              <li
+                key={i}
+                className={`flex gap-3 text-[16px] leading-[25px] font-normal ${
+                  ctx.light ? "text-ink/85" : "text-body"
+                } ${PROSE}`}
+              >
+                <Icon
+                  name="check"
+                  size={16}
+                  strokeWidth={2.4}
+                  className={`mt-[4px] shrink-0 ${ctx.light ? "text-ink" : "text-gold"}`}
+                />
+                <span dangerouslySetInnerHTML={{ __html: t }} />
+              </li>
+            ))}
+          </ul>
+        );
+      }
 
       return (
         <p
           className={`mt-4 max-w-[76ch] text-[16.5px] leading-[28px] font-normal ${
             ctx.light ? "text-ink/80" : "text-body"
           } ${PROSE}`}
-          dangerouslySetInnerHTML={{ __html: block.html }}
+          dangerouslySetInnerHTML={{ __html: clean(block.html) }}
         />
       );
     }
 
     case "list": {
-      const Tag = block.ordered ? "ol" : "ul";
+      // Blank bullets, six of them across the location pages.
+      const items = block.items.filter(hasContent);
+      if (!items.length) return null;
+      const list = items.length === block.items.length ? block : { ...block, items };
+
+      /*
+        Most of these are not lists. An item of the form "Label: explanation"
+        is a card, and a run of them under a process heading is a sequence.
+        Left as bullets they were the flattest thing on every service page —
+        four paragraphs of grey with a tick in front of each.
+      */
+      const features = asFeatures(list);
+      if (features) {
+        return isSequence(list, ctx.heading) ? (
+          <Steps items={features} light={ctx.light} />
+        ) : (
+          <FeatureCards items={features} onGold={ctx.onGold} />
+        );
+      }
+
+      // One- and two-word items belong on a row, not a column.
+      const ticks = asTicks(list);
+      if (ticks) {
+        return (
+          <ul className="mt-6 flex flex-wrap gap-x-7 gap-y-2.5">
+            {ticks.map((t, i) => (
+              <li
+                key={i}
+                className={`flex items-center gap-2.5 text-[15.5px] leading-[24px] font-semibold ${
+                  ctx.light ? "text-ink" : "text-white"
+                } ${PROSE}`}
+              >
+                <Icon
+                  name="check"
+                  size={17}
+                  strokeWidth={2.4}
+                  className={`shrink-0 ${ctx.light ? "text-ink" : "text-gold"}`}
+                />
+                <span dangerouslySetInnerHTML={{ __html: t }} />
+              </li>
+            ))}
+          </ul>
+        );
+      }
+
+      // What is left really is a list: the what's-included checklists.
+      const Tag = list.ordered ? "ol" : "ul";
+      const panel = list.items.length >= 6;
       return (
+        /*
+          The second column is asked for against the panel's own width, not the
+          window's. `sm:grid-cols-2` split the list in two whenever the browser
+          was wider than 640px — including inside the four package columns on
+          /standard-car-wash, where it left 97px cells with "Hybrid Ceramic Wax
+          – SiO2 Paint Protection" running out of them.
+        */
+        <div className={`@container ${panel ? "mt-6" : ""}`}>
         <Tag
-          className={`mt-6 ${
-            block.items.length >= 6
-              ? "surface grid gap-x-8 gap-y-3 p-6 sm:grid-cols-2 sm:p-7"
+          className={`${panel ? "" : "mt-6"} ${
+            panel
+              ? `grid gap-x-8 gap-y-3.5 p-6 @min-[520px]:grid-cols-2 @min-[520px]:p-7 ${
+                  ctx.onGold ? "surface-on-gold" : "surface"
+                }`
               : "max-w-[76ch] space-y-2.5"
           }`}
         >
-          {block.items.map((it, i) => (
+          {list.items.map((it, i) => (
             <li
               key={i}
               className={`flex gap-3 text-[16px] leading-[25px] font-normal ${
-                ctx.light ? "text-ink/85" : "text-body"
+                // A checklist sits inside its own dark panel, so its copy stays
+                // light even where the section around it is gold.
+                ctx.light && list.items.length < 6 ? "text-ink/85" : "text-body"
               } ${PROSE}`}
             >
-              {block.ordered ? (
+              {list.ordered ? (
                 <span
                   className={`mt-[1px] shrink-0 font-[family-name:var(--font-sub)] text-[15px] tabular-nums ${
-                    ctx.light ? "text-ink" : "text-gold"
+                    ctx.light && list.items.length < 6 ? "text-ink" : "text-gold"
                   }`}
                   aria-hidden
                 >
@@ -336,13 +542,17 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
                   name="check"
                   size={16}
                   strokeWidth={2.4}
-                  className={`mt-[4px] shrink-0 ${ctx.light ? "text-ink" : "text-gold"}`}
+                  className={`mt-[4px] shrink-0 ${
+                    ctx.light && list.items.length < 6 ? "text-ink" : "text-gold"
+                  }`}
                 />
               )}
-              <span dangerouslySetInnerHTML={{ __html: it }} />
+              {/* The source's own "✔" would sit next to the one drawn above. */}
+              <span dangerouslySetInnerHTML={{ __html: unbullet(clean(it)) }} />
             </li>
           ))}
         </Tag>
+        </div>
       );
     }
 
@@ -384,12 +594,22 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
       );
     }
 
-    case "button":
+    case "button": {
+      /*
+        Three "Book Now" buttons carry `href="#"` — on the source they opened
+        a popup this clone does not have, so they landed here as a gold call
+        to action that goes nowhere. Only a booking label is redirected, and
+        only to the booking URL every other Book Now on the site already uses.
+      */
+      const dead = !block.href || block.href === "#";
+      const href = dead && /\bbook\b/i.test(block.label) ? BOOK_URL : block.href;
+      if (!href || href === "#") return null;
+
       return (
         <a
-          href={block.href}
+          href={href}
           className="btn btn-gold mt-7 mr-3 rounded-full"
-          {...(/^https?:/.test(block.href)
+          {...(/^https?:/.test(href)
             ? { target: "_blank", rel: "noopener noreferrer" }
             : {})}
         >
@@ -397,6 +617,7 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
           <Icon name="arrow" size={18} className="ml-2.5" />
         </a>
       );
+    }
 
     case "table": {
       // Defensive: a malformed row must not take down the whole prerender.
@@ -494,10 +715,30 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
         );
       }
 
+      /*
+        A two-cell row where one cell is nothing but pictures is a media
+        split, not a layout. Aligning the two centrally and letting the
+        picture stick while the copy scrolls is the difference between a
+        photograph parked above a wall of text and a section.
+      */
+      const imageCol = block.cols.findIndex(
+        (col) => col.length > 0 && col.every((b) => b.type === "image" && !b.icon),
+      );
+      const split = block.cols.length === 2 && imageCol !== -1;
+
       return (
-        <div className="mt-8 grid gap-x-8 gap-y-8 lg:grid-cols-12">
+        <div
+          className={`mt-8 grid gap-x-10 gap-y-8 lg:grid-cols-12 ${
+            split ? "lg:items-center" : ""
+          }`}
+        >
           {block.cols.map((col, i) => (
-            <div key={i} className={SPAN[block.spans[i]] ?? "lg:col-span-12"}>
+            <div
+              key={i}
+              className={`${SPAN[block.spans[i]] ?? "lg:col-span-12"} ${
+                split && i === imageCol ? "lg:sticky lg:top-[120px] [&_img]:ring-1 [&_img]:ring-white/[0.08]" : ""
+              }`}
+            >
               <BlockList blocks={col} ctx={ctx} />
             </div>
           ))}
@@ -539,6 +780,43 @@ function Heading({
 }) {
   const head = light ? "text-ink" : "text-white";
   const accent = light ? "text-ink" : "text-gold";
+
+  /*
+    132 of the h5s on this site run past 90 characters — `car-lovers-club`
+    has one of 188. Those are paragraphs the page builder happened to mark as
+    a heading, and set at heading weight they shout a whole sentence. The tag
+    stays, so the document outline is unchanged; only the type steps back.
+  */
+  const prose = level >= 4 && text.length > 90;
+  const body = `max-w-[76ch] text-[16.5px] leading-[28px] font-normal ${
+    light ? "text-ink/80" : "text-body"
+  }`;
+
+  /*
+    A heading that is only a price is not a heading. The service pages carry
+    one directly under the h1 — "£ 100" set as an h5 — where it read as a
+    stray line of type between the title and the first paragraph. As a badge
+    it becomes the thing a visitor is looking for.
+
+    Price *tables* never reach here: `group()` collapses those runs first.
+  */
+  if (/^\s*(from\s*)?£\s*[\d,]/i.test(text)) {
+    // The figure verbatim. Whether it is a fixed price or a starting one is
+    // the source's to say — several of these pages quote an exact price, and
+    // captioning them all "from" would be inventing a commercial claim.
+    return (
+      <p className="mt-6 first:mt-0">
+        <span
+          className={`inline-flex items-baseline rounded-full px-4 py-2 font-[family-name:var(--font-display)] text-[22px] leading-none ${
+            light ? "bg-ink text-white" : "bg-gold/12 text-gold ring-1 ring-gold/35"
+          }`}
+        >
+          {text.replace(/\s+/g, " ").trim()}
+        </span>
+      </p>
+    );
+  }
+
   switch (level) {
     case 1:
       return (
@@ -573,10 +851,10 @@ function Heading({
         </h3>
       );
     case 4:
-      return <h4 className={`mt-5 text-[20px] lg:text-[22px] ${accent}`}>{text}</h4>;
+      return <h4 className={`mt-5 ${prose ? body : `text-[20px] lg:text-[22px] ${accent}`}`}>{text}</h4>;
     case 5:
-      return <h5 className={`mt-4 text-[17px] font-semibold ${head}`}>{text}</h5>;
+      return <h5 className={`mt-4 ${prose ? body : `text-[17px] font-semibold ${head}`}`}>{text}</h5>;
     default:
-      return <h6 className={`mt-4 text-[15px] font-semibold ${accent}`}>{text}</h6>;
+      return <h6 className={`mt-4 ${prose ? body : `text-[15px] font-semibold ${accent}`}`}>{text}</h6>;
   }
 }

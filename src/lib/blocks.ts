@@ -77,8 +77,19 @@ import raw from "@/content/pages.json";
 
 export const PAGES = raw as unknown as Record<string, Page>;
 
-/** Every route this site serves, excluding the hand-built homepage. */
-export const ALL_SLUGS = Object.keys(PAGES).filter((s) => s !== "");
+/**
+ * Pages that have earned their own hand-built route under `app/`, the way the
+ * homepage has. A static segment already outranks the catch-all at request
+ * time; excluding these keeps the build from prerendering a second, unreachable
+ * copy of the same URL. They stay in `PAGES` so the sitemap and the link
+ * checker still see them.
+ */
+export const CUSTOM_ROUTES = new Set(["headlight-restoration"]);
+
+/** Every route the catch-all renderer serves. */
+export const ALL_SLUGS = Object.keys(PAGES).filter(
+  (s) => s !== "" && !CUSTOM_ROUTES.has(s),
+);
 
 export function getPage(slug: string): Page | undefined {
   return PAGES[slug];

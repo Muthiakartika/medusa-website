@@ -43,3 +43,7 @@ next-env.d.ts
 # mirrored source HTML used to regenerate src/content/pages.json (~70MB).
 # Recreate with: npm run content:fetch
 /.cache
+
+# derived from pages.json by the classifier, and nothing renders from it yet.
+# Recreate with: npm run content:classify -- --write
+/src/content/pages.v2.json
