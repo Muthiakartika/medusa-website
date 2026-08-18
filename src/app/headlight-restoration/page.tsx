@@ -459,7 +459,7 @@ function Cta() {
             dangerouslySetInnerHTML={{ __html: HEADLIGHT.cta.closer }}
           />
         </Reveal>
-        <Reveal delay={2}>
+        <Reveal delay={2} className="w-full sm:w-auto">
           <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
             <a href={HEADLIGHT.book} className="btn btn-gold w-full rounded-full text-[15px] sm:w-auto">
               Book Now

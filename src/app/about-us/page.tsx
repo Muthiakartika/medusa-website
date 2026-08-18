@@ -178,7 +178,7 @@ export default function AboutPage() {
               title="Mobile Auto Detailing & Valeting brought to your doorstep!"
               align="center"
             />
-            <Reveal delay={1}>
+            <Reveal delay={1} className="w-full sm:w-auto">
               <div className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
                 <a href={BOOK_URL} className="btn btn-gold w-full rounded-full text-[15px] sm:w-auto">
                   Book Now
