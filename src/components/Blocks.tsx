@@ -21,8 +21,26 @@ import EnquiryForm from "@/components/EnquiryForm";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import Reveal from "@/components/Reveal";
+import TableCards from "@/components/TableCards";
 import { type Block, getForms, type Section } from "@/lib/blocks";
 import { BOOK_URL } from "@/lib/site";
+import { parseTable } from "@/lib/table-model";
+
+/**
+ * The container width at which a table stops needing to be re-read, by how
+ * many packages it compares. Written out rather than computed because these
+ * class names have to survive Tailwind's scanner.
+ *
+ * The numbers are the table's own: roughly 200px for the feature name, 240px
+ * for its description and 110px per verdict column. Below that the columns
+ * start colliding, and a `<table>` answers a squeeze with a scrollbar.
+ */
+const WIDE_ENOUGH: Record<number, { table: string; cards: string }> = {
+  1: { table: "hidden @min-[560px]:block", cards: "@min-[560px]:hidden" },
+  2: { table: "hidden @min-[720px]:block", cards: "@min-[720px]:hidden" },
+  3: { table: "hidden @min-[820px]:block", cards: "@min-[820px]:hidden" },
+  4: { table: "hidden @min-[820px]:block", cards: "@min-[820px]:hidden" },
+};
 
 /**
  * A block that is only a card flag — "MOST POPULAR" over a package name.
@@ -777,10 +795,16 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
       const href = dead && /\bbook\b/i.test(block.label) ? BOOK_URL : block.href;
       if (!href || href === "#") return null;
 
+      /*
+        Full width on a phone, content width from `sm` up. A page's buttons
+        arrive as a run of separate blocks, so on a narrow screen they stack —
+        and stacked, four labels of four lengths read as four sizes of button
+        rather than four choices. The same reason the hero row does it.
+      */
       return (
         <a
           href={href}
-          className="btn btn-gold mt-7 mr-3 rounded-full"
+          className="btn btn-gold mt-7 mr-3 w-full rounded-full sm:w-auto"
           {...(/^https?:/.test(href)
             ? { target: "_blank", rel: "noopener noreferrer" }
             : {})}
@@ -795,9 +819,22 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
       // Defensive: a malformed row must not take down the whole prerender.
       const rows = (block.rows ?? []).filter(Array.isArray);
       if (!rows.length) return null;
+
+      /*
+        A table is the right shape for this content and the wrong one for a
+        phone: /valeting's package matrix is 1062px wide and 18,633px tall at
+        375px, which is two axes of scrolling and about fifty screens of it.
+        So the table renders wherever its container can hold it, and
+        `TableCards` renders the same rows wherever it cannot — see
+        `lib/table-model.ts`. A table this cannot read keeps the old
+        behaviour rather than being guessed at.
+      */
+      const model = parseTable(rows);
+      const view = model ? WIDE_ENOUGH[Math.min(model.valueCount, 4)] : null;
+
       return (
-        <div className="surface mt-7 overflow-hidden">
-          <div className="w-full overflow-x-auto">
+        <div className={`surface mt-7 overflow-hidden ${model ? "@container" : ""}`}>
+          <div className={`w-full overflow-x-auto ${view ? view.table : ""}`}>
             <table className="w-full min-w-[520px] border-collapse text-left">
               <tbody>
                 {rows.map((row, i) => (
@@ -822,6 +859,11 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
               </tbody>
             </table>
           </div>
+          {model && view && (
+            <div className={view.cards}>
+              <TableCards model={model} />
+            </div>
+          )}
         </div>
       );
     }

@@ -232,13 +232,15 @@ export default function LocationsPage() {
                 </Reveal>
               )}
               <Reveal delay={3}>
-                <div className="mt-9 flex flex-wrap gap-3">
+                <div className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap">
                   {buttons.map((b, i) =>
                     b.type === "button" ? (
                       <a
                         key={b.label}
                         href={b.href}
-                        className={`btn rounded-full ${i === 0 ? "btn-gold text-[15px]" : "btn-outline"}`}
+                        className={`btn w-full rounded-full sm:w-auto ${
+                          i === 0 ? "btn-gold text-[15px]" : "btn-outline"
+                        }`}
                       >
                         {b.label}
                       </a>

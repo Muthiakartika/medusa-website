@@ -460,12 +460,12 @@ function Cta() {
           />
         </Reveal>
         <Reveal delay={2}>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <a href={HEADLIGHT.book} className="btn btn-gold rounded-full text-[15px]">
+          <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
+            <a href={HEADLIGHT.book} className="btn btn-gold w-full rounded-full text-[15px] sm:w-auto">
               Book Now
               <Icon name="arrow" size={18} className="ml-2.5" />
             </a>
-            <Link href="/contact-us" className="btn btn-outline rounded-full">
+            <Link href="/contact-us" className="btn btn-outline w-full rounded-full sm:w-auto">
               Contact Us
             </Link>
           </div>

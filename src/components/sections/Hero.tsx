@@ -75,23 +75,33 @@ export default function Hero() {
             ))}
           </ul>
 
+          {/*
+            One column on a phone, one row from `sm` up. Stacked, the four
+            buttons take the column's full width, which is the only way four
+            labels of different lengths — "BOOK NOW" against "COMPARE OUR
+            PACKAGES" — read as one set of choices rather than four sizes of
+            button. Above `sm` they go back to sitting on their own content.
+          */}
           <div
-            className="hero-wipe mt-10 flex flex-wrap items-center gap-3"
+            className="hero-wipe mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center"
             style={{ "--i": 5 } as React.CSSProperties}
           >
-            <a href={HERO.buttons[0].href} className="btn btn-gold text-[15px]">
+            <a
+              href={HERO.buttons[0].href}
+              className="btn btn-gold w-full text-[15px] sm:w-auto"
+            >
               {HERO.buttons[0].label}
               <Icon name="arrow" size={18} className="ml-2.5" />
             </a>
             {HERO.buttons.slice(1).map((b) => (
-              <a key={b.label} href={b.href} className="btn btn-outline">
+              <a key={b.label} href={b.href} className="btn btn-outline w-full sm:w-auto">
                 {b.label}
               </a>
             ))}
             <button
               type="button"
               onClick={() => setLightbox(true)}
-              className="group ml-1 inline-flex items-center gap-3 text-white transition-colors hover:text-gold"
+              className="group inline-flex items-center justify-center gap-3 text-white transition-colors hover:text-gold sm:ml-1 sm:justify-start"
             >
               <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full ring-2 ring-white/45 transition-all duration-300 group-hover:bg-gold group-hover:ring-gold">
                 <Icon name="play" size={16} className="ml-[3px]" variant="solid" />

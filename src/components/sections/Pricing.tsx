@@ -173,7 +173,10 @@ function Row({
             )}
           </p>
 
-          <div className="flex shrink-0 gap-2">
+          {/* Two columns, not two content-width buttons: "Book" beside
+              "Included" is 68px beside 95px, and a pair that sits on one line
+              should look like a pair. */}
+          <div className="grid shrink-0 grid-cols-2 gap-2">
             <a href={BOOK_URL} className="btn btn-gold px-4 py-2.5 text-[12px]">
               Book
             </a>

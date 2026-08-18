@@ -49,6 +49,30 @@ const audiowide = Audiowide({
   display: "swap",
 });
 
+/**
+ * Incremental Static Regeneration, for every route under this layout.
+ *
+ * Set here rather than on 255 page files: a `revalidate` on a layout is the
+ * default for its whole subtree, and the lowest value across a route wins, so
+ * a page that needs to refresh faster can still say so itself.
+ *
+ * What it buys, concretely:
+ *
+ * - Pages are served from the prerender cache and revalidated in the
+ *   background at most once an hour, so a visitor never waits on a render.
+ * - Next sends `Cache-Control: s-maxage=3600, stale-while-revalidate` with
+ *   them, which is what a CDN in front of this needs in order to hold them.
+ * - `revalidatePath` can flush one page, or all of them, without a redeploy —
+ *   see `app/api/revalidate/route.ts`.
+ *
+ * An hour rather than a minute because the content behind these pages is a
+ * build artefact (`src/content/pages.json`), not a live feed: see the note in
+ * PROJECT.md about what a regeneration can and cannot pick up.
+ *
+ * Development ignores this entirely — `next dev` re-renders every request.
+ */
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://medusaautodetailing.co.uk"),
   title:

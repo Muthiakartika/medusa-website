@@ -318,6 +318,42 @@
     transition-delay: calc(var(--i, 0) * 70ms);
   }
 
+  /* ── Disclosure ───────────────────────────────────────────────────────
+     The explanation inside a <details> row on the narrow table view. Native
+     <details> has no transition of its own, so the body is animated on the
+     frame it appears: it settles rather than snapping, and it uses the same
+     ease as everything else that arrives on this site. */
+  @keyframes disclose {
+    from {
+      opacity: 0;
+      transform: translate3d(0, -4px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  details[open] > .disclosure {
+    animation: disclose 0.28s var(--ease-out-expo) both;
+  }
+
+  /* The mark that says a row opens, and which state it is in. Two icons
+     swapped rather than one chevron rotated: plus and minus already carry the
+     meaning on their own, so the state survives with animation turned off and
+     reads the same to someone who never sees the transition. */
+  .disclosure-mark [data-when="open"] {
+    display: none;
+  }
+
+  details[open] > summary .disclosure-mark [data-when="closed"] {
+    display: none;
+  }
+
+  details[open] > summary .disclosure-mark [data-when="open"] {
+    display: block;
+  }
+
   /* ── Hero: the one authored moment ────────────────────────────────────
      The scrim retracts while the headline is wiped in along the slant —
      the car emerging from under the cover, which is the service itself. */

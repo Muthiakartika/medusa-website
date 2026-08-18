@@ -176,12 +176,14 @@ function Hero({
         {/* The page's own buttons only — these pages carry four, or none. */}
         {model.buttons.length > 0 && (
           <Reveal delay={5}>
-            <div className="mt-9 flex flex-wrap gap-3">
+            <div className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap">
               {model.buttons.map((b, i) => (
                 <a
                   key={b.label + i}
                   href={b.href}
-                  className={`btn rounded-full ${i === 0 ? "btn-gold text-[15px]" : "btn-outline"}`}
+                  className={`btn w-full rounded-full sm:w-auto ${
+                    i === 0 ? "btn-gold text-[15px]" : "btn-outline"
+                  }`}
                 >
                   {b.label}
                 </a>
