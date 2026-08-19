@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { PAGES } from "@/lib/blocks";
+import { REDIRECTED_SLUGS } from "@/lib/redirects";
 import { SITE } from "@/lib/site";
 
 /**
@@ -11,12 +12,16 @@ import { SITE } from "@/lib/site";
  * without a lastmod rather than with a fabricated one.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  return Object.values(PAGES).map((page) => ({
-    url: SITE + (page.slug ? `/${page.slug}` : "/"),
-    lastModified: page.modified,
-    changeFrequency: changeFrequency(page.slug),
-    priority: priority(page.slug),
-  }));
+  return Object.values(PAGES)
+    /* A sitemap that lists a URL which only 301s is asking a crawler to
+       spend its budget learning the page moved. */
+    .filter((page) => !REDIRECTED_SLUGS.has(page.slug))
+    .map((page) => ({
+      url: SITE + (page.slug ? `/${page.slug}/` : "/"),
+      lastModified: page.modified,
+      changeFrequency: changeFrequency(page.slug),
+      priority: priority(page.slug),
+    }));
 }
 
 const isPost = (slug: string) => /^20\d\d\//.test(slug);

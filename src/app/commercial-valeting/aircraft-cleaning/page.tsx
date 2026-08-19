@@ -30,7 +30,7 @@ import { pageSchema } from "@/lib/schema";
  * one now, so there is a single source of truth again.
  */
 
-const SLUG = "aircraft-cleaning";
+const SLUG = "commercial-valeting/aircraft-cleaning";
 
 export function generateMetadata(): Metadata {
   const page = getPage(SLUG);
@@ -38,11 +38,11 @@ export function generateMetadata(): Metadata {
   return {
     title: page.title,
     description: page.description,
-    alternates: { canonical: `/${SLUG}` },
+    alternates: { canonical: `/${SLUG}/` },
     openGraph: {
       title: page.title,
       description: page.description,
-      url: `/${SLUG}`,
+      url: `/${SLUG}/`,
       images: page.ogImage ? [{ url: page.ogImage }] : undefined,
     },
   };

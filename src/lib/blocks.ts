@@ -92,18 +92,18 @@ export const PAGES = raw as unknown as Record<string, Page>;
  * checker still see them.
  */
 export const CUSTOM_ROUTES = new Set([
-  "headlight-restoration",
-  "motorcycle-valeting-detailing",
+  "car-detailing/headlight-restoration",
+  "vehicles/motorcycle-valeting-detailing",
   "blog",
   "our-locations",
   "contact-us",
   "careers-franchising",
-  "commercial-valeting-and-detailing",
+  "commercial-valeting",
   "terms-and-conditions",
   "gift-card",
   "about-us",
   "car-lovers-club",
-  "aircraft-cleaning",
+  "commercial-valeting/aircraft-cleaning",
 ]);
 
 /** Every route the catch-all renderer serves. */

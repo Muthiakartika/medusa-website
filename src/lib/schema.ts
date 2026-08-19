@@ -13,7 +13,7 @@ const LOGO_ID = `${SITE}/#/schema/logo/image/`;
 
 const abs = (path: string) => (path.startsWith("http") ? path : SITE + path);
 
-/** "" -> "https://…/", "mini-valet" -> "https://…/mini-valet/" */
+/** "" -> "https://…/", "car-valeting/mini-valet" -> "https://…/car-valeting/mini-valet/" */
 const url = (slug: string) => `${SITE}/${slug ? `${slug}/` : ""}`;
 
 const organization = {

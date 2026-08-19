@@ -32,7 +32,7 @@ import { pageSchema } from "@/lib/schema";
  * catch-all, and the slug is in `CUSTOM_ROUTES` so only one page is built.
  */
 
-const SLUG = "motorcycle-valeting-detailing";
+const SLUG = "vehicles/motorcycle-valeting-detailing";
 
 export function generateMetadata(): Metadata {
   const page = getPage(SLUG);
@@ -40,11 +40,11 @@ export function generateMetadata(): Metadata {
   return {
     title: page.title,
     description: page.description,
-    alternates: { canonical: `/${SLUG}` },
+    alternates: { canonical: `/${SLUG}/` },
     openGraph: {
       title: page.title,
       description: page.description,
-      url: `/${SLUG}`,
+      url: `/${SLUG}/`,
       images: page.ogImage ? [{ url: page.ogImage }] : undefined,
     },
   };

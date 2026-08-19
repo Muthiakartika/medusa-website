@@ -16,7 +16,7 @@ import { ALL_SLUGS, CUSTOM_ROUTES, getPage } from "@/lib/blocks";
  *   curl -X POST https://example.com/api/revalidate \
  *     -H "Authorization: Bearer $REVALIDATE_SECRET" \
  *     -H "Content-Type: application/json" \
- *     -d '{"paths":["/mini-valet","/blog"]}'
+ *     -d '{"paths":["/car-valeting/mini-valet","/blog"]}'
  *
  *   # everything, via the root layout
  *   curl -X POST … -d '{"all":true}'

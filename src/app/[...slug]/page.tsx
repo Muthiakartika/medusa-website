@@ -27,11 +27,11 @@ export async function generateMetadata({
   return {
     title: page.title,
     description: page.description,
-    alternates: { canonical: "/" + slug.join("/") },
+    alternates: { canonical: "/" + slug.join("/") + "/" },
     openGraph: {
       title: page.title,
       description: page.description,
-      url: "/" + slug.join("/"),
+      url: "/" + slug.join("/") + "/",
       images: page.ogImage ? [{ url: page.ogImage }] : undefined,
     },
   };

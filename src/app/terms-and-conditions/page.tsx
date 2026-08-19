@@ -30,11 +30,11 @@ export function generateMetadata(): Metadata {
   return {
     title: page.title,
     description: page.description,
-    alternates: { canonical: `/${SLUG}` },
+    alternates: { canonical: `/${SLUG}/` },
     openGraph: {
       title: page.title,
       description: page.description,
-      url: `/${SLUG}`,
+      url: `/${SLUG}/`,
     },
   };
 }

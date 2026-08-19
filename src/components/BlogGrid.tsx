@@ -58,7 +58,7 @@ function Card({ post, delay }: { post: BlogCard; delay: number }) {
   return (
     <Reveal as="li" delay={delay} className="h-full">
       <Link
-        href={`/${post.slug}`}
+        href={`/${post.slug}/`}
         className="group surface flex h-full flex-col overflow-hidden"
       >
         {post.cover && (

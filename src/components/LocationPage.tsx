@@ -573,7 +573,7 @@ function Others({ others }: { others: { slug: string; name: string }[] }) {
               {others.map((o) => (
                 <li key={o.slug}>
                   <Link
-                    href={`/${o.slug}`}
+                    href={`/${o.slug}/`}
                     className="inline-flex rounded-full bg-white/[0.05] px-4 py-2 text-[14px] font-normal text-white/80 ring-1 ring-white/10 transition-colors hover:bg-gold hover:text-ink hover:ring-gold"
                   >
                     {o.name}

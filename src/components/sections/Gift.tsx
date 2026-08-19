@@ -27,7 +27,7 @@ export default function Gift() {
               lede="The gift card will be sent to the recipient with a unique code that they can use. They can select a date to book and we will come on that date."
             />
             <Reveal delay={3}>
-              <Link href="/gift-card" className="btn btn-gold mt-8 rounded-full">
+              <Link href="/gift-card/" className="btn btn-gold mt-8 rounded-full">
                 Find Them Here
                 <Icon name="arrow" size={18} className="ml-2.5" />
               </Link>

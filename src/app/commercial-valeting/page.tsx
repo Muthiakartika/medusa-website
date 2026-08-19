@@ -26,7 +26,7 @@ import { pageSchema } from "@/lib/schema";
  * source's order; everything else on this page is its own copy, unchanged.
  */
 
-const SLUG = "commercial-valeting-and-detailing";
+const SLUG = "commercial-valeting";
 
 export function generateMetadata(): Metadata {
   const page = getPage(SLUG);
@@ -34,11 +34,11 @@ export function generateMetadata(): Metadata {
   return {
     title: page.title,
     description: page.description,
-    alternates: { canonical: `/${SLUG}` },
+    alternates: { canonical: `/${SLUG}/` },
     openGraph: {
       title: page.title,
       description: page.description,
-      url: `/${SLUG}`,
+      url: `/${SLUG}/`,
       images: page.ogImage ? [{ url: page.ogImage }] : undefined,
     },
   };

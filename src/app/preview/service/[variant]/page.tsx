@@ -22,7 +22,7 @@ export function generateStaticParams() {
 export const dynamicParams = false;
 
 /** Preview the alternatives on a real service page. */
-const DEFAULT_SLUG = "mini-valet";
+const DEFAULT_SLUG = "car-valeting/mini-valet";
 
 export default async function ServiceDesignPreview({
   params,

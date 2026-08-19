@@ -12,12 +12,12 @@ export const metadata: Metadata = {
 
 /* Where a lost visitor most likely meant to go. */
 const ROUTES = [
-  { label: "Mobile Valeting", href: "/valeting", note: "Full deep-clean packages" },
-  { label: "Mobile Detailing", href: "/detailing", note: "Paint correction & protection" },
-  { label: "Mobile Car Wash", href: "/standard-car-wash", note: "Regular wash packages" },
-  { label: "Car Lovers Club", href: "/car-lovers-club", note: "Weekly & monthly plans" },
-  { label: "Our Locations", href: "/our-locations", note: "Areas we cover" },
-  { label: "Contact Us", href: "/contact-us", note: "Talk to the team" },
+  { label: "Mobile Valeting", href: "/car-valeting/", note: "Full deep-clean packages" },
+  { label: "Mobile Detailing", href: "/car-detailing/", note: "Paint correction & protection" },
+  { label: "Mobile Car Wash", href: "/mobile-car-wash/", note: "Regular wash packages" },
+  { label: "Car Lovers Club", href: "/car-lovers-club/", note: "Weekly & monthly plans" },
+  { label: "Our Locations", href: "/our-locations/", note: "Areas we cover" },
+  { label: "Contact Us", href: "/contact-us/", note: "Talk to the team" },
 ];
 
 export default function NotFound() {

@@ -9,6 +9,7 @@ import JsonLd from "@/components/JsonLd";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
 import { getPage, type Page, PAGES } from "@/lib/blocks";
+import { REDIRECTED_SLUGS } from "@/lib/redirects";
 import { pageSchema } from "@/lib/schema";
 
 /**
@@ -39,11 +40,11 @@ export function generateMetadata(): Metadata {
   return {
     title: page.title,
     description: page.description,
-    alternates: { canonical: `/${SLUG}` },
+    alternates: { canonical: `/${SLUG}/` },
     openGraph: {
       title: page.title,
       description: page.description,
-      url: `/${SLUG}`,
+      url: `/${SLUG}/`,
       images: page.ogImage ? [{ url: page.ogImage }] : undefined,
     },
   };
@@ -94,7 +95,9 @@ type Post = {
 function posts(): Post[] {
   const headings = indexHeadings();
   return Object.entries(PAGES)
-    .filter(([slug]) => POST_SLUG.test(slug))
+    /* Posts the plan folds into another page are gone from the index too:
+       a card that only 301s away is a dead end for a reader. */
+    .filter(([slug]) => POST_SLUG.test(slug) && !REDIRECTED_SLUGS.has(slug))
     .map(([slug, page]: [string, Page]) => ({
       slug,
       title:
@@ -154,7 +157,7 @@ function Lead({ post }: { post: Post }) {
       <div className="shell">
         <Reveal>
           <Link
-            href={`/${post.slug}`}
+            href={`/${post.slug}/`}
             className="group surface grid overflow-hidden lg:grid-cols-12"
           >
             {post.cover && (
