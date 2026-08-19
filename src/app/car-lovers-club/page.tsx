@@ -276,11 +276,11 @@ export default function ClubPage() {
                   "radial-gradient(80% 100% at 50% 0%, rgba(193,146,49,0.16) 0%, transparent 62%)",
               }}
             />
-            {/* The source puts this form on the page under no heading of its
-                own, so it gets none — one centred column rather than a
-                two-column row with nothing in the other half. */}
+            {/* The source page leaves this form untitled, which reads as an
+                orphaned set of fields at the foot of the page. One centred
+                column, under a heading that names what the form is for. */}
             <div className="shell relative mx-auto max-w-[760px]">
-              <span aria-hidden className="speed-rule mx-auto" />
+              <SectionHead title="INQUIRE" align="center" />
               <div className="mt-8">
                 <EnquiryForm
                   slug={SLUG}
