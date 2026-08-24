@@ -888,7 +888,15 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
                       <div
                         key={full + idx}
                         style={{ backgroundColor: accent }}
-                        className="rounded-[9px] px-3.5 py-3.5 text-center"
+                        /*
+                          The grid stretches every chip to the row's tallest
+                          — Neptune's one-line name beside Pandora's two —
+                          so top-anchored content left the short ones with a
+                          lopsided gap under the subtitle. Centered, a short
+                          chip and a tall one both read as one block sized to
+                          its own text, not as a box with room left over.
+                        */
+                        className="flex flex-col justify-center rounded-[9px] px-3.5 py-3.5 text-center"
                       >
                         <p className="font-[family-name:var(--font-sub)] text-[13.5px] leading-[17px] tracking-[0.01em] text-ink uppercase">
                           {full}
