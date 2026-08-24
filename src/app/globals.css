@@ -12,6 +12,20 @@
   --color-muted: #717171;
   --color-hairline: #eaeaea;
 
+  /* ── Package tier accents ─────────────────────────────────────────────
+     /car-valeting's five packages, for the comparison table's column
+     headers only (TableCards.tsx). Bronze, Silver and Gold are the
+     packages' own tier names (Pandora, Zeus, Medusa — Gold reuses
+     --color-gold-bright rather than a sixth token). Triton's own qualifier
+     is "Superior", a tier the metal ladder doesn't name, so it takes the
+     rung above gold. Neptune prices an exterior-only specialty, not a
+     tier, so its teal breaks the metal ladder on purpose rather than
+     forcing a fifth metal that doesn't exist. */
+  --color-tier-bronze: #cd7f32;
+  --color-tier-silver: #bfc4cc;
+  --color-tier-platinum: #e8e1d0;
+  --color-tier-neptune: #5ab8ae;
+
   /* ── Type ramp (matches the live site's computed styles) ─────────────── */
   --font-display: var(--font-bungee);      /* h1 */
   --font-heading: var(--font-exo2);        /* h2 */

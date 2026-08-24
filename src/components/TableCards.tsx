@@ -1,9 +1,11 @@
 import Icon from "@/components/Icon";
 import TablePrices from "@/components/TablePrices";
 import {
+  DEFAULT_ACCENT,
   isTick,
   parseLadder,
   shortLabel,
+  TIER_ACCENT,
   type TableModel,
   type TableRow,
 } from "@/lib/table-model";
@@ -129,21 +131,53 @@ function Comparison({ model }: { model: TableModel }) {
           className="sticky top-[90px] z-20 grid border-b border-gold/35 bg-ink-panel"
           style={grid}
         >
-          {names.map((full, i) => (
-            <div
-              key={full + i}
-              className="border-l border-white/[0.07] px-1 py-2.5 text-center first:border-l-0"
-            >
-              <p className="font-[family-name:var(--font-sub)] text-[10px] leading-[12.5px] tracking-[0.01em] text-gold uppercase">
-                {full}
-              </p>
-              {subs[i] && (
-                <p className="mt-1 font-[family-name:var(--font-ui)] text-[7.5px] leading-[10px] font-semibold tracking-[0.05em] text-white/45 uppercase">
-                  {subs[i]}
+          {names.map((full, i) => {
+            /*
+              Five of "Pandora – BRONZE Interior & Exterior" at 66px each
+              wrapped the name alone to four lines, on top of a wrapped
+              subtitle — a 105px-tall header a reader had to parse before
+              reaching a single tick. `shortLabel` is the same trim
+              `PackageTabs` puts on its own chips for the same reason; the
+              panel this table sits beside prints the name verbatim, so
+              nothing here is the only copy of it. `title` keeps the full
+              name one hover away for a mouse.
+
+              The tier color is the header's own version of that same fix:
+              five identical gold labels read as one undifferentiated row
+              until a reader stops to parse the text, which is what "make it
+              bolder" actually meant here. The bar reuses the gold rule
+              `Blocks.tsx` already draws above a section's lead heading — the
+              same short, colored stroke, just full-width and per-column.
+            */
+            const accent = TIER_ACCENT[shortLabel(full)] ?? DEFAULT_ACCENT;
+            return (
+              <div
+                key={full + i}
+                title={full}
+                className="relative border-l border-white/[0.07] px-1 pt-3.5 pb-2.5 text-center first:border-l-0"
+                style={{
+                  backgroundColor: `color-mix(in srgb, ${accent} 22%, var(--color-ink-panel))`,
+                }}
+              >
+                <span
+                  aria-hidden
+                  className="absolute inset-x-0 top-0 h-[3px]"
+                  style={{ backgroundColor: accent }}
+                />
+                <p
+                  className="font-[family-name:var(--font-sub)] text-[12px] leading-[14px] tracking-[0.01em] uppercase"
+                  style={{ color: accent }}
+                >
+                  {shortLabel(full)}
                 </p>
-              )}
-            </div>
-          ))}
+                {subs[i] && (
+                  <p className="mt-1.5 font-[family-name:var(--font-ui)] text-[7.5px] leading-[10px] font-semibold tracking-[0.05em] text-white/45 uppercase">
+                    {subs[i]}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 

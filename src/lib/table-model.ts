@@ -130,6 +130,32 @@ export function parseTable(raw: unknown[][]): TableModel | null {
 }
 
 /**
+ * Which tier accent a package's short name gets, on `/car-valeting`'s
+ * comparison table (`TableCards`' `Comparison`, its desktop `<table>`
+ * counterpart in `Blocks.tsx`) and the tab strip that picks a single one
+ * (`PackageTabs`, wired up in `Blocks.tsx`) — the three places this page
+ * shows the five package names side by side. Keyed on `shortLabel`'s
+ * output, since that is what a reader actually sees repeated across all
+ * three. A name the map does not carry falls back to `DEFAULT_ACCENT`
+ * (the site's standard gold) rather than rendering `undefined`.
+ *
+ * Bronze, Silver and Gold are the packages' own tier names (Pandora, Zeus,
+ * Medusa — Gold reuses `--color-gold-bright` rather than a sixth token).
+ * Triton's own qualifier is "Superior", a tier the metal ladder doesn't
+ * name, so it takes the rung above gold. Neptune prices an exterior-only
+ * specialty, not a tier, so its teal breaks the metal ladder on purpose
+ * rather than forcing a fifth metal that doesn't exist.
+ */
+export const TIER_ACCENT: Record<string, string> = {
+  Pandora: "var(--color-tier-bronze)",
+  Zeus: "var(--color-tier-silver)",
+  Medusa: "var(--color-gold-bright)",
+  Triton: "var(--color-tier-platinum)",
+  Neptune: "var(--color-tier-neptune)",
+};
+export const DEFAULT_ACCENT = "var(--color-gold)";
+
+/**
  * A tab label short enough to sit four-across on a phone.
  *
  * The packages are named "Pandora – BRONZE Interior & Exterior" and the like,

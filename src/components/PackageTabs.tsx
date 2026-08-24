@@ -28,7 +28,13 @@ import { useId, useState } from "react";
 export default function PackageTabs({
   panels,
 }: {
-  panels: { label: string; content: React.ReactNode }[];
+  panels: {
+    label: string;
+    content: React.ReactNode;
+    /** Solid fill for this tab's selected state. Plain gold when omitted,
+     *  so a tab set with no tier meaning still gets the site's usual chip. */
+    accent?: string;
+  }[];
 }) {
   const [index, setIndex] = useState(0);
   const id = useId();
@@ -62,8 +68,9 @@ export default function PackageTabs({
               aria-selected={on}
               aria-controls={`${id}-panel-${i}`}
               onClick={() => setIndex(i)}
+              style={on ? { backgroundColor: panel.accent ?? "var(--color-gold)" } : undefined}
               className={`flex min-h-[44px] items-center justify-center rounded-[8px] px-1 font-[family-name:var(--font-ui)] text-[10px] font-semibold tracking-[0.02em] whitespace-nowrap uppercase transition-colors duration-200 @min-[420px]:text-[11px] @min-[420px]:tracking-[0.04em] ${
-                on ? "bg-gold text-ink" : "text-white/70 hover:bg-white/[0.08]"
+                on ? "text-ink" : "text-white/70 hover:bg-white/[0.08]"
               }`}
             >
               {panel.label}

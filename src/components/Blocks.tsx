@@ -25,7 +25,7 @@ import PackageTabs from "@/components/PackageTabs";
 import TableCards from "@/components/TableCards";
 import { type Block, getForms, type Section } from "@/lib/blocks";
 import { BOOK_URL } from "@/lib/site";
-import { parseTable } from "@/lib/table-model";
+import { DEFAULT_ACCENT, parseTable, shortLabel, TIER_ACCENT } from "@/lib/table-model";
 
 /**
  * The container width at which a table stops needing to be re-read, by how
@@ -556,6 +556,10 @@ export function BlockList({ blocks, ctx }: { blocks: Block[]; ctx: Ctx }) {
               panels={g.panels.map((panel) => ({
                 label: panel.label,
                 content: <BlockList blocks={panel.blocks} ctx={ctx} />,
+                // The nav label is already the source's own short form
+                // ("Pandora", not "Pandora – Bronze"), so it lines up with
+                // TIER_ACCENT's keys without another shortLabel() pass.
+                accent: TIER_ACCENT[panel.label],
               }))}
             />
           );
@@ -845,6 +849,21 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
       const model = parseTable(rows);
       const view = model ? WIDE_ENOUGH[Math.min(model.valueCount, 5)] : null;
 
+      /*
+        A comparison's package names get their own rounded, tier-coloured
+        strip — the same segmented-chip shape `PackageTabs` and `PriceTabs`
+        already use for "pick one of these" — rather than living as row 0 of
+        the `<table>` beneath. A `<tr>` of five `<td>`s can't be given gaps
+        or independent corners under `border-collapse`, and that was the
+        real shape problem with every earlier attempt here: a flat, edge-to-
+        edge band reads as part of the table's grid no matter what color it
+        carries, where five separate rounded chips read as what they are —
+        five distinct packages. A single-package table has only itself to
+        tell apart from nothing, so it keeps the plain gold row 0 below.
+      */
+      const segmented = model && model.valueCount > 1;
+      const bodyRows = segmented ? rows.slice(model.headers.length) : rows;
+
       return (
         <div
           /*
@@ -856,29 +875,58 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
           className={`surface mt-7 overflow-clip ${model ? "@container" : ""}`}
         >
           <div className={`w-full overflow-x-auto ${view ? view.table : ""}`}>
-            <table className="w-full min-w-[520px] border-collapse text-left">
-              <tbody>
-                {rows.map((row, i) => (
-                  <tr
-                    key={i}
-                    className={
-                      i === 0
-                        ? "bg-gold text-ink"
-                        : "border-t border-white/[0.07] transition-colors hover:bg-white/[0.03]"
-                    }
-                  >
-                    {row.map((cell, j) => (
-                      <td
-                        key={j}
-                        className="px-5 py-3.5 text-[15px] font-normal first:font-semibold"
+            <div className="min-w-[520px]">
+              {segmented && (
+                <div
+                  className="grid gap-1.5 p-4 pb-3"
+                  style={{ gridTemplateColumns: `repeat(${model.valueCount}, minmax(0, 1fr))` }}
+                >
+                  {model.headers[0].map((full, idx) => {
+                    const accent = TIER_ACCENT[shortLabel(full)] ?? DEFAULT_ACCENT;
+                    const sub = model.headers[1]?.[idx];
+                    return (
+                      <div
+                        key={full + idx}
+                        style={{ backgroundColor: accent }}
+                        className="rounded-[9px] px-3.5 py-3.5 text-center"
                       >
-                        {cell}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        <p className="font-[family-name:var(--font-sub)] text-[13.5px] leading-[17px] tracking-[0.01em] text-ink uppercase">
+                          {full}
+                        </p>
+                        {sub && (
+                          <p className="mt-1 font-[family-name:var(--font-ui)] text-[10.5px] leading-[13px] font-semibold tracking-[0.04em] text-ink/65 uppercase">
+                            {sub}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <table className="w-full border-collapse text-left">
+                <tbody>
+                  {bodyRows.map((row, i) => (
+                    <tr
+                      key={i}
+                      className={
+                        !segmented && i === 0
+                          ? "bg-gold text-ink"
+                          : "border-t border-white/[0.07] transition-colors hover:bg-white/[0.03]"
+                      }
+                    >
+                      {row.map((cell, j) => (
+                        <td
+                          key={j}
+                          className="px-5 py-3.5 text-[15px] font-normal first:font-semibold"
+                        >
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
           {model && view && (
             <div className={view.cards}>
