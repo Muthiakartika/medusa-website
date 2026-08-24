@@ -911,7 +911,27 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
                   })}
                 </div>
               )}
-              <table className="w-full border-collapse text-left">
+              <table className="w-full table-fixed border-collapse text-left">
+                {model && (
+                  /*
+                    `table-layout: fixed` needs the table's own width pinned
+                    to something other than `auto` before it will use these
+                    `col` widths at all — `w-full` supplies that. From there
+                    the ratio between the four numbers below (not their literal
+                    pixel values) is what fixes the columns: name and
+                    description stay proportionally wide, and the five verdict
+                    columns stay equal, instead of a plain `<table>`'s
+                    content-driven layout handing whatever space is left to
+                    whichever column the browser feels like.
+                  */
+                  <colgroup>
+                    <col style={{ width: 200 }} />
+                    {model.hasDesc && <col style={{ width: 240 }} />}
+                    {Array.from({ length: model.valueCount }).map((_, idx) => (
+                      <col key={idx} style={{ width: 110 }} />
+                    ))}
+                  </colgroup>
+                )}
                 <tbody>
                   {bodyRows.map((row, i) => (
                     <tr

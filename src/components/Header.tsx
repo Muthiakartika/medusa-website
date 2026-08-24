@@ -93,7 +93,7 @@ export default function Header() {
             panel belongs to the item rather than being a gap that drops the
             hover. */}
         <nav className="hidden self-stretch xl:block">
-          <ul className="flex h-full items-stretch gap-x-6 2xl:gap-x-7">
+          <ul className="flex h-full items-stretch gap-x-4 2xl:gap-x-7">
             {NAV.map((item) =>
               item.mega ? (
                 <MegaTrigger
