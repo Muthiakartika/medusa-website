@@ -145,3 +145,58 @@ export function shortLabel(full: string) {
   const two = words.slice(0, 2).join(" ");
   return two.length <= 14 ? two : words[0];
 }
+
+/* ── The price row ────────────────────────────────────────────────────────
+   The last row of /car-valeting's matrix is not prose. In the source each of
+   its five cells is a carousel of vehicle-class cards — an icon, `<h3>Large
+   Car</h3>`, `eg. Tesla Model S/ BMW 5 Series/ Porsche Macan`, `<h2>£85</h2>`
+   — followed by a duration and a real BOOK NOW button pointing at
+   `book.medusaautodetailing.co.uk`.
+
+   `extract-content.mjs` flattens all of it into one 270-character string, so
+   the four prices run together as `…Toyota yaris£70Medium Car…` and the site's
+   primary call to action arrives as dead text. Reading the shape back is the
+   same job `parseTable` above does for the matrix itself.
+
+   Fixing the extractor would be the deeper repair, but regenerating
+   `pages.json` rewrites 200-odd pages for one row — see PROJECT.md §3. */
+
+export type Rung = { label: string; note?: string; price: string };
+
+export type PriceLadder = {
+  rungs: Rung[];
+  /** "Approximately 2 hours (1 Technician)", verbatim. */
+  duration?: string;
+  /** The button's own words, when the cell ends in one. */
+  cta?: string;
+};
+
+/** The four classes the site prices by, in the source's own order. */
+const RUNG = /(Small|Medium|Large|XL)\s*Car\s*(eg\.[^£]*?)?£\s*([\d,]+)/gi;
+const CTA = /\b(book\s*now)\.?\s*$/i;
+
+export function parseLadder(cell: string): PriceLadder | null {
+  const text = String(cell ?? "");
+  const rungs: Rung[] = [];
+  let end = 0;
+
+  RUNG.lastIndex = 0;
+  for (let m = RUNG.exec(text); m; m = RUNG.exec(text)) {
+    rungs.push({
+      label: `${m[1]} Car`,
+      note: m[2]?.trim() || undefined,
+      price: `£${m[3]}`,
+    });
+    end = RUNG.lastIndex;
+  }
+
+  // Two rungs is the least that is a ladder rather than a sentence with a
+  // price in it. Anything shorter keeps its prose.
+  if (rungs.length < 2) return null;
+
+  let tail = text.slice(end).trim();
+  const cta = tail.match(CTA)?.[1];
+  if (cta) tail = tail.slice(0, tail.length - cta.length).trim();
+
+  return { rungs, duration: tail || undefined, cta };
+}

@@ -21,6 +21,7 @@ import EnquiryForm from "@/components/EnquiryForm";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import Reveal from "@/components/Reveal";
+import PackageTabs from "@/components/PackageTabs";
 import TableCards from "@/components/TableCards";
 import { type Block, getForms, type Section } from "@/lib/blocks";
 import { BOOK_URL } from "@/lib/site";
@@ -40,6 +41,7 @@ const WIDE_ENOUGH: Record<number, { table: string; cards: string }> = {
   2: { table: "hidden @min-[720px]:block", cards: "@min-[720px]:hidden" },
   3: { table: "hidden @min-[820px]:block", cards: "@min-[820px]:hidden" },
   4: { table: "hidden @min-[820px]:block", cards: "@min-[820px]:hidden" },
+  5: { table: "hidden @min-[990px]:block", cards: "@min-[990px]:hidden" },
 };
 
 /**
@@ -547,6 +549,17 @@ export function BlockList({ blocks, ctx }: { blocks: Block[]; ctx: Ctx }) {
   return (
     <>
       {groups.map((g, i) => {
+        if (g.kind === "tabs") {
+          return (
+            <PackageTabs
+              key={i}
+              panels={g.panels.map((panel) => ({
+                label: panel.label,
+                content: <BlockList blocks={panel.blocks} ctx={ctx} />,
+              }))}
+            />
+          );
+        }
         if (g.kind === "priceGrid") return <PriceGrid key={i} items={g.items} />;
         if (g.kind === "gallery") return <Gallery key={i} images={g.images} />;
         if (g.kind === "addonCards") {
@@ -830,10 +843,18 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
         behaviour rather than being guessed at.
       */
       const model = parseTable(rows);
-      const view = model ? WIDE_ENOUGH[Math.min(model.valueCount, 4)] : null;
+      const view = model ? WIDE_ENOUGH[Math.min(model.valueCount, 5)] : null;
 
       return (
-        <div className={`surface mt-7 overflow-hidden ${model ? "@container" : ""}`}>
+        <div
+          /*
+            `clip`, not `hidden`: both round the corners off the rows inside,
+            but `hidden` makes this a scroll container and a scroll container
+            is where `position: sticky` goes to die — which is what holds the
+            column header in `TableCards` in place.
+          */
+          className={`surface mt-7 overflow-clip ${model ? "@container" : ""}`}
+        >
           <div className={`w-full overflow-x-auto ${view ? view.table : ""}`}>
             <table className="w-full min-w-[520px] border-collapse text-left">
               <tbody>

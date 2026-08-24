@@ -82,11 +82,97 @@ export type PriceItem = {
   price: string;
 };
 
+export type TabPanel = { label: string; blocks: Block[] };
+
 export type Grouped =
   | { kind: "block"; block: Block }
   | { kind: "priceGrid"; items: PriceItem[] }
   | { kind: "gallery"; images: Extract<Block, { type: "image" }>[] }
-  | { kind: "addonCards"; cards: AddonCard[] };
+  | { kind: "addonCards"; cards: AddonCard[] }
+  | { kind: "tabs"; panels: TabPanel[] };
+
+/* ── A tab set the extractor flattened ────────────────────────────────────
+   `/car-valeting` ends its "Our Packages" row with a WPBakery tab set: a nav
+   of five package names and five panels, one shown at a time. `fetch-html`
+   mirrors the markup but not the jQuery UI that drives it, so `extract-
+   content.mjs` sees five panels' worth of blocks in a row and emits them as
+   one 99-block stack. On a phone that is 14,908px where the source spends
+   4,608px, and the paragraph directly above it still reads "Click on choice
+   of package below to see what the package entails" — an instruction with
+   nothing left to click.
+
+   The nav survives intact, which is what makes this safe to detect rather
+   than guess: its items are anchors to WPBakery's own `#tab-<id>` targets.
+   Restoring the tabs is restoring the source's layout, not imposing one. */
+
+const TAB_LINK = /^\s*<a\s[^>]*href="#tab-[^"]*"[^>]*>(.*?)<\/a>\s*$/i;
+
+const plain = (html: string) =>
+  html
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
+/**
+ * The panels a `#tab-…` nav list introduces, or null when the run underneath
+ * it does not line up with the nav.
+ *
+ * Every nav label has to find its own heading, in the nav's order, with the
+ * first one sitting immediately after the nav — anything looser and a page
+ * that merely links to anchors would have its content swallowed into a tab
+ * set that was never there.
+ */
+function asTabs(blocks: Block[], start: number): { panels: TabPanel[]; end: number } | null {
+  const nav = blocks[start];
+  if (nav?.type !== "list" || nav.items.length < 2) return null;
+
+  const labels = nav.items.map((item) => item.match(TAB_LINK)?.[1]);
+  if (labels.some((l) => !l)) return null;
+  const wanted = labels.map((l) => plain(l!));
+
+  // Where each label's panel begins.
+  const heads: number[] = [];
+  let at = start + 1;
+  for (const label of wanted) {
+    const head = blocks[at];
+    if (
+      head?.type !== "heading" ||
+      isPrice(head) ||
+      !plain(head.text).startsWith(label)
+    ) {
+      // Not this block — scan on, but only past blocks the previous panel
+      // could plausibly own, and never past a heading that matches nothing.
+      let scan = at;
+      while (
+        scan < blocks.length &&
+        !(
+          blocks[scan].type === "heading" &&
+          !isPrice(blocks[scan]) &&
+          plain((blocks[scan] as Extract<Block, { type: "heading" }>).text).startsWith(label)
+        )
+      )
+        scan++;
+      if (scan >= blocks.length) return null;
+      at = scan;
+    }
+    heads.push(at);
+    at += 1;
+  }
+
+  // The first panel must follow the nav directly; a gap means these headings
+  // are something else that happens to share the nav's words.
+  if (heads[0] !== start + 1) return null;
+
+  const end = blocks.length;
+  const panels = heads.map((h, n) => ({
+    label: nav.items[n].match(TAB_LINK)![1].replace(/<[^>]+>/g, "").trim(),
+    blocks: blocks.slice(h, heads[n + 1] ?? end),
+  }));
+
+  return { panels, end };
+}
 
 /**
  * Collapses `icon → h3 → (paragraph) → £heading` runs into one price grid.
@@ -97,6 +183,15 @@ export function group(blocks: Block[]): Grouped[] {
   let i = 0;
 
   while (i < blocks.length) {
+    // A flattened tab set claims everything from its nav to the end of the
+    // run, so it is tried before the shapes that would eat into its panels.
+    const tabs = asTabs(blocks, i);
+    if (tabs) {
+      out.push({ kind: "tabs", panels: tabs.panels });
+      i = tabs.end;
+      continue;
+    }
+
     const items: PriceItem[] = [];
     let j = i;
 
