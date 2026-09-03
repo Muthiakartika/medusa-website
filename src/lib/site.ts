@@ -45,7 +45,7 @@ export const BUSINESS = {
 
 /**
  * A menu entry. `href` is optional: "Services" is a label that only opens the
- * mega-menu, and five hubs in the proposed structure have no page behind them
+ * mega-menu, and six hubs in the proposed structure have no page behind them
  * yet - both render as plain text rather than a link that would 404.
  */
 export type NavItem = {
@@ -100,26 +100,35 @@ export const NAV: NavItem[] = [  { label: "Home", href: "/" },
         ],
       },
       {
+        /* Ceramic Coating is no longer a column of its own: the workbook folds
+           it into this one as an ordinary child, its own hub link first and
+           Mini Car Detail last, which frees the fourth column for Repairs &
+           Restoration below. */
         label: "Car Detailing",
         href: "/car-detailing/",
         children: [
-          { label: "Mini Car Detail", href: "/car-detailing/mini-detail/" },
-          { label: "Headlight Restoration", href: "/car-detailing/headlight-restoration/" },
-          { label: "Engine Bay Steam Cleaning", href: "/car-detailing/engine-bay-steam-cleaning/" },
-          { label: "Car Graffiti Removal", href: "/car-detailing/car-graffiti-removal/" },
-          { label: "Paint Overspray Removal", href: "/car-detailing/paint-overspray-removal/" },
-        ],
-      },
-      {
-        label: "Ceramic Coating",
-        href: "/ceramic-coating/",
-        children: [
+          { label: "Ceramic Coating", href: "/ceramic-coating/" },
           { label: "New Car Protection", href: "/ceramic-coating/new-car-protection/" },
           { label: "Paint Correction", href: "/ceramic-coating/paint-correction/" },
           { label: "Machine Polish", href: "/ceramic-coating/machine-polish/" },
           { label: "Windscreen Protection", href: "/ceramic-coating/windscreen-protection/" },
           { label: "Enhancement", href: "/ceramic-coating/enhancement-detail/" },
           { label: "Perfection", href: "/ceramic-coating/perfection-detail/" },
+          { label: "Mini Car Detail", href: "/car-detailing/mini-detail/" },
+        ],
+      },
+      {
+        /* The workbook gives this head /repairs/ and moves its four services
+           under the same prefix. Nothing serves those URLs yet - the pages are
+           still at their /car-detailing/ slugs, which is what both the mirror
+           and the 301 table carry - so the head stays a heading and the
+           children keep the URLs that resolve. */
+        label: "Repairs & Restoration",
+        children: [
+          { label: "Headlight Restoration", href: "/car-detailing/headlight-restoration/" },
+          { label: "Engine Bay Steam Cleaning", href: "/car-detailing/engine-bay-steam-cleaning/" },
+          { label: "Car Graffiti Removal", href: "/car-detailing/car-graffiti-removal/" },
+          { label: "Paint Overspray Removal", href: "/car-detailing/paint-overspray-removal/" },
         ],
       },
       {

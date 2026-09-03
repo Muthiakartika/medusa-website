@@ -171,7 +171,7 @@ export default function Header() {
         }`}
       >
         {megaItem && (
-          <div className="mx-auto grid max-w-[2000px] grid-cols-6 gap-x-8 gap-y-10 px-[6%] py-11 lg:px-[90px]">
+          <div className="mx-auto grid max-w-[2000px] grid-cols-6 grid-rows-[auto_auto] gap-x-8 px-[6%] py-11 lg:px-[90px]">
             {megaItem.children?.map((column) => (
               <MegaColumn key={column.label} column={column} />
             ))}
@@ -285,17 +285,22 @@ function MegaColumn({ column }: { column: NavItem }) {
   );
 
   return (
-    <div>
+    /* Two subgrid rows - head, then list - so every column starts its list on
+       the same line once a head as long as "Repairs & Restoration" wraps to
+       two. The row only grows when one of them actually wraps. */
+    <div className="row-span-2 grid grid-rows-subgrid">
       {/* A column head with no page behind it stays a heading rather than
           becoming a link to a 404. */}
-      {column.href ? (
-        <Link href={column.href} className="group/head inline-block pb-1">
-          {head}
-          <span className="mt-[3px] block h-[1px] origin-left scale-x-0 bg-gold transition-transform duration-300 group-hover/head:scale-x-100" />
-        </Link>
-      ) : (
-        <span className="inline-block pb-1">{head}</span>
-      )}
+      <div>
+        {column.href ? (
+          <Link href={column.href} className="group/head inline-block pb-1">
+            {head}
+            <span className="mt-[3px] block h-[1px] origin-left scale-x-0 bg-gold transition-transform duration-300 group-hover/head:scale-x-100" />
+          </Link>
+        ) : (
+          <span className="inline-block pb-1">{head}</span>
+        )}
+      </div>
 
       <ul className="mt-4 space-y-[10px]">
         {column.children?.map((child) => (
