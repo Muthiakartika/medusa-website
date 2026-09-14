@@ -188,6 +188,11 @@ type Ctx = {
   /** Extra `<h1>`s, rendered as the section headings they actually are. */
   demote?: Set<Block>;
   /**
+   * Rendering the run of actions pinned to a card's foot, where more than one
+   * button sits together and one of them has to lead — see the `button` case.
+   */
+  actionRow?: boolean;
+  /**
    * Paragraphs that are section titles the author typed into the prose.
    * Decided in `Sections`, where the following block can be looked at — a
    * marker alone is not enough, because the same "✅ …" opens a list item.
@@ -841,11 +846,11 @@ export function BlockList({ blocks, ctx }: { blocks: Block[]; ctx: Ctx }) {
               key={i}
               cells={g.cells}
               onGold={ctx.onGold}
-              renderBlocks={(cell) => (
+              renderBlocks={(cell, opts) => (
                 <BlockList
                   blocks={cell}
                   // The card is a dark surface even on a gold band.
-                  ctx={{ ...ctx, light: false, onGold: false }}
+                  ctx={{ ...ctx, light: false, onGold: false, actionRow: opts?.actions }}
                 />
               )}
             />
@@ -1116,6 +1121,18 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
       if (!href || href === "#") return null;
 
       /*
+        One primary action per card. A package card ends on two buttons — the
+        booking link and a link to the package's own page — and since the
+        second is named after the page it opens rather than reading "Read
+        More", two gold pills of equal weight left the card with no point of
+        entry, one of them repeating the card's own title back at it. Booking
+        keeps the gold; the link beside it goes to the outline, which is what
+        says which of the two the card is asking for.
+      */
+      const booking = href === BOOK_URL || href.startsWith("https://book.");
+      const secondary = ctx.actionRow === true && !booking;
+
+      /*
         Full width on a phone, content width from `sm` up. A page's buttons
         arrive as a run of separate blocks, so on a narrow screen they stack —
         and stacked, four labels of four lengths read as four sizes of button
@@ -1131,7 +1148,7 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
              12px either way, and a symmetric margin keeps a lone button on
              the centre line of a closing statement. */
           className={`btn mt-7 mx-1.5 w-full rounded-full sm:w-auto ${
-            ctx.light ? "btn-dark" : "btn-gold"
+            secondary ? "btn-outline" : ctx.light ? "btn-dark" : "btn-gold"
           }`}
           {...(/^https?:/.test(href)
             ? { target: "_blank", rel: "noopener noreferrer" }

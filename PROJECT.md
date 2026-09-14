@@ -243,6 +243,17 @@ fallback. Every section, whoever renders it, now follows this:
   so peers share a baseline. Consecutive rows with the same cell shape merge
   into one grid — otherwise each row sizes off its own cell count and the same
   package is 337px wide in one row and 525px in the next.
+- **One primary action per card.** A card's foot carries two buttons — the
+  booking link and a link to the package's own page. The booking link keeps
+  `btn-gold`; its sibling goes to `btn-outline`. Two gold pills of equal weight
+  left the card with no point of entry, and since the second is now named after
+  the page it opens (below), one of them repeated the card's own title back at
+  it. `Blocks.tsx` decides this from `ctx.actionRow`, which only `CardRow` sets.
+- **A link is named after where it goes.** Client, 2026-09-14: "could we name
+  these buttons the names of the pages they lead into." `nameReadMoreLinks` in
+  `overrides.ts` relabels every "Read More" with its destination page's own
+  breadcrumb tail, so nothing is invented and a regeneration keeps the labels in
+  step with the page titles.
 - **Prices** — one treatment. A lone price is a badge whether the source wrote
   it as a heading or, on nine pages, as a paragraph.
 
@@ -365,6 +376,19 @@ rendered `<main>`. Known, pre-existing gaps: `asLinkChips` drops commas and
   extractor's `rowBg()` only reads WPBakery `.wpb_row` backgrounds; Elementor
   keeps its row images in Autoptimize CSS bundles that `fetch-html` does not
   mirror. About half the service pages therefore fall back to their OG image.
+- **WPBakery *column* backgrounds are dropped too, and these are recoverable.**
+  The extractor reads `data-bg` off `.column-image-bg-wrap`, but the theme puts
+  it on the `.column-image-bg` *inside* that wrapper. 37 photographs across 9
+  mirrored pages are lost that way. `/car-valeting`'s seven package tiles are
+  the ones that mattered — the source sets each tile's photograph behind a gold
+  wash, and without it the row extracted as bare headings on a flat band, so
+  `overrides.ts` hands those seven back (`restoreTilePhotos`) and the row
+  becomes a `CardRow`. The remaining 30 are on `/about-us`, `/car-detailing`
+  and the four detailing levels, where they sit behind other content rather
+  than heading a card. Fixing the extractor is the real repair, but it means a
+  full `npm run content`, which does **not** reproduce the committed
+  `pages.json` from the current mirror — it comes back ~6,000 lines shorter, so
+  that regeneration has to be vetted on its own before anything rides on it.
 - **Three service heroes are narrower than the 1270 px band they fill** —
   `/car-graffiti-removal` (800 px), `/safely-clean-sickness-vomit-from-your-car-interior`
   (980 px), `/car-windscreen-protection` (1152 px). No larger copy exists in

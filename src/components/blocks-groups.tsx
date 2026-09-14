@@ -827,7 +827,8 @@ export function CardRow({
 }: {
   cells: Block[][];
   onGold?: boolean;
-  renderBlocks: (blocks: Block[]) => React.ReactNode;
+  /** `actions` marks the run pinned to the card's foot, where one button leads. */
+  renderBlocks: (blocks: Block[], opts?: { actions?: boolean }) => React.ReactNode;
 }) {
   return (
     <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -863,7 +864,7 @@ export function CardRow({
               {renderBlocks(body)}
               {actions.length > 0 && (
                 <div className="mt-auto flex flex-wrap gap-2 pt-7">
-                  {renderBlocks(actions)}
+                  {renderBlocks(actions, { actions: true })}
                 </div>
               )}
             </div>

@@ -51,14 +51,27 @@ function eachColumns(blocks: Block[], fn: (b: Extract<Block, { type: "columns" }
 const isPrice = (b: Block | undefined): b is Extract<Block, { type: "heading" }> =>
   b?.type === "heading" && /^\s*£\s?[\d,]/.test(b.text);
 
+/**
+ * Entities back to characters. Breadcrumb names are stored as WordPress wrote
+ * them — "Mould Sanitisation &#038; Sterilisation Service" — and a button
+ * label is rendered as text, not as HTML, so an undecoded one ships literally.
+ */
+const decodeEntities = (s: string): string =>
+  s
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(Number(dec)))
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#0?39;|&apos;/gi, "'")
+    .replace(/&amp;/gi, "&");
+
 /** The text a block carries, entities and markup stripped. */
 const plain = (b: Block): string => {
   const html =
     b.type === "heading" ? b.text : b.type === "paragraph" ? b.html : "";
-  return html
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
+  return decodeEntities(html.replace(/<[^>]+>/g, " "))
     .replace(/\s+/g, " ")
     .trim();
 };
@@ -156,6 +169,105 @@ function insertBefore(page: Page, pred: (b: Block) => boolean, newBlocks: Block[
   }
   throw new Error("content override: insertBefore found nothing to insert before");
 }
+
+/** A "Read More" link — the label the source gives every package tile. */
+const isReadMore = (b: Block): b is Extract<Block, { type: "button" }> =>
+  b.type === "button" && /^\s*read\s+more\s*$/i.test(b.label);
+
+/**
+ * The site's own name for the page at `href`.
+ *
+ * Its breadcrumb tail, which is the short form the source itself uses in
+ * navigation ("Ultimate Pre-Sale Valet", not the h1's "The Ultimate Pre-Sale
+ * Valet in London"). Nothing is written here that the site does not already
+ * say about itself, so a regeneration keeps the labels in step with the page
+ * titles rather than freezing a transcription of them.
+ */
+function pageName(pages: Record<string, Page>, href: string): string | null {
+  if (!href.startsWith("/")) return null;
+  const page = pages[href.replace(/^\/+|\/+$/g, "")];
+  if (!page) return null;
+  const tail = page.breadcrumb?.[page.breadcrumb.length - 1]?.name;
+  return decodeEntities(tail || page.h1).replace(/\s+/g, " ").trim() || null;
+}
+
+/**
+ * Label each "Read More" with the page it opens.
+ *
+ * Client, 2026-09-14: "could we name these buttons the names of the pages they
+ * lead into". A tile row hands the reader seven identical pills, and on a phone
+ * — where the tiles stack and the buttons go full width — a pill is often all
+ * that is on screen. Naming them is also the plainest fix for the oldest link
+ * anti-pattern there is: "Read More" out of context tells a screen reader
+ * nothing about where it goes.
+ *
+ * Only internal links are touched, and only ones that resolve to a page this
+ * build actually carries; an unresolved one is left as it was rather than
+ * guessed at.
+ */
+function nameReadMoreLinks(page: Page, pages: Record<string, Page>): number {
+  let hits = 0;
+  const run = (blocks: Block[]) => {
+    for (const b of blocks) {
+      if (b.type === "columns") {
+        b.cols.forEach(run);
+        continue;
+      }
+      if (!isReadMore(b)) continue;
+      const name = pageName(pages, b.href);
+      if (!name) continue;
+      b.label = name;
+      hits++;
+    }
+  };
+  page.sections.forEach((s) => run(s.blocks));
+  return hits;
+}
+
+/**
+ * Give each package tile back the photograph it carries on the source.
+ *
+ * The source builds these tiles as WPBakery *column* backgrounds — a
+ * `.column-image-bg` inside the cell, behind a gold wash — and
+ * `extract-content.mjs` only reads `data-bg` off the `.column-image-bg-wrap`
+ * around it. So every one of them is dropped, and the row extracts as bare
+ * headings over a flat band: the weakest section on the page, and the one the
+ * client pointed at.
+ *
+ * The image goes at the head of the cell, which is the shape `asCardRow` is
+ * looking for. The source's two rows (three tiles, then four) then merge into
+ * one grid of seven cards with a shared height and a shared button baseline,
+ * the same treatment `/mobile-car-wash`'s packages already get.
+ *
+ * Keyed on the tile's own "Read More" href rather than on a position, so
+ * resplitting or reordering the rows cannot mis-target one. Every file is
+ * already committed under `public/assets` — `fetch-assets.mjs` met them all
+ * elsewhere on the site.
+ */
+function restoreTilePhotos(page: Page, photos: Record<string, TilePhoto>) {
+  const placed = new Set<string>();
+  for (const section of page.sections) {
+    eachColumns(section.blocks, (block) => {
+      block.cols.forEach((col, i) => {
+        if (col[0]?.type === "image") return;
+        const link = col.find(isReadMore);
+        const photo = link && photos[link.href];
+        if (!link || !photo) return;
+        block.cols[i] = [
+          { type: "image", src: photo.src, alt: "", w: photo.w, h: photo.h },
+          ...col,
+        ];
+        placed.add(link.href);
+      });
+    });
+  }
+  const missing = Object.keys(photos).filter((href) => !placed.has(href));
+  if (missing.length) {
+    throw new Error(`content override: no tile to photograph at ${missing.join(", ")}`);
+  }
+}
+
+type TilePhoto = { src: string; w: number; h: number };
 
 /**
  * Replace the four vehicle-class prices that follow a package's heading.
@@ -355,6 +467,49 @@ const addOnServices = (b: Block) => b.type === "heading" && /add-on services/i.t
 /** The retired wash tiers, item 2. Exact names — "EXTERIOR PLUS WASH" stays. */
 const RETIRED_WASHES = ["BRONZE WASH", "EXTERIOR WASH"];
 
+/**
+ * The photograph behind each "MORE VALETING PACKAGES" tile on `/car-valeting`,
+ * read off the source's own `.column-image-bg` for that cell — see
+ * `restoreTilePhotos`. Sizes are the files on disk.
+ */
+const VALETING_TILES: Record<string, TilePhoto> = {
+  "/car-valeting/deep-clean-full-valet/": {
+    src: "/assets/2020/11/20201116_141403.webp",
+    w: 2016,
+    h: 1512,
+  },
+  "/car-valeting/pre-sale-valet/": {
+    src: "/assets/2021/12/20210214_144341-scaled.webp",
+    w: 2560,
+    h: 1920,
+  },
+  "/car-interior-cleaning/mould-removal/": {
+    src: "/assets/2021/12/20210225_161935-scaled.webp",
+    w: 2560,
+    h: 1920,
+  },
+  "/car-valeting/summer-glow-valet/": {
+    src: "/assets/2022/01/shutterstock_552095587-min-scaled.webp",
+    w: 2560,
+    h: 1707,
+  },
+  "/car-valeting/winter-protection/": {
+    src: "/assets/2022/11/4-1.webp",
+    w: 576,
+    h: 576,
+  },
+  "/mobile-car-wash/": {
+    src: "/assets/2022/01/brad-starkey-eP8h7YVhFHk-unsplash-min-scaled.webp",
+    w: 2560,
+    h: 1707,
+  },
+  "/car-valeting/convertible-roof-cleaning/": {
+    src: "/assets/2023/08/3-a.webp",
+    w: 1024,
+    h: 768,
+  },
+};
+
 const PASTE_WAX =
   "<strong>Paste Wax</strong>: Protect and extend your car’s paintwork with a wax sealant that shields against the elements while delivering a brilliant shine.";
 const LIQUID_WAX =
@@ -422,6 +577,7 @@ const RULES: Record<string, (page: Page) => void> = {
      Item 10, in the package comparison table. The trailing rung tells Triton
      from Neptune, which is otherwise priced identically and is unchanged. */
   "car-valeting": (page) => {
+    restoreTilePhotos(page, VALETING_TILES);
     addToZeus(page, "Upholstery seats & mats shampoo + extract");
     swap(
       page.sections.flatMap((s) => s.blocks),
@@ -526,6 +682,21 @@ export function applyOverrides(
     );
     if (carriesSource) patch(slug, useTranscoded);
   }
+
+  /*
+    Last, because `restoreTilePhotos` finds its tiles by the label this pass
+    rewrites. Site-wide rather than per-slug: two pages carry these links
+    today, and a regeneration that moves the row onto a third should name its
+    buttons too.
+  */
+  let named = 0;
+  for (const slug of Object.keys(out)) {
+    if (!allBlocks(out[slug]).some(isReadMore)) continue;
+    patch(slug, (p) => {
+      named += nameReadMoreLinks(p, out);
+    });
+  }
+  if (!named) throw new Error('content override: no "Read More" link left to name');
 
   return out;
 }
