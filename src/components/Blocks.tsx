@@ -1137,7 +1137,17 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
         arrive as a run of separate blocks, so on a narrow screen they stack —
         and stacked, four labels of four lengths read as four sizes of button
         rather than four choices. The same reason the hero row does it.
+
+        Those margins are for a run loose in the prose, and inside a card they
+        were wrong twice over: `mt-7` landed on top of the action row's own
+        `pt-7`, so 56px opened between a card's last sentence and its first
+        button and 36px between the two buttons — two pills that belong
+        together, read as two unrelated things; and `mx-1.5` inset them 6px
+        from the copy above, so nothing in the card shared a left edge. The
+        action row is a flex row with its own gap, so it needs neither.
       */
+      const spacing = ctx.actionRow ? "" : "mt-7 mx-1.5";
+
       return (
         <a
           href={href}
@@ -1147,7 +1157,7 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
           /* `mx-1.5`, not `mr-3`: the gap between two of these is the same
              12px either way, and a symmetric margin keeps a lone button on
              the centre line of a closing statement. */
-          className={`btn mt-7 mx-1.5 w-full rounded-full sm:w-auto ${
+          className={`btn w-full rounded-full sm:w-auto ${spacing} ${
             secondary ? "btn-outline" : ctx.light ? "btn-dark" : "btn-gold"
           }`}
           {...(/^https?:/.test(href)

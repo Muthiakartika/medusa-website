@@ -249,6 +249,12 @@ fallback. Every section, whoever renders it, now follows this:
   left the card with no point of entry, and since the second is now named after
   the page it opens (below), one of them repeated the card's own title back at
   it. `Blocks.tsx` decides this from `ctx.actionRow`, which only `CardRow` sets.
+  `actionRow` also drops the `mt-7 mx-1.5` a button carries loose in the prose:
+  the action row is a flex row with its own gap, so **28px** above it (`pt-7`)
+  and **10px** between two buttons (`gap-2.5`) are the whole spacing, and the
+  buttons share the card copy's left edge. With the margins left on it was 56 /
+  36 and a 6px inset, which is what the client saw — "maybe a little less space
+  in between the buttons, and a general clean", 2026-09-14.
 - **A link is named after where it goes.** Client, 2026-09-14: "could we name
   these buttons the names of the pages they lead into." `nameReadMoreLinks` in
   `overrides.ts` relabels every "Read More" with its destination page's own

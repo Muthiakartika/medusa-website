@@ -862,8 +862,14 @@ export function CardRow({
             */}
             <div className="flex flex-1 flex-col p-6 [&>*:first-child]:mt-0 [&>h2]:text-[19px] [&>h2]:lg:text-[21px] [&>h3]:text-[19px] [&>h3]:lg:text-[21px] [&>h4]:text-[19px] [&>h4]:lg:text-[21px] [&>h4]:text-white [&>h5]:text-[17px]">
               {renderBlocks(body)}
+              {/*
+                `pt-7` is the whole gap between the card's copy and its
+                actions, and `gap-2.5` the whole gap between two of them — the
+                buttons carry no margins of their own in here, so these two
+                numbers are the spacing, not a floor under it.
+              */}
               {actions.length > 0 && (
-                <div className="mt-auto flex flex-wrap gap-2 pt-7">
+                <div className="mt-auto flex flex-wrap gap-2.5 pt-7">
                   {renderBlocks(actions, { actions: true })}
                 </div>
               )}
