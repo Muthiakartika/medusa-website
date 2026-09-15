@@ -99,7 +99,17 @@ export default function HubPage({ spec }: { spec: HubSpec }) {
           */
           aside={entryPrice && <PriceCard label={TITLE} from={entryPrice} />}
         >
-          <LinkChips chips={cards.map((c) => ({ href: c.href, label: c.name }))} />
+          {/*
+            From `sm` up only. These are a shortcut to the cards a screen
+            below, and on one column the cards already are that shortcut —
+            nine of them wrapped over six rows and took 292px of a 375px
+            phone's first screen, so the header ran 1,184px before a reader
+            reached a service. No link is lost: every chip's destination is a
+            card, with a photograph and a price beside it.
+          */}
+          <div className="hidden sm:block">
+            <LinkChips chips={cards.map((c) => ({ href: c.href, label: c.name }))} />
+          </div>
         </PageHero>
 
         {/*
