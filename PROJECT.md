@@ -439,22 +439,24 @@ rendered `<main>`. Known, pre-existing gaps: `asLinkChips` drops commas and
   `/car-graffiti-removal` (800 px), `/safely-clean-sickness-vomit-from-your-car-interior`
   (980 px), `/car-windscreen-protection` (1152 px). No larger copy exists in
   the mirror; fixing them needs a fresh fetch from the live site.
-- **`/repairs` has no introduction of its own.** Every other master page opens
-  on three or four paragraphs under the h1; this one has no source page to take
-  them from and rule 8.1 forbids writing them, so the header carries the title,
-  a photograph, a chip per service and the entry-price card instead. Everything
-  below it is real content, but a standfirst is the one thing on the page the
-  client still has to supply — and with it, the prose band `/mobile-car-wash`
-  carries between its header and its prices, which has nowhere to draw copy
-  from either.
-  Its FAQ is the same kind of borrowing: none of the four services has an `faq`
-  block anywhere, so the accordion is six of their own question-shaped headings
-  with the prose underneath, each linked back to the page it came from. A
-  written FAQ from the client replaces it wholesale. `/car-interior-cleaning`
-  is better off on both counts — three of its nine pages carry real FAQ blocks
-  — but it has no introduction either, and its reasons name leather in two of
-  four bodies because no page in that group has a list that names no service
-  at all.
+- **A hub's introduction is borrowed, not written.** Client, 2026-09-16: "the
+  data it needs should be on the child pages… just feed it the child pages,
+  should be what it needs". It is — a few of these pages open on a paragraph
+  about the whole subject rather than about their own service, and `spec.intro`
+  names those. `/car-interior-cleaning` takes one from the interior valet page
+  ("what's on the inside that counts"); `/repairs` takes two, from the graffiti
+  and engine bay pages, which between them say that damage costs a car its
+  value and the right work gives it back. Each is one paragraph, whole, and the
+  card for that page then shows its *next* paragraph so the same words are not
+  on screen twice.
+
+  The same borrowing runs through the rest of a hub, and two spots are worth
+  knowing about. `/repairs` has no `faq` block anywhere in its group, so its
+  accordion is six of its pages' own question-shaped headings with the prose
+  underneath; `/car-interior-cleaning` has twenty-one real ones and uses them.
+  And no list in the interior group names no service at all, so its reasons
+  mention leather in two of four bodies — the least specific of the nine.
+  Written copy from the client replaces either in one line of `lib/hubs.ts`.
 - **`/blog` renders post titles its own source page does not list** — the
   source paginates at 10, the grid loads 10 at a time from the full set. This
   is the one intentional exception to rule 8.1.

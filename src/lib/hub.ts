@@ -54,6 +54,21 @@ export type HubSpec = {
    */
   why: { slug: string; heading: string; dropLead: number };
   /**
+   * The paragraphs the header opens on, as `[slug, first words]` — a page in
+   * the group and the opening of one of its own paragraphs, matched on that
+   * text so a regeneration cannot silently pick a different one.
+   *
+   * Client, 2026-09-16: "the data it needs should be on the child pages…
+   * just feed it the child pages, should be what it needs". It is: every one
+   * of these pages opens on a paragraph about the problem its service solves,
+   * and a few of those are written about the whole subject rather than about
+   * the one service. Those are the ones named here. Nothing is stitched
+   * together or reworded — each is one paragraph, whole, as its own page has
+   * it, and the card for that page then takes its *next* paragraph so the
+   * same words are not on the screen twice.
+   */
+  intro: ReadonlyArray<readonly [slug: string, startsWith: string]>;
+  /**
    * Questions to fall back on when no page in the group carries an `faq` block
    * at all: a slug and one of that page's own question-shaped headings, whose
    * answer is the prose written under it. `/repairs` needs this; the interior
@@ -105,16 +120,38 @@ const plain = (html: string) =>
  * us immediately at +442033556435" — which is a call to action, not a
  * description, and as a card blurb it told the reader nothing about the
  * service. So: the first paragraph long enough to be prose and not built
- * around a `tel:` link. That lands on the right one for all four.
+ * around a `tel:` link, and not one the header has already used.
  */
-function blurbOf(page: Page): string | undefined {
+function blurbOf(page: Page, taken: ReadonlySet<string>): string | undefined {
   for (const b of flatten(page.sections.flatMap((s) => s.blocks))) {
     if (b.type !== "paragraph") continue;
     if (/href="tel:/i.test(b.html)) continue;
     if (plain(b.html).length < 90) continue;
+    if (taken.has(b.html)) continue;
     return b.html;
   }
   return undefined;
+}
+
+/**
+ * The header's opening paragraphs, read out of the pages `spec.intro` names.
+ *
+ * Matched on the paragraph's own first words rather than its position, so a
+ * page gaining a paragraph above it cannot change what the hub says. A named
+ * paragraph that has gone throws at build.
+ */
+export function hubIntro(spec: HubSpec): string[] {
+  return spec.intro.map(([slug, startsWith]) => {
+    const page = getPage(slug);
+    if (!page) throw new Error(`${spec.slug}: no page at /${slug}`);
+    const found = flatten(page.sections.flatMap((s) => s.blocks)).find(
+      (b) => b.type === "paragraph" && plain(b.html).startsWith(startsWith),
+    );
+    if (found?.type !== "paragraph") {
+      throw new Error(`${spec.slug}: /${slug} has no paragraph opening "${startsWith}"`);
+    }
+    return found.html;
+  });
 }
 
 /**
@@ -147,12 +184,13 @@ function menuGroup(spec: HubSpec): NavItem[] {
  * failing the build for.
  */
 export function hubCards(spec: HubSpec): HubCard[] {
+  const taken = new Set(hubIntro(spec));
   return menuGroup(spec).map((item) => {
     const slug = (item.href ?? "").replace(/^\/+|\/+$/g, "");
     const page = slug ? getPage(slug) : undefined;
     if (!page) throw new Error(`${spec.slug}: no page for "${item.label}" (${item.href})`);
 
-    const blurbHtml = blurbOf(page);
+    const blurbHtml = blurbOf(page, taken);
     if (!blurbHtml) throw new Error(`${spec.slug}: no opening paragraph on /${slug}`);
 
     return {

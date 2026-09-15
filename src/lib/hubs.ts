@@ -39,6 +39,18 @@ export const REPAIRS: HubSpec = {
     heading: "Why Choose Medusa Auto Detailing?",
     dropLead: 1,
   },
+  /*
+    Two paragraphs, from two of the four. The graffiti page's opener is the
+    only one in the group written about damage in general rather than about
+    its own service — damage costs a car its value, and the right work gives
+    it back — and the engine bay page's second paragraph says the same thing
+    about upkeep and resale. Together they are the hub's subject. The other
+    two pages open on a phone number and on foggy headlights.
+  */
+  intro: [
+    ["repairs/car-graffiti-removal", "Graffiti on your car is not only unsightly"],
+    ["repairs/engine-bay-steam-cleaning", "Whether you’re focused on maintaining"],
+  ],
   /* No page in this group carries an `faq` block, so the accordion is built
      from these pages' own question-shaped headings instead. */
   questionHeadings: [
@@ -89,6 +101,15 @@ export const INTERIOR: HubSpec = {
     heading: "Why Choose Medusa Auto Detailing?",
     dropLead: 1,
   },
+  /*
+    One paragraph, and it needs no help: the interior valet page opens on two
+    sentences about car interiors in general — dirt on the carpet, stains on
+    the upholstery, smells inside the vehicle — without naming a package until
+    the paragraph after it. That is this hub's subject exactly. Every other
+    opener in the group is about its own service, so a second would only
+    narrow it.
+  */
+  intro: [["car-interior-cleaning/interior-valet", "It’s often said that it’s what’s on the inside"]],
   /* Three of the nine carry real `faq` blocks — twenty-one questions between
      them — so `hubQuestions` never reaches a fallback here. */
   /* Nine cards: three across from `lg`, which is what `CardRow` uses. */

@@ -14,6 +14,7 @@ import {
   type HubSpec,
   hubAreas,
   hubCards,
+  hubIntro,
   hubQuestions,
   hubReasons,
 } from "@/lib/hub";
@@ -63,6 +64,7 @@ export default function HubPage({ spec }: { spec: HubSpec }) {
   const questions = hubQuestions(spec);
   const reasons = hubReasons(spec);
   const areas = hubAreas(spec);
+  const introHtml = hubIntro(spec);
 
   /* The cheapest of the four, for the header card. Two of them quote nothing
      at all, so this can legitimately be undefined and the header falls back to
@@ -78,16 +80,15 @@ export default function HubPage({ spec }: { spec: HubSpec }) {
       <Header />
       <main className="flex-1">
         {/*
-          The four services as chips under the title. `PageHero` holds a 620px
-          band open only when something sits under the heading, and with no
-          introduction to put there — see `lib/repairs.ts` — a title alone gave
-          this hub a 383px header where every other master page has a full one.
-          The chips are the client's "links that go to its childs" and carry no
-          words but the names of the pages they open.
+          The group's own introduction, then its services as chips — the
+          client's "links that go to its childs", carrying no words but the
+          names of the pages they open. The paragraphs are read out of the
+          child pages too; see `hubIntro`.
         */}
         <PageHero
           title={TITLE}
           image={spec.heroImage}
+          introHtml={introHtml}
           /*
             The same card the forty-one service pages carry, so this hub reads
             as their equal rather than as a lesser page. `from` is the cheapest
