@@ -47,14 +47,14 @@ export const SERVICE_SLUGS = new Set([
   "car-valeting/convertible-roof-cleaning",
   // Detailing
   "car-detailing",
-  "ceramic-coating/new-car-protection",
+  "car-detailing/new-car-protection",
   "car-detailing/mini-detail",
-  "ceramic-coating/enhancement-detail",
-  "ceramic-coating/paint-correction",
-  "ceramic-coating/perfection-detail",
+  "car-detailing/enhancement-detail",
+  "car-detailing/paint-correction",
+  "car-detailing/perfection-detail",
   "mobile-car-wash/alloy-wheel-cleaning",
-  "ceramic-coating/machine-polish",
-  "ceramic-coating",
+  "car-detailing/machine-polish",
+  "car-detailing/ceramic-coating",
   // Mobile car wash
   "mobile-car-wash",
   "mobile-car-wash/bronze-wash",
@@ -67,18 +67,18 @@ export const SERVICE_SLUGS = new Set([
   // More services
   "car-interior-cleaning/steam-cleaning",
   "commercial-valeting/mobile-truck-cleaning",
-  "car-detailing/paint-overspray-removal",
+  "repairs/paint-overspray-removal",
   "car-interior-cleaning/vomit-cleaning",
-  "car-detailing/car-graffiti-removal",
+  "repairs/car-graffiti-removal",
   "car-interior-cleaning/flooded-car-cleaning",
   "commercial-valeting/car-van-stickers-removal",
   "car-interior-cleaning/leather-cleaning",
-  "ceramic-coating/windscreen-protection",
+  "car-detailing/windscreen-protection",
   "vehicles/caravan-cleaning",
   "mobile-car-wash/car-wax-service",
   "car-interior-cleaning/pet-hair-removal",
   "car-interior-cleaning/odour-removal",
-  "car-detailing/engine-bay-steam-cleaning",
+  "repairs/engine-bay-steam-cleaning",
 ]);
 
 export type ServiceModel = {

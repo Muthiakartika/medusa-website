@@ -29,7 +29,7 @@ import { pageSchema } from "@/lib/schema";
  * ever built for it.
  */
 
-const SLUG = "car-detailing/headlight-restoration";
+const SLUG = "repairs/headlight-restoration";
 
 export function generateMetadata(): Metadata {
   const page = getPage(SLUG);

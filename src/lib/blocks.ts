@@ -99,7 +99,7 @@ export const PAGES = applyOverrides(raw as unknown as Record<string, Page>);
  * checker still see them.
  */
 export const CUSTOM_ROUTES = new Set([
-  "car-detailing/headlight-restoration",
+  "repairs/headlight-restoration",
   "vehicles/motorcycle-valeting-detailing",
   "blog",
   "our-locations",

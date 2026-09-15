@@ -16,7 +16,9 @@ The clone is **content-identical by design**. Every word, price, phone number
 and photograph comes from the live site. What this project changes is the
 *layout*, not the *content*.
 
-- **255 routes.** 254 pages in `src/content/pages.json` plus the homepage.
+- **255 routes.** 254 in `src/content/pages.json` — the homepage is one of
+  them, keyed `""` — plus `/repairs`, which has no source page and is built out
+  of the four pages it links to (§5).
 - **Fully static**, served through ISR (§7).
 - Stack: App Router, React 19, Tailwind CSS v4, TypeScript. No CMS, no
   database, no runtime API.
@@ -86,8 +88,17 @@ run `npm run content:fetch` first if the mirror is missing or stale.
   them on size.
 - **`scripts/paths.mjs`** — every path constant the scripts share.
 
-**Regenerating is not free.** The last regeneration changed 201 of 254 pages.
-Diff `pages.json` and spot-check before committing.
+**Regenerating is not free, and right now it does not round-trip.** The last
+regeneration changed 201 of 254 pages. Worse, `extract-content.mjs` takes each
+page's slug straight off its mirror filename, and the mirror is the *live*
+site — which still publishes the old WordPress URLs (`/correction/`,
+`/wheeluv/`, `/valeting/`). The committed `pages.json` is keyed by the **new**
+structure, and its internal links are rewritten to match. That remapping is
+not in any script in this repo, so `npm run content` against the current mirror
+comes back with the old slugs and about 6,000 lines shorter. `lib/redirects.ts`
+is the map between the two — every rule there is one old URL and the new one it
+became — so re-applying it after a regeneration is what the missing step would
+do. Diff `pages.json` and spot-check before committing anything.
 
 ---
 
@@ -156,10 +167,21 @@ Three tiers, cheapest first:
      location pages (`mobile-car-{valeting,wash,detailing}-in-*` and
      `our-locations/*`).
 3. **Its own route** — for a page the extractor mangled badly enough that a
-   frame cannot save it (`/headlight-restoration`,
-   `/motorcycle-valeting-detailing`, the homepage, and the ten others in
-   `CUSTOM_ROUTES`). Copy is transcribed verbatim into a `lib/*.ts` file or
+   frame cannot save it (`/repairs/headlight-restoration`,
+   `/vehicles/motorcycle-valeting-detailing`, the homepage, and the ten others
+   in `CUSTOM_ROUTES`). Copy is transcribed verbatim into a `lib/*.ts` file or
    read back out of `pages.json`.
+
+   `/repairs` is the one route with no source page at all. The client asked for
+   it on 2026-09-15 — "a page for /Repairs will need to be created, which will
+   have links that go to its childs" — and rule 8.1 forbids writing copy to
+   fill it, so `lib/repairs.ts` reads every name, blurb, price and photograph
+   back out of the four pages it links to and `app/repairs/page.tsx` lays them
+   out as a card each. Add a service to the Repairs & Restoration menu group
+   and a card appears, carrying that page's own words. Because it is not in
+   `pages.json` it is **not** in `CUSTOM_ROUTES` — there is no duplicate to
+   exclude — and it has to be named explicitly in `app/sitemap.ts` and in
+   `scripts/verify.mjs`'s `EXTRA_ROUTES`.
 
 Prefer tier 1, then 2. Tier 3 is a maintenance cost — each one is a second
 place the content lives.
@@ -393,12 +415,17 @@ rendered `<main>`. Known, pre-existing gaps: `asLinkChips` drops commas and
   and the four detailing levels, where they sit behind other content rather
   than heading a card. Fixing the extractor is the real repair, but it means a
   full `npm run content`, which does **not** reproduce the committed
-  `pages.json` from the current mirror — it comes back ~6,000 lines shorter, so
-  that regeneration has to be vetted on its own before anything rides on it.
+  `pages.json` from the current mirror — see §3 for why — so that regeneration
+  has to be vetted on its own before anything rides on it.
 - **Three service heroes are narrower than the 1270 px band they fill** —
   `/car-graffiti-removal` (800 px), `/safely-clean-sickness-vomit-from-your-car-interior`
   (980 px), `/car-windscreen-protection` (1152 px). No larger copy exists in
   the mirror; fixing them needs a fresh fetch from the live site.
+- **`/repairs` opens on its title and nothing else.** Every other master page
+  has three or four paragraphs of its own under the h1; this one has no source
+  page to take them from, and rule 8.1 forbids writing them. The cards carry
+  the four services' own copy, so the page is not empty, but an introduction is
+  the one thing on it the client still has to supply.
 - **`/blog` renders post titles its own source page does not list** — the
   source paginates at 10, the grid loads 10 at a time from the full set. This
   is the one intentional exception to rule 8.1.

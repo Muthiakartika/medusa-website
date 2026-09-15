@@ -107,32 +107,39 @@ export const NAV: NavItem[] = [  { label: "Home", href: "/" },
         /* Ceramic Coating is no longer a column of its own: the workbook folds
            it into this one as an ordinary child, its own hub link first and
            Mini Car Detail last, which frees the fourth column for Repairs &
-           Restoration below. */
+           Restoration below.
+
+           Client, 2026-09-15: "pages here in this group need to live under
+           /car-detailing/*". They all do now — the six that sat under
+           /ceramic-coating/ moved, and Ceramic Coating's own hub page with
+           them. `lib/redirects.ts` carries the 301 for each. */
         label: "Car Detailing",
         href: "/car-detailing/",
         children: [
-          { label: "Ceramic Coating", href: "/ceramic-coating/" },
-          { label: "New Car Protection", href: "/ceramic-coating/new-car-protection/" },
-          { label: "Paint Correction", href: "/ceramic-coating/paint-correction/" },
-          { label: "Machine Polish", href: "/ceramic-coating/machine-polish/" },
-          { label: "Windscreen Protection", href: "/ceramic-coating/windscreen-protection/" },
-          { label: "Enhancement", href: "/ceramic-coating/enhancement-detail/" },
-          { label: "Perfection", href: "/ceramic-coating/perfection-detail/" },
+          { label: "Ceramic Coating", href: "/car-detailing/ceramic-coating/" },
+          { label: "New Car Protection", href: "/car-detailing/new-car-protection/" },
+          { label: "Paint Correction", href: "/car-detailing/paint-correction/" },
+          { label: "Machine Polish", href: "/car-detailing/machine-polish/" },
+          { label: "Windscreen Protection", href: "/car-detailing/windscreen-protection/" },
+          { label: "Enhancement", href: "/car-detailing/enhancement-detail/" },
+          { label: "Perfection", href: "/car-detailing/perfection-detail/" },
           { label: "Mini Car Detail", href: "/car-detailing/mini-detail/" },
         ],
       },
       {
         /* The workbook gives this head /repairs/ and moves its four services
-           under the same prefix. Nothing serves those URLs yet - the pages are
-           still at their /car-detailing/ slugs, which is what both the mirror
-           and the 301 table carry - so the head stays a heading and the
-           children keep the URLs that resolve. */
+           under the same prefix, which the client confirmed on 2026-09-15:
+           "pages here need to live under /repairs/*", and "a page for /repairs
+           will need to be created, which will have links that go to its
+           childs". Both are done — the head is a link now, and `app/repairs`
+           builds that page out of these four pages' own copy. */
         label: "Repairs & Restoration",
+        href: "/repairs/",
         children: [
-          { label: "Headlight Restoration", href: "/car-detailing/headlight-restoration/" },
-          { label: "Engine Bay Steam Cleaning", href: "/car-detailing/engine-bay-steam-cleaning/" },
-          { label: "Car Graffiti Removal", href: "/car-detailing/car-graffiti-removal/" },
-          { label: "Paint Overspray Removal", href: "/car-detailing/paint-overspray-removal/" },
+          { label: "Headlight Restoration", href: "/repairs/headlight-restoration/" },
+          { label: "Engine Bay Steam Cleaning", href: "/repairs/engine-bay-steam-cleaning/" },
+          { label: "Car Graffiti Removal", href: "/repairs/car-graffiti-removal/" },
+          { label: "Paint Overspray Removal", href: "/repairs/paint-overspray-removal/" },
         ],
       },
       {
@@ -785,7 +792,7 @@ export const EXTRA_SERVICES = [
     title: "Engine bay cleaning",
     body: "Discover more about our Engine Bay Steam Cleaning service below, and see how we can help your vehicle shine from the inside out, making a lasting impression both under the hood and with potential buyers.",
     image: "/assets/2024/10/wipping-car-engine-080520210315.webp",
-    href: "/car-detailing/engine-bay-steam-cleaning/",
+    href: "/repairs/engine-bay-steam-cleaning/",
   },
   {
     title: "OZONE Odour Removal",
@@ -813,7 +820,7 @@ export const DETAILING = [
     title: "LEVEL 1",
     subtitle: "NEW CAR / PROTECTION",
     prices: [349, 399, 449, 499] as [number, number, number, number],
-    href: "/ceramic-coating/new-car-protection/",
+    href: "/car-detailing/new-car-protection/",
   },
   {
     title: "LEVEL 2",
@@ -825,19 +832,19 @@ export const DETAILING = [
     title: "LEVEL 3",
     subtitle: "ENHANCEMENT",
     prices: [450, 500, 550, 600] as [number, number, number, number],
-    href: "/ceramic-coating/enhancement-detail/",
+    href: "/car-detailing/enhancement-detail/",
   },
   {
     title: "LEVEL 4",
     subtitle: "CORRECTION",
     prices: [600, 650, 700, 750] as [number, number, number, number],
-    href: "/ceramic-coating/paint-correction/",
+    href: "/car-detailing/paint-correction/",
   },
   {
     title: "LEVEL 5",
     subtitle: "PERFECTION",
     prices: [1200, 1400, 1500, 1600] as [number, number, number, number],
-    href: "/ceramic-coating/perfection-detail/",
+    href: "/car-detailing/perfection-detail/",
   },
 ];
 

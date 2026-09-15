@@ -12,16 +12,25 @@ import { SITE } from "@/lib/site";
  * without a lastmod rather than with a fabricated one.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  return Object.values(PAGES)
-    /* A sitemap that lists a URL which only 301s is asking a crawler to
-       spend its budget learning the page moved. */
-    .filter((page) => !REDIRECTED_SLUGS.has(page.slug))
-    .map((page) => ({
-      url: SITE + (page.slug ? `/${page.slug}/` : "/"),
-      lastModified: page.modified,
-      changeFrequency: changeFrequency(page.slug),
-      priority: priority(page.slug),
-    }));
+  const slugs = [
+    ...Object.values(PAGES)
+      /* A sitemap that lists a URL which only 301s is asking a crawler to
+         spend its budget learning the page moved. */
+      .filter((page) => !REDIRECTED_SLUGS.has(page.slug))
+      .map((page) => ({ slug: page.slug, modified: page.modified })),
+    /* `/repairs` is a route with no page in `pages.json` — it is built out of
+       the four pages it links to, so nothing in the mirror represents it and
+       the loop above cannot see it. Every other hub on the site is in the
+       sitemap; leaving this one out would hide a menu head from crawlers. */
+    { slug: "repairs", modified: undefined },
+  ];
+
+  return slugs.map(({ slug, modified }) => ({
+    url: SITE + (slug ? `/${slug}/` : "/"),
+    lastModified: modified,
+    changeFrequency: changeFrequency(slug),
+    priority: priority(slug),
+  }));
 }
 
 const isPost = (slug: string) => /^20\d\d\//.test(slug);

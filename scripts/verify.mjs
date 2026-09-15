@@ -14,10 +14,25 @@ import { PAGES_JSON, PUBLIC } from './paths.mjs';
 const BASE = process.env.BASE || 'http://localhost:3000';
 
 const pages = JSON.parse(fs.readFileSync(PAGES_JSON, 'utf8'));
+
+/* Routes the app serves that have no entry in pages.json, so the loop below
+   cannot see them. /repairs is built out of the four pages it links to. */
+const EXTRA_ROUTES = ['/repairs'];
+
+/* The 301 table, read out of the TypeScript rather than imported from it —
+   this is a .mjs script and that is a .ts module. Only the sources are needed:
+   the sitemap deliberately leaves them out, so without them the count below
+   compares against every page in the mirror and is permanently wrong. */
+const REDIRECTED = new Set(
+  [...fs
+    .readFileSync(path.join(path.dirname(PAGES_JSON), '../lib/redirects.ts'), 'utf8')
+    .matchAll(/\["(\/[^"]*)", "\/[^"]*"\]/g)].map((m) => m[1]),
+);
+
 const routes = new Set([
   '/',
   ...Object.keys(pages).filter(Boolean).map((s) => '/' + s),
-  '/ceramic-coating', // 301 -> /car-ceramic-paint-protection, same as live
+  ...EXTRA_ROUTES,
 ]);
 
 /* Links that are already broken on medusaautodetailing.co.uk (verified 404
@@ -34,8 +49,11 @@ const DEAD_ON_SOURCE = new Set([
 ]);
 
 /* Pages with no <h1> on the live site either: all Elementor-built blog posts,
-   plus /aircraft-cleaning (verified — it opens straight into an <h2>). */
-const NO_H1_ON_SOURCE = /^\/(20\d\d\/|aircraft-cleaning$)/;
+   plus aircraft cleaning (verified — it opens straight into an <h2>). The
+   second arm was written against the live site's own /aircraft-cleaning/ and
+   stopped matching when the page moved under /commercial-valeting/, which is
+   why this check has been reporting it ever since. */
+const NO_H1_ON_SOURCE = /^\/(20\d\d\/|commercial-valeting\/aircraft-cleaning$)/;
 
 const badStatus = [];
 const noH1 = [];
@@ -142,8 +160,9 @@ async function checkSeo() {
   else {
     const xml = await sitemap.text();
     const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-    // every page in pages.json, and nothing that isn't a real route
-    const want = Object.keys(pages).length;
+    // every route the site serves, minus the ones that only 301
+    const want =
+      Object.keys(pages).filter((s) => !REDIRECTED.has(`/${s}/`)).length + EXTRA_ROUTES.length;
     if (locs.length !== want) seo.push(`/sitemap.xml :: ${locs.length} urls, expected ${want}`);
     const strays = locs
       .map((u) => new URL(u).pathname.replace(/\/$/, '') || '/')
