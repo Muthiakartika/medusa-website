@@ -6,10 +6,10 @@ import Header from "@/components/Header";
 import Icon from "@/components/Icon";
 import JsonLd from "@/components/JsonLd";
 import PageHero from "@/components/PageHero";
+import PriceCard from "@/components/PriceCard";
 import Reveal from "@/components/Reveal";
 import SectionHead from "@/components/SectionHead";
 import { LinkChips } from "@/components/blocks-groups";
-import Areas from "@/components/sections/Areas";
 import WhyChoose from "@/components/sections/WhyChoose";
 import type { Page } from "@/lib/blocks";
 import { REPAIRS_HERO, repairCards, repairQuestions } from "@/lib/repairs";
@@ -69,6 +69,14 @@ export default function RepairsPage() {
   const cards = repairCards();
   const questions = repairQuestions();
 
+  /* The cheapest of the four, for the header card. Two of them quote nothing
+     at all, so this can legitimately be undefined and the header falls back to
+     the wider, card-less layout `PageHero` uses everywhere else. */
+  const entryPrice = cards
+    .map((c) => c.priceFrom)
+    .filter((p): p is string => Boolean(p))
+    .sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)))[0];
+
   return (
     <>
       <JsonLd data={pageSchema(metaPage())} />
@@ -82,12 +90,30 @@ export default function RepairsPage() {
           The chips are the client's "links that go to its childs" and carry no
           words but the names of the pages they open.
         */}
-        <PageHero title={TITLE} image={REPAIRS_HERO}>
+        <PageHero
+          title={TITLE}
+          image={REPAIRS_HERO}
+          /*
+            The same card the forty-one service pages carry, so this hub reads
+            as their equal rather than as a lesser page. `from` is the cheapest
+            price in the group — engine bay steam cleaning's £60 — which is the
+            same thing /car-detailing's "from £300" is: the cheapest of the
+            things below it. The two services that quote nothing say so on
+            their own cards.
+          */
+          aside={entryPrice && <PriceCard label={TITLE} from={entryPrice} />}
+        >
           <LinkChips chips={cards.map((c) => ({ href: c.href, label: c.name }))} />
         </PageHero>
 
-        <section className="w-full bg-ink py-16 lg:py-[104px]">
+        {/*
+          The gold band directly under the header is what a master page looks
+          like here — /car-detailing opens its packages on one. The cards go to
+          `surface-on-gold` on it, the same swap `CardRow` makes.
+        */}
+        <section className="bg-gold-wash w-full py-16 lg:py-[104px]">
           <div className="shell">
+            <SectionHead title={`Our ${TITLE} Services`} tone="gold" className="mb-12" />
             {/*
               Four across only from `xl`. At `lg` the shell is 834px wide, so
               four columns are 193px each — narrower than the add-on cards'
@@ -100,7 +126,7 @@ export default function RepairsPage() {
                   as="li"
                   key={card.slug}
                   delay={i}
-                  className="surface flex flex-col overflow-hidden"
+                  className="surface-on-gold flex flex-col overflow-hidden"
                 >
                   {card.image && (
                     <div className="relative aspect-3/2 w-full">
@@ -127,7 +153,7 @@ export default function RepairsPage() {
                         foot instead. Same badge the price ladders use. */}
                     {card.priceFrom && (
                       <p className="mt-3">
-                        <span className="inline-flex rounded-full bg-gold px-3 py-1 font-[family-name:var(--font-ui)] text-[13px] font-semibold text-ink">
+                        <span className="inline-flex rounded-full bg-white px-3 py-1 font-[family-name:var(--font-ui)] text-[13px] font-semibold text-ink">
                           From {card.priceFrom}
                         </span>
                       </p>
@@ -164,15 +190,6 @@ export default function RepairsPage() {
           </div>
         </section>
 
-        {/*
-          The rest of a master page, and none of it written here either.
-          `WhyChoose` and `Areas` are the homepage's own sections reading
-          `lib/site.ts`, so this hub makes the same case and quotes the same
-          coverage as everywhere else rather than a second version of it.
-          The bands alternate ink / gold / ink / gold from here down.
-        */}
-        <WhyChoose />
-
         <section className="w-full py-16 lg:py-[104px]">
           <div className="shell grid gap-8 lg:grid-cols-12 lg:gap-14">
             <div className="lg:col-span-5">
@@ -194,7 +211,19 @@ export default function RepairsPage() {
           </div>
         </section>
 
-        <Areas />
+        {/*
+          The homepage's own section, reading `lib/site.ts`, so the hub makes
+          the site's case rather than a second version of it — and it closes on
+          a Book Now, which is what /car-detailing's last two bands do.
+
+          Its neighbour `Areas` is not here, and it is the one thing this page
+          drops from that shape. Both are gold and neither can be recoloured
+          from outside, so with only two ink bands to give — the header and the
+          questions — a third gold band would have had to sit against this one.
+          A long unbroken stretch of gold is the thing §5's alternation exists
+          to prevent, and coverage is on all four service pages anyway.
+        */}
+        <WhyChoose />
       </main>
       <Footer />
     </>

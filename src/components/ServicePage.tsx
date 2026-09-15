@@ -2,11 +2,10 @@ import { asLinkChips, LinkChips } from "@/components/blocks-groups";
 import { Sections } from "@/components/Blocks";
 import FaqAccordion from "@/components/FaqAccordion";
 import Image from "next/image";
-import Icon from "@/components/Icon";
+import PriceCard from "@/components/PriceCard";
 import Reveal from "@/components/Reveal";
 import SectionHead from "@/components/SectionHead";
 import type { Page } from "@/lib/blocks";
-import { BOOK_URL } from "@/lib/site";
 import { parseServicePage } from "@/lib/service-frame";
 
 /**
@@ -190,25 +189,7 @@ function Hero({ page, model }: { page: Page; model: ReturnType<typeof parseServi
 
           {model.priceFrom && (
             <Reveal delay={5} className="lg:col-span-5 lg:justify-self-end">
-              <div className="surface w-full max-w-[420px] p-7 backdrop-blur-sm lg:p-8">
-                <p className="font-[family-name:var(--font-ui)] text-[11px] tracking-[0.18em] text-white/55 uppercase">
-                  {short(page.h1)}
-                </p>
-                <p className="mt-3 flex items-baseline gap-2">
-                  <span className="text-[14px] font-normal text-white/60">from</span>
-                  <span className="font-[family-name:var(--font-display)] text-[44px] leading-none text-gold lg:text-[52px]">
-                    {model.priceFrom}
-                  </span>
-                </p>
-                <span aria-hidden className="my-6 block h-px w-full bg-white/10" />
-
-                {/* "Book Now" is the button these pages already carry under
-                    their price table; nothing else is added to the card. */}
-                <a href={BOOK_URL} className="btn btn-gold w-full rounded-full text-[15px]">
-                  Book Now
-                  <Icon name="arrow" size={18} className="ml-2.5" />
-                </a>
-              </div>
+              <PriceCard label={short(page.h1)} from={model.priceFrom} />
             </Reveal>
           )}
         </div>
