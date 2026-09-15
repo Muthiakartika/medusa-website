@@ -179,10 +179,12 @@ Three tiers, cheapest first:
    back out of the four pages it links to and `app/repairs/page.tsx` lays them
    out in the shape `/car-detailing` has: the header with the group's entry
    price beside it (`components/PriceCard`, shared with `ServicePage` so the
-   two cannot drift), a gold band of service cards, the questions, and the
-   homepage's own `WhyChoose` reading `lib/site.ts`. Add a service to the
-   Repairs & Restoration menu group and a card and a chip appear, carrying
-   that page's own words. Because it is not in
+   two cannot drift), then the reasons, the services, the questions and the
+   coverage, gold and ink alternating. Add a service to the Repairs &
+   Restoration menu group and a card and a chip appear, carrying that page's
+   own words. The homepage's `WhyChoose` is deliberately **not** here — the
+   client asked for the service pages' version of that section so the hub does
+   not repeat the homepage. Because it is not in
    `pages.json` it is **not** in `CUSTOM_ROUTES` — there is no duplicate to
    exclude — and it has to be named explicitly in `app/sitemap.ts` and in
    `scripts/verify.mjs`'s `EXTRA_ROUTES`.
@@ -430,10 +432,9 @@ rendered `<main>`. Known, pre-existing gaps: `asLinkChips` drops commas and
   them from and rule 8.1 forbids writing them, so the header carries the title,
   a photograph, a chip per service and the entry-price card instead. Everything
   below it is real content, but a standfirst is the one thing on the page the
-  client still has to supply. It also drops the coverage band `/car-detailing`
-  carries: `WhyChoose` and `Areas` are both gold and neither can be recoloured
-  from outside, and with only two ink bands to give — the header and the
-  questions — a third gold band would have had to sit against another one.
+  client still has to supply — and with it, the prose band `/mobile-car-wash`
+  carries between its header and its prices, which has nowhere to draw copy
+  from either.
   Its FAQ is the same kind of borrowing: none of the four services has an `faq`
   block anywhere, so the accordion is six of their own question-shaped headings
   with the prose underneath, each linked back to the page it came from. A

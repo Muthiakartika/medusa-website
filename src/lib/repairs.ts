@@ -22,6 +22,7 @@
  * optional and the card falls back to the quote button.
  */
 
+import { asFeatures, type Feature } from "@/components/blocks-groups";
 import { type Block, getPage, heroImageFor, type Page } from "@/lib/blocks";
 import { HEADLIGHT } from "@/lib/headlight";
 import { NAV, type NavItem } from "@/lib/site";
@@ -231,4 +232,86 @@ export function repairQuestions(): RepairQuestion[] {
     const card = named.get(slug);
     return { q: heading, a, href: card?.href ?? `/${slug}/`, name: card?.name ?? slug };
   });
+}
+
+/* ── Why choose us ────────────────────────────────────────────────────── */
+
+/**
+ * The photograph beside the reasons — a machine polisher on a panel, from
+ * `/repairs/car-graffiti-removal`. Square, where the header's is landscape, so
+ * it fits a column beside the cards rather than a band behind them.
+ */
+export const REPAIRS_WHY_IMAGE =
+  "/assets/elementor/thumbs/close-up-of-the-hands-of-a-car-mechanic-at-a-servi-2024-12-02-11-55-00-utc-1-r1e9o8d56eqisnmplho9bfo70eb8lujn6d3l6oh2kg.webp";
+
+/**
+ * Three of the four services close on the same section — "Why Choose Medusa
+ * Auto Detailing?" over a labelled list — and this is the graffiti page's,
+ * which is the longest of the three and the only one whose reasons are about
+ * the company rather than about one service.
+ *
+ * Its own first item is not: "Your Local Spray Paint Removal Experts" is a
+ * claim about graffiti removal, and on a hub covering four services it would
+ * be wrong. `DROP_LEAD` skips it. Nothing else is touched — the four that
+ * remain are the page's own words in the page's own order.
+ *
+ * Not the homepage's `WHY`, which is what `components/sections/WhyChoose`
+ * renders: the client asked for this section specifically so that the hub
+ * would not repeat the homepage.
+ */
+const WHY_SOURCE = {
+  slug: "repairs/car-graffiti-removal",
+  heading: "Why Choose Medusa Auto Detailing?",
+  /** The lead reason names a single service; the hub covers four. */
+  DROP_LEAD: 1,
+} as const;
+
+export function repairReasons(): { heading: string; items: Feature[] } {
+  const page = getPage(WHY_SOURCE.slug);
+  if (!page) throw new Error(`repairs: no page at /${WHY_SOURCE.slug}`);
+  const blocks = flatten(page.sections.flatMap((s) => s.blocks));
+
+  const at = blocks.findIndex((b) => headingText(b) === WHY_SOURCE.heading);
+  if (at === -1) {
+    throw new Error(`repairs: /${WHY_SOURCE.slug} no longer has "${WHY_SOURCE.heading}"`);
+  }
+
+  const list = blocks.slice(at + 1, at + 5).find((b) => b.type === "list");
+  if (list?.type !== "list") throw new Error(`repairs: no reasons under "${WHY_SOURCE.heading}"`);
+
+  const items = asFeatures(list)?.slice(WHY_SOURCE.DROP_LEAD);
+  if (!items?.length) throw new Error("repairs: the reasons no longer parse as label + text");
+  return { heading: WHY_SOURCE.heading, items };
+}
+
+/* ── Coverage ─────────────────────────────────────────────────────────── */
+
+/** The regions named in a "… Near You" paragraph, in the order written. */
+const REGION =
+  /North West London|South West London|South East London|North East London|Central London|Greater London|North London|South London|East London|West London|Hertfordshire/g;
+
+/**
+ * Where the four services are offered.
+ *
+ * All four pages close on a "… Near You" paragraph naming the same six
+ * regions, so the hub can state the coverage without picking a side. The
+ * regions are read out of those paragraphs rather than listed here, and they
+ * are shown as plain chips: the source names regions, not the districts the
+ * wash and valeting pages link to, so there is nothing to link them to that
+ * the source itself points at.
+ */
+export function repairAreas(): string[] {
+  const seen = new Set<string>();
+  for (const { slug } of repairCards()) {
+    const page = getPage(slug);
+    if (!page) continue;
+    const blocks = flatten(page.sections.flatMap((s) => s.blocks));
+    const at = blocks.findIndex((b) => /near you\s*$/i.test(headingText(b)));
+    if (at === -1) continue;
+    const p = blocks[at + 1];
+    if (p?.type !== "paragraph") continue;
+    for (const m of p.html.matchAll(REGION)) seen.add(m[0]);
+  }
+  if (seen.size < 4) throw new Error(`repairs: only ${seen.size} regions found across the four`);
+  return [...seen];
 }

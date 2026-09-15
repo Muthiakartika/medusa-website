@@ -532,20 +532,28 @@ export function FeatureCards({
   items,
   onGold,
   numbered,
+  cols: override,
 }: {
   items: Feature[];
   onGold?: boolean;
   /** Ordinals instead of ticks — for sets that read as a progression. */
   numbered?: boolean;
+  /**
+   * Column classes, when the count alone cannot decide them. The default
+   * assumes the full page width; `/repairs` sets these in a seven-column
+   * gutter beside a photograph, where four across came out 164px wide.
+   */
+  cols?: string;
 }) {
   const cols =
-    items.length === 3
+    override ??
+    (items.length === 3
       ? "sm:grid-cols-3"
       : items.length === 4
         ? "sm:grid-cols-2 lg:grid-cols-4"
         : items.length <= 6
           ? "sm:grid-cols-2 lg:grid-cols-3"
-          : "sm:grid-cols-2 lg:grid-cols-3";
+          : "sm:grid-cols-2 lg:grid-cols-3");
 
   return (
     <ul className={`mt-7 grid gap-4 ${cols}`}>

@@ -9,10 +9,16 @@ import PageHero from "@/components/PageHero";
 import PriceCard from "@/components/PriceCard";
 import Reveal from "@/components/Reveal";
 import SectionHead from "@/components/SectionHead";
-import { LinkChips } from "@/components/blocks-groups";
-import WhyChoose from "@/components/sections/WhyChoose";
+import { FeatureCards, LinkChips } from "@/components/blocks-groups";
 import type { Page } from "@/lib/blocks";
-import { REPAIRS_HERO, repairCards, repairQuestions } from "@/lib/repairs";
+import {
+  REPAIRS_HERO,
+  REPAIRS_WHY_IMAGE,
+  repairAreas,
+  repairCards,
+  repairQuestions,
+  repairReasons,
+} from "@/lib/repairs";
 import { pageSchema } from "@/lib/schema";
 import { BOOK_URL } from "@/lib/site";
 
@@ -23,15 +29,22 @@ import { BOOK_URL } from "@/lib/site";
  * have links that go to its childs… since repairs is a master page, it would
  * follow a similar layout to the other master pages."
  *
- * A master page here is a header and then one card per service, which is what
- * `/car-detailing` and `/car-valeting` are. The difference is that those two
- * have a source page behind them and this one does not, so **nothing on it is
- * written**: `lib/repairs.ts` reads every name, blurb, price and photograph
- * back out of the four pages it links to. See the note there.
+ * Five bands, in the order the client asked for on 2026-09-16: the header with
+ * the group's entry price beside it, the case for the company *before* the
+ * services and their prices, the services, the questions, and coverage as the
+ * closing. `/car-detailing` is the reference for all of it — same header, same
+ * gold-on-ink alternation, same sections.
  *
- * The one exception is the `<title>` and meta description, which no page can
- * do without and which no source supplies; both are built from the client's
- * own menu label and the four service names.
+ * The homepage's own `WhyChoose` used to close this page and does not any more:
+ * "ss 4 bisa dihapus bagian itu agar tidak mengulang yang ada di home". The
+ * reasons here are the ones the service pages carry instead.
+ *
+ * **Almost nothing on the page is written.** `lib/repairs.ts` reads every name,
+ * blurb, price, reason, question, region and photograph back out of the four
+ * pages this hub links to. Three strings are not from the source, because no
+ * source supplies them: the `<title>` and meta description, and the two section
+ * heads "Our … Services" and "… Near You" — both the site's own pattern over
+ * the client's own name for the group.
  */
 
 const SLUG = "repairs";
@@ -68,6 +81,8 @@ export function generateMetadata(): Metadata {
 export default function RepairsPage() {
   const cards = repairCards();
   const questions = repairQuestions();
+  const reasons = repairReasons();
+  const areas = repairAreas();
 
   /* The cheapest of the four, for the header card. Two of them quote nothing
      at all, so this can legitimately be undefined and the header falls back to
@@ -107,13 +122,34 @@ export default function RepairsPage() {
         </PageHero>
 
         {/*
-          The gold band directly under the header is what a master page looks
-          like here — /car-detailing opens its packages on one. The cards go to
-          `surface-on-gold` on it, the same swap `CardRow` makes.
+          The case for the company, before the services and their prices —
+          the client's order. Laid out the way the service pages lay the same
+          section out: the photograph in a column beside the reasons rather
+          than a band of its own. The words are read out of one of the four
+          pages; see `repairReasons`.
         */}
         <section className="bg-gold-wash w-full py-16 lg:py-[104px]">
+          <div className="shell grid items-center gap-10 lg:grid-cols-12 lg:gap-14">
+            <Reveal className="lg:col-span-5">
+              <Image
+                src={REPAIRS_WHY_IMAGE}
+                alt=""
+                width={800}
+                height={800}
+                sizes="(min-width: 1024px) 520px, 100vw"
+                className="h-auto w-full rounded-[14px]"
+              />
+            </Reveal>
+            <div className="lg:col-span-7">
+              <SectionHead title={reasons.heading} tone="gold" />
+              <FeatureCards items={reasons.items} onGold cols="sm:grid-cols-2" />
+            </div>
+          </div>
+        </section>
+
+        <section className="w-full py-16 lg:py-[104px]">
           <div className="shell">
-            <SectionHead title={`Our ${TITLE} Services`} tone="gold" className="mb-12" />
+            <SectionHead title={`Our ${TITLE} Services`} className="mb-12" />
             {/*
               Four across only from `xl`. At `lg` the shell is 834px wide, so
               four columns are 193px each — narrower than the add-on cards'
@@ -126,7 +162,7 @@ export default function RepairsPage() {
                   as="li"
                   key={card.slug}
                   delay={i}
-                  className="surface-on-gold flex flex-col overflow-hidden"
+                  className="surface flex flex-col overflow-hidden"
                 >
                   {card.image && (
                     <div className="relative aspect-3/2 w-full">
@@ -153,7 +189,7 @@ export default function RepairsPage() {
                         foot instead. Same badge the price ladders use. */}
                     {card.priceFrom && (
                       <p className="mt-3">
-                        <span className="inline-flex rounded-full bg-white px-3 py-1 font-[family-name:var(--font-ui)] text-[13px] font-semibold text-ink">
+                        <span className="inline-flex rounded-full bg-gold px-3 py-1 font-[family-name:var(--font-ui)] text-[13px] font-semibold text-ink">
                           From {card.priceFrom}
                         </span>
                       </p>
@@ -190,13 +226,14 @@ export default function RepairsPage() {
           </div>
         </section>
 
-        <section className="w-full py-16 lg:py-[104px]">
+        <section className="bg-gold-wash w-full py-16 lg:py-[104px]">
           <div className="shell grid gap-8 lg:grid-cols-12 lg:gap-14">
             <div className="lg:col-span-5">
-              <SectionHead title="FAQs" />
+              <SectionHead title="FAQs" tone="gold" />
             </div>
             <div className="lg:col-span-7">
               <FaqAccordion
+                onGold
                 items={questions.map((q) => ({
                   q: q.q,
                   /* The source's own answer, then the way to the rest of it.
@@ -212,18 +249,27 @@ export default function RepairsPage() {
         </section>
 
         {/*
-          The homepage's own section, reading `lib/site.ts`, so the hub makes
-          the site's case rather than a second version of it — and it closes on
-          a Book Now, which is what /car-detailing's last two bands do.
+          Coverage, closing the page the way the service pages close theirs.
 
-          Its neighbour `Areas` is not here, and it is the one thing this page
-          drops from that shape. Both are gold and neither can be recoloured
-          from outside, so with only two ink bands to give — the header and the
-          questions — a third gold band would have had to sit against this one.
-          A long unbroken stretch of gold is the thing §5's alternation exists
-          to prevent, and coverage is on all four service pages anyway.
+          Plain chips, not links: the four pages name regions where the wash
+          and valeting pages name districts, and there is no page the source
+          itself points a region at. `LinkChips`'s own styling, minus the
+          anchor.
         */}
-        <WhyChoose />
+        <section className="w-full py-16 lg:py-[104px]">
+          <div className="shell">
+            <SectionHead title={`${TITLE} Near You`} />
+            <ul className="mt-8 flex flex-wrap gap-2">
+              {areas.map((area) => (
+                <li key={area}>
+                  <span className="inline-flex rounded-full bg-white/[0.05] px-4 py-2 text-[14px] font-normal text-white/80 ring-1 ring-white/10">
+                    {area}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
       </main>
       <Footer />
     </>
