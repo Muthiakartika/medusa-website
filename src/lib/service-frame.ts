@@ -148,7 +148,7 @@ const sameText = (a: string, b: string) =>
  * The scan stops at the add-ons heading — those cards price themselves, and on
  * the wash pages they are the only prices on the page at all.
  */
-function entryPrice(sections: Section[]): string | undefined {
+export function entryPrice(sections: Section[]): string | undefined {
   let single: string | undefined;
 
   for (const section of sections) {

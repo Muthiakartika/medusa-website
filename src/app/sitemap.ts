@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { PAGES } from "@/lib/blocks";
+import { INTERIOR, REPAIRS } from "@/lib/hubs";
 import { REDIRECTED_SLUGS } from "@/lib/redirects";
 import { SITE } from "@/lib/site";
 
@@ -11,6 +12,9 @@ import { SITE } from "@/lib/site";
  * scripts/extract-content.mjs. Pages the source never dated are emitted
  * without a lastmod rather than with a fabricated one.
  */
+/** The menu-group hubs, in menu order. */
+const HUBS = [REPAIRS, INTERIOR];
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const slugs = [
     ...Object.values(PAGES)
@@ -18,11 +22,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
          spend its budget learning the page moved. */
       .filter((page) => !REDIRECTED_SLUGS.has(page.slug))
       .map((page) => ({ slug: page.slug, modified: page.modified })),
-    /* `/repairs` is a route with no page in `pages.json` — it is built out of
-       the four pages it links to, so nothing in the mirror represents it and
-       the loop above cannot see it. Every other hub on the site is in the
-       sitemap; leaving this one out would hide a menu head from crawlers. */
-    { slug: "repairs", modified: undefined },
+    /* The menu-group hubs have no page in `pages.json` — each is built out of
+       the pages it links to, so nothing in the mirror represents them and the
+       loop above cannot see them. Every other hub on the site is in the
+       sitemap; leaving these out would hide two menu heads from crawlers. */
+    ...HUBS.map((h) => ({ slug: h.slug, modified: undefined })),
   ];
 
   return slugs.map(({ slug, modified }) => ({

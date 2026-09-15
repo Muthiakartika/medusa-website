@@ -143,7 +143,12 @@ export const NAV: NavItem[] = [  { label: "Home", href: "/" },
         ],
       },
       {
+        /* Client, 2026-09-16: "one more master page to create, with links on
+           the master page going to its childs". `app/car-interior-cleaning`
+           builds it out of these nine pages' own copy, so the head is a link
+           now rather than a heading. */
         label: "Interior Cleaning",
+        href: "/car-interior-cleaning/",
         children: [
           { label: "Interior Valet", href: "/car-interior-cleaning/interior-valet/" },
           { label: "Premium Interior Wash", href: "/car-interior-cleaning/premium-interior-wash/" },

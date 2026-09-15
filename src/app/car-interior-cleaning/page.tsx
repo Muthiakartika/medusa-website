@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
 import HubPage, { hubMetaPage } from "@/components/HubPage";
-import { REPAIRS } from "@/lib/hubs";
+import { INTERIOR } from "@/lib/hubs";
 
-/** The Repairs & Restoration hub. Everything is in `components/HubPage`. */
+/** The Interior Cleaning hub. Everything is in `components/HubPage`. */
 export function generateMetadata(): Metadata {
-  const page = hubMetaPage(REPAIRS);
+  const page = hubMetaPage(INTERIOR);
   return {
     title: page.title,
     description: page.description,
-    alternates: { canonical: `/${REPAIRS.slug}/` },
+    alternates: { canonical: `/${INTERIOR.slug}/` },
     openGraph: {
       title: page.title,
       description: page.description,
-      url: `/${REPAIRS.slug}/`,
+      url: `/${INTERIOR.slug}/`,
     },
   };
 }
 
 export default function Page() {
-  return <HubPage spec={REPAIRS} />;
+  return <HubPage spec={INTERIOR} />;
 }

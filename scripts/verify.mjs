@@ -16,8 +16,9 @@ const BASE = process.env.BASE || 'http://localhost:3000';
 const pages = JSON.parse(fs.readFileSync(PAGES_JSON, 'utf8'));
 
 /* Routes the app serves that have no entry in pages.json, so the loop below
-   cannot see them. /repairs is built out of the four pages it links to. */
-const EXTRA_ROUTES = ['/repairs'];
+   cannot see them. Each menu-group hub is built out of the pages it links to
+   — see lib/hubs.ts. */
+const EXTRA_ROUTES = ['/repairs', '/car-interior-cleaning'];
 
 /* The 301 table, read out of the TypeScript rather than imported from it —
    this is a .mjs script and that is a .ts module. Only the sources are needed:

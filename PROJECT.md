@@ -16,9 +16,10 @@ The clone is **content-identical by design**. Every word, price, phone number
 and photograph comes from the live site. What this project changes is the
 *layout*, not the *content*.
 
-- **255 routes.** 254 in `src/content/pages.json` — the homepage is one of
-  them, keyed `""` — plus `/repairs`, which has no source page and is built out
-  of the four pages it links to (§5).
+- **256 routes.** 254 in `src/content/pages.json` — the homepage is one of
+  them, keyed `""` — plus the two **menu-group hubs**, `/repairs` and
+  `/car-interior-cleaning`, which have no source page and are built out of the
+  pages they link to (§5).
 - **Fully static**, served through ISR (§7).
 - Stack: App Router, React 19, Tailwind CSS v4, TypeScript. No CMS, no
   database, no runtime API.
@@ -172,22 +173,33 @@ Three tiers, cheapest first:
    in `CUSTOM_ROUTES`). Copy is transcribed verbatim into a `lib/*.ts` file or
    read back out of `pages.json`.
 
-   `/repairs` is the one route with no source page at all. The client asked for
-   it on 2026-09-15 — "a page for /Repairs will need to be created, which will
-   have links that go to its childs" — and rule 8.1 forbids writing copy to
-   fill it, so `lib/repairs.ts` reads every name, blurb, price and photograph
-   back out of the four pages it links to and `app/repairs/page.tsx` lays them
-   out in the shape `/car-detailing` has: the header with the group's entry
-   price beside it (`components/PriceCard`, shared with `ServicePage` so the
-   two cannot drift), then the reasons, the services, the questions and the
-   coverage, gold and ink alternating. Add a service to the Repairs &
-   Restoration menu group and a card and a chip appear, carrying that page's
-   own words. The homepage's `WhyChoose` is deliberately **not** here — the
-   client asked for the service pages' version of that section so the hub does
-   not repeat the homepage. Because it is not in
-   `pages.json` it is **not** in `CUSTOM_ROUTES` — there is no duplicate to
-   exclude — and it has to be named explicitly in `app/sitemap.ts` and in
-   `scripts/verify.mjs`'s `EXTRA_ROUTES`.
+   **A fourth kind: the menu-group hubs.** `/repairs` and
+   `/car-interior-cleaning` have no source page at all. The client asked for
+   them — "a page for /Repairs will need to be created, which will have links
+   that go to its childs" (2026-09-15), then "one more master page to create,
+   with links on the master page going to its childs" against the Interior
+   Cleaning column (2026-09-16) — and rule 8.1 forbids writing copy to fill a
+   page, so `lib/hub.ts` reads every name, blurb, price, reason, question,
+   region and photograph back out of the pages each group links to and
+   `components/HubPage.tsx` lays them out in the shape `/car-detailing` has:
+   the header with the group's entry price beside it (`components/PriceCard`,
+   shared with `ServicePage` so the two cannot drift), then the reasons, the
+   services, the questions and the coverage, gold and ink alternating. Add a
+   service to a group and a card and a chip appear on its hub, carrying that
+   page's own words. The homepage's `WhyChoose` is deliberately **not** on
+   either — the client asked for the service pages' version of that section so
+   a hub does not repeat the homepage.
+
+   `lib/hubs.ts` holds one `HubSpec` per hub and both routes are four lines
+   over `HubPage`. A third is that spec, an `href` on its NAV group, and the
+   slug in two more places: because a hub is not in `pages.json` it is **not**
+   in `CUSTOM_ROUTES` — there is no duplicate to exclude — and it has to be
+   named in `app/sitemap.ts` and in `scripts/verify.mjs`'s `EXTRA_ROUTES`.
+
+   The questions come from real `faq` blocks where the group has them — the
+   interior pages carry twenty-one between three of the nine — and fall back to
+   the group's own question-shaped headings where it does not, which is what
+   `/repairs` uses.
 
 Prefer tier 1, then 2. Tier 3 is a maintenance cost — each one is a second
 place the content lives.
@@ -438,7 +450,11 @@ rendered `<main>`. Known, pre-existing gaps: `asLinkChips` drops commas and
   Its FAQ is the same kind of borrowing: none of the four services has an `faq`
   block anywhere, so the accordion is six of their own question-shaped headings
   with the prose underneath, each linked back to the page it came from. A
-  written FAQ from the client replaces it wholesale.
+  written FAQ from the client replaces it wholesale. `/car-interior-cleaning`
+  is better off on both counts — three of its nine pages carry real FAQ blocks
+  — but it has no introduction either, and its reasons name leather in two of
+  four bodies because no page in that group has a list that names no service
+  at all.
 - **`/blog` renders post titles its own source page does not list** — the
   source paginates at 10, the grid loads 10 at a time from the full set. This
   is the one intentional exception to rule 8.1.
