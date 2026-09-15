@@ -177,8 +177,12 @@ Three tiers, cheapest first:
    have links that go to its childs" — and rule 8.1 forbids writing copy to
    fill it, so `lib/repairs.ts` reads every name, blurb, price and photograph
    back out of the four pages it links to and `app/repairs/page.tsx` lays them
-   out as a card each. Add a service to the Repairs & Restoration menu group
-   and a card appears, carrying that page's own words. Because it is not in
+   out as a card each, then `WhyChoose` and `Areas` — the homepage's own
+   sections, reading `lib/site.ts`, so the hub makes the same case and quotes
+   the same coverage as everywhere else rather than a second version of it —
+   and an accordion built the same way as the cards. Add a service to the
+   Repairs & Restoration menu group and a card and a chip appear, carrying
+   that page's own words. Because it is not in
    `pages.json` it is **not** in `CUSTOM_ROUTES` — there is no duplicate to
    exclude — and it has to be named explicitly in `app/sitemap.ts` and in
    `scripts/verify.mjs`'s `EXTRA_ROUTES`.
@@ -421,11 +425,16 @@ rendered `<main>`. Known, pre-existing gaps: `asLinkChips` drops commas and
   `/car-graffiti-removal` (800 px), `/safely-clean-sickness-vomit-from-your-car-interior`
   (980 px), `/car-windscreen-protection` (1152 px). No larger copy exists in
   the mirror; fixing them needs a fresh fetch from the live site.
-- **`/repairs` opens on its title and nothing else.** Every other master page
-  has three or four paragraphs of its own under the h1; this one has no source
-  page to take them from, and rule 8.1 forbids writing them. The cards carry
-  the four services' own copy, so the page is not empty, but an introduction is
-  the one thing on it the client still has to supply.
+- **`/repairs` has no introduction of its own.** Every other master page opens
+  on three or four paragraphs under the h1; this one has no source page to take
+  them from and rule 8.1 forbids writing them, so the header carries the title,
+  the photograph and a chip per service instead. Everything below it is real
+  content — the four cards, `WhyChoose`, the questions, `Areas` — but a
+  standfirst is the one thing on the page the client still has to supply.
+  Its FAQ is the same kind of borrowing: none of the four services has an `faq`
+  block anywhere, so the accordion is six of their own question-shaped headings
+  with the prose underneath, each linked back to the page it came from. A
+  written FAQ from the client replaces it wholesale.
 - **`/blog` renders post titles its own source page does not list** — the
   source paginates at 10, the grid loads 10 at a time from the full set. This
   is the one intentional exception to rule 8.1.

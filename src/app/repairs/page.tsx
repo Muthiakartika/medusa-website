@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import FaqAccordion from "@/components/FaqAccordion";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Icon from "@/components/Icon";
 import JsonLd from "@/components/JsonLd";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
+import SectionHead from "@/components/SectionHead";
+import { LinkChips } from "@/components/blocks-groups";
+import Areas from "@/components/sections/Areas";
+import WhyChoose from "@/components/sections/WhyChoose";
 import type { Page } from "@/lib/blocks";
-import { repairCards } from "@/lib/repairs";
+import { REPAIRS_HERO, repairCards, repairQuestions } from "@/lib/repairs";
 import { pageSchema } from "@/lib/schema";
 import { BOOK_URL } from "@/lib/site";
 
@@ -62,13 +67,24 @@ export function generateMetadata(): Metadata {
 
 export default function RepairsPage() {
   const cards = repairCards();
+  const questions = repairQuestions();
 
   return (
     <>
       <JsonLd data={pageSchema(metaPage())} />
       <Header />
       <main className="flex-1">
-        <PageHero title={TITLE} />
+        {/*
+          The four services as chips under the title. `PageHero` holds a 620px
+          band open only when something sits under the heading, and with no
+          introduction to put there — see `lib/repairs.ts` — a title alone gave
+          this hub a 383px header where every other master page has a full one.
+          The chips are the client's "links that go to its childs" and carry no
+          words but the names of the pages they open.
+        */}
+        <PageHero title={TITLE} image={REPAIRS_HERO}>
+          <LinkChips chips={cards.map((c) => ({ href: c.href, label: c.name }))} />
+        </PageHero>
 
         <section className="w-full bg-ink py-16 lg:py-[104px]">
           <div className="shell">
@@ -147,6 +163,38 @@ export default function RepairsPage() {
             </ul>
           </div>
         </section>
+
+        {/*
+          The rest of a master page, and none of it written here either.
+          `WhyChoose` and `Areas` are the homepage's own sections reading
+          `lib/site.ts`, so this hub makes the same case and quotes the same
+          coverage as everywhere else rather than a second version of it.
+          The bands alternate ink / gold / ink / gold from here down.
+        */}
+        <WhyChoose />
+
+        <section className="w-full py-16 lg:py-[104px]">
+          <div className="shell grid gap-8 lg:grid-cols-12 lg:gap-14">
+            <div className="lg:col-span-5">
+              <SectionHead title="FAQs" />
+            </div>
+            <div className="lg:col-span-7">
+              <FaqAccordion
+                items={questions.map((q) => ({
+                  q: q.q,
+                  /* The source's own answer, then the way to the rest of it.
+                     These questions are lifted off four different pages, and
+                     without the link the reader has no way of telling which
+                     one an answer came from. The link carries the page's name
+                     and nothing else — the same rule the cards follow. */
+                  a: [...q.a, `<a href="${q.href}">${q.name}</a>`],
+                }))}
+              />
+            </div>
+          </div>
+        </section>
+
+        <Areas />
       </main>
       <Footer />
     </>

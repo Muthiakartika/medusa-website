@@ -26,6 +26,19 @@ import { type Block, getPage, heroImageFor, type Page } from "@/lib/blocks";
 import { HEADLIGHT } from "@/lib/headlight";
 import { NAV, type NavItem } from "@/lib/site";
 
+/**
+ * The photograph behind the header.
+ *
+ * The hub has no picture of its own, so it borrows one from a page it links
+ * to: the technician sanding a body panel that `/repairs/paint-overspray-
+ * removal` already runs. It is the only landscape file of header size among
+ * the four — the graffiti page's is an 800px square Elementor thumbnail and
+ * the headlight one is a 1200x1500 portrait — and it is the one that reads as
+ * repair work rather than as cleaning.
+ */
+export const REPAIRS_HERO =
+  "/assets/2025/02/polishing-the-surface-repairman-is-working-with-c-2024-02-28-19-11-55-utc-1.webp";
+
 export type RepairCard = {
   /** The page's slug, without slashes either side. */
   slug: string;
@@ -135,5 +148,87 @@ export function repairCards(): RepairCard[] {
          a sliver. Still the page's own picture either way. */
       image: slug === "repairs/headlight-restoration" ? HEADLIGHT.hero.image : heroImageFor(page),
     };
+  });
+}
+
+/* ── Questions ────────────────────────────────────────────────────────── */
+
+export type RepairQuestion = {
+  q: string;
+  /** The answer, as the source wrote it: HTML paragraphs or list items. */
+  a: string[];
+  /** The page it came from, so the reader can go and read the rest. */
+  href: string;
+  name: string;
+};
+
+/**
+ * None of the four pages carries an `faq` block — not in `pages.json`, not in
+ * the mirror, not on the live site. So there is no FAQ to lift, and rule 8.1
+ * forbids writing one.
+ *
+ * What the four pages do carry is question-shaped headings with the answer
+ * written underneath: "Why Trust Professionals for Car Graffiti Removal?",
+ * "What to Do If You Have Paint Spillage in Your Car". This names six of them
+ * and reads the words back out of `pages.json`, so the accordion is the site's
+ * own copy re-laid-out rather than new copy — the same thing `Steps` and
+ * `FeatureCards` do to a run of blocks elsewhere.
+ *
+ * Anchored on the heading's own text, never an index, and a heading that has
+ * gone throws at build. If the client would rather have a written FAQ, it
+ * replaces this wholesale.
+ */
+const QUESTIONS: ReadonlyArray<readonly [slug: string, heading: string]> = [
+  ["repairs/headlight-restoration", "Why Headlight Restoration Matters"],
+  ["repairs/headlight-restoration", "The Headlight Restoration Process"],
+  ["repairs/engine-bay-steam-cleaning", "Why Engine Bay Steam Cleaning Matters"],
+  ["repairs/car-graffiti-removal", "Why Trust Professionals for Car Graffiti Removal?"],
+  ["repairs/paint-overspray-removal", "What to Do If You Have Paint Spillage in Your Car"],
+  ["repairs/paint-overspray-removal", "Why Removing Paint from Car Interiors Is Challenging:"],
+];
+
+/** Heading text with the source's entities decoded, for comparison. */
+const headingText = (b: Block) =>
+  b.type === "heading"
+    ? b.text
+        .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+        .replace(/&amp;/gi, "&")
+        .replace(/\s+/g, " ")
+        .trim()
+    : "";
+
+/**
+ * The run of prose under a heading: every paragraph and list item up to the
+ * next heading. Stops at six so one long answer — the graffiti page lists six
+ * removal methods — cannot fill the whole accordion.
+ */
+function answerAfter(blocks: Block[], at: number): string[] {
+  const out: string[] = [];
+  for (let i = at + 1; i < blocks.length && out.length < 6; i++) {
+    const b = blocks[i];
+    if (b.type === "heading") break;
+    if (b.type === "paragraph") out.push(b.html);
+    else if (b.type === "list") out.push(...b.items);
+    else break;
+  }
+  return out;
+}
+
+export function repairQuestions(): RepairQuestion[] {
+  const named = new Map(repairCards().map((c) => [c.slug, c]));
+
+  return QUESTIONS.map(([slug, heading]) => {
+    const page = getPage(slug);
+    if (!page) throw new Error(`repairs: no page at /${slug}`);
+    const blocks = flatten(page.sections.flatMap((s) => s.blocks));
+
+    const at = blocks.findIndex((b) => headingText(b) === heading);
+    if (at === -1) throw new Error(`repairs: /${slug} no longer has "${heading}"`);
+
+    const a = answerAfter(blocks, at);
+    if (!a.length) throw new Error(`repairs: nothing under "${heading}" on /${slug}`);
+
+    const card = named.get(slug);
+    return { q: heading, a, href: card?.href ?? `/${slug}/`, name: card?.name ?? slug };
   });
 }
