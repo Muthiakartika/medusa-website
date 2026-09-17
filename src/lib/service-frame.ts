@@ -260,6 +260,42 @@ function faqOnly(section: Section) {
   return items.length ? items : null;
 }
 
+/**
+ * The coverage row where it is not a row of its own — lifted out of the body.
+ *
+ * `parseServicePage` claims that row only when the source gave it its own
+ * two-block section, which is how forty of these pages are built.
+ * `/mobile-car-wash/` is the exception: the whole page is one WPBakery row, so
+ * its "AREAS WE PROVIDE STANDARD CAR WASH SERVICES IN LONDON:" heading and the
+ * paragraph of borough links under it sit inside that one section and reach the
+ * page through the ordinary renderer.
+ *
+ * This finds that pair and hands it back with the body it was cut from.
+ * `ServicePage` only asks when the page also has an A–Z index — the one case
+ * where the two are the same list twice and the client asked for one of them
+ * (2026-09-17) — so the other forty pages keep their coverage row exactly where
+ * the source put it.
+ */
+export function takeAreasFromBody(body: Section[]) {
+  for (let i = 0; i < body.length; i++) {
+    const blocks = body[i].blocks;
+    for (let j = 0; j < blocks.length - 1; j++) {
+      const head = blocks[j];
+      const next = blocks[j + 1];
+      if (head.type !== "heading" || !AREAS_RE.test(head.text)) continue;
+      if (next.type !== "paragraph") continue;
+
+      const kept = [...blocks.slice(0, j), ...blocks.slice(j + 2)];
+      const rest = [...body];
+      if (kept.length) rest[i] = { ...body[i], blocks: kept };
+      else rest.splice(i, 1);
+
+      return { areas: { heading: head.text, html: next.html }, body: rest };
+    }
+  }
+  return null;
+}
+
 export function parseServicePage(page: Page): ServiceModel {
   const sections = page.sections;
   const body: Section[] = [];

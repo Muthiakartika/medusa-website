@@ -267,6 +267,33 @@ function restoreTilePhotos(page: Page, photos: Record<string, TilePhoto>) {
   }
 }
 
+/**
+ * One add-on mark the extractor did not recognise as a mark.
+ *
+ * `/car-valeting`'s "+ Add-on services" run carries 28 images. Twenty-seven are
+ * the theme's `car-parts-icon-24-*` files at 339px square and arrive flagged
+ * `icon`; the twenty-eighth — Autoglym HD Wax, uploaded on its own at 180px —
+ * does not, so it renders at card width while its neighbours render as small
+ * gold marks. It is the same line drawing in the same style, and the odd card
+ * out was visible on the hub long before the location pages borrowed the row.
+ *
+ * Matched on the file, not a position, and it throws if the file is not there.
+ */
+function markAsIcon(page: Page, src: string) {
+  let found = false;
+  const walk = (blocks: Block[]) => {
+    for (const b of blocks) {
+      if (b.type === "columns") b.cols.forEach(walk);
+      else if (b.type === "image" && b.src === src) {
+        b.icon = true;
+        found = true;
+      }
+    }
+  };
+  page.sections.forEach((s) => walk(s.blocks));
+  if (!found) throw new Error(`content override: no image to mark as an icon at ${src}`);
+}
+
 type TilePhoto = { src: string; w: number; h: number };
 
 /**
@@ -578,6 +605,7 @@ const RULES: Record<string, (page: Page) => void> = {
      from Neptune, which is otherwise priced identically and is unchanged. */
   "car-valeting": (page) => {
     restoreTilePhotos(page, VALETING_TILES);
+    markAsIcon(page, "/assets/2025/03/907dae74-cd56-491c-86f7-527943757154.webp");
     addToZeus(page, "Upholstery seats & mats shampoo + extract");
     swap(
       page.sections.flatMap((s) => s.blocks),

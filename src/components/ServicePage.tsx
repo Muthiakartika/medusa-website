@@ -2,11 +2,13 @@ import { asLinkChips, LinkChips } from "@/components/blocks-groups";
 import { Sections } from "@/components/Blocks";
 import FaqAccordion from "@/components/FaqAccordion";
 import Image from "next/image";
+import { LocationIndexSection } from "@/components/LocationIndex";
 import PriceCard from "@/components/PriceCard";
 import Reveal from "@/components/Reveal";
 import SectionHead from "@/components/SectionHead";
 import type { Page } from "@/lib/blocks";
-import { parseServicePage } from "@/lib/service-frame";
+import { foldableAreas, hubLocations, withAreaLinks } from "@/lib/location-frame";
+import { parseServicePage, takeAreasFromBody } from "@/lib/service-frame";
 
 /**
  * The frame the forty-one service pages share.
@@ -27,15 +29,36 @@ import { parseServicePage } from "@/lib/service-frame";
  */
 export default function ServicePage({ page }: { page: Page }) {
   const model = parseServicePage(page);
-  const chips = model.areas ? asLinkChips(model.areas.html) : null;
+  const index = hubLocations(page.slug);
+
+  /*
+    "ini double, pake yg browser A-Z aja tapi judulnya pake yg areas we
+    provides" — client, 2026-09-17. A page that carries both an areas row and
+    an A–Z index is showing the same kind of list twice, so the index takes the
+    row's heading and its links and the row itself goes.
+
+    Only a page with an index asks for the row out of its body: on
+    `/mobile-car-wash/` — the one page where this doubling happens — the whole
+    source page is a single row, so its coverage list never became a section of
+    its own for `model.areas` to claim.
+  */
+  const lifted = index ? takeAreasFromBody(model.body) : null;
+  const body = lifted?.body ?? model.body;
+  const areas = model.areas ?? lifted?.areas;
+  const chips = areas ? asLinkChips(areas.html) : null;
+
+  const folded =
+    index && areas && chips && foldableAreas(chips)
+      ? { heading: areas.heading, items: withAreaLinks(index.items, chips, page.slug) }
+      : null;
 
   return (
     <main className="flex-1">
       <Hero page={page} model={model} />
 
-      {model.body.length > 0 && (
+      {body.length > 0 && (
         <Sections
-          sections={model.body}
+          sections={body}
           slug={page.slug}
           pageH1={page.h1}
           // The hero above has already set this page's one <h1>.
@@ -53,7 +76,7 @@ export default function ServicePage({ page }: { page: Page }) {
         />
       )}
 
-      {model.areas && (
+      {areas && !folded && (
         <section className="w-full border-t border-white/[0.07] py-16 lg:py-[104px]">
           <div className="shell grid gap-6 lg:grid-cols-12 lg:gap-14">
             <div className="lg:col-span-4">
@@ -70,7 +93,7 @@ export default function ServicePage({ page }: { page: Page }) {
               */}
               <Reveal delay={1}>
                 <h2 className="mt-5 font-[family-name:var(--font-sub)] text-[20px] leading-tight text-white uppercase lg:text-[23px]">
-                  {model.areas.heading}
+                  {areas.heading}
                 </h2>
               </Reveal>
             </div>
@@ -83,7 +106,7 @@ export default function ServicePage({ page }: { page: Page }) {
                 <Reveal>
                   <p
                     className="text-[15.5px] leading-[26px] font-normal text-body [&_a]:text-gold [&_a:hover]:underline"
-                    dangerouslySetInnerHTML={{ __html: model.areas.html }}
+                    dangerouslySetInnerHTML={{ __html: areas.html }}
                   />
                 </Reveal>
               )}
@@ -103,6 +126,20 @@ export default function ServicePage({ page }: { page: Page }) {
             </div>
           </div>
         </section>
+      )}
+
+      {/*
+        The last thing on the page, above the footer, on the three hubs that
+        have location pages under them — the client's "navigational widget"
+        (2026-09-17). `hubLocations` is null everywhere else, so the other
+        thirty-eight service pages are unchanged.
+      */}
+      {index && (
+        <LocationIndexSection
+          heading={folded?.heading}
+          title={index.title}
+          locations={folded?.items ?? index.items}
+        />
       )}
 
     </main>

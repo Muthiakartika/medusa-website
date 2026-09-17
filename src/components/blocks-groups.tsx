@@ -902,19 +902,25 @@ export function AddonCards({
 }) {
   return (
     /*
-      `items-start`, so a card is only as tall as what is in it.
+      `items-stretch`, so every card in a row is the same height.
 
-      A grid stretches its cells by default, and these four cards are wildly
-      uneven — "Congestion Zone Surcharge" is one sentence, "Excessive Soiled
-      Interior" is six. Stretched, the long one set the height for all four and
-      the other three carried several hundred pixels of nothing underneath.
+      This used to be `items-start` — a card only as tall as its own copy —
+      because these cards are wildly uneven: "Congestion Zone Surcharge" is one
+      sentence, "Excessive Soiled Interior" is six, and stretching left the
+      short ones with empty space below. The client looked at the result and
+      asked for the opposite (2026-09-17): "semua kotak memiliki lebar dan
+      tinggi sama rata". Ragged bottoms across a twelve-card grid read as
+      broken, and a grid row only ever matches its own row's tallest card, so
+      the dead space is bounded by the worst card in four rather than the worst
+      on the page. The card is a flex column, so its copy still sits at the top
+      and the slack falls to the bottom.
 
       220px, not 250: /car-detailing carries five of these cards over five
       columns of description, and at 250 the fifth card dropped to a row of
       its own while its blurb stayed in column five. The five now sit on one
       row, over the blurbs that explain them.
     */
-    <ul className="mt-7 grid items-start gap-4 sm:grid-cols-2 lg:[grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+    <ul className="mt-7 grid items-stretch gap-4 sm:grid-cols-2 lg:[grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
       {cards.map((c, i) => (
         <li
           key={i}

@@ -3,14 +3,17 @@ import Link from "next/link";
 import { Sections } from "@/components/Blocks";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
+import { LocationIndexSection } from "@/components/LocationIndex";
 import Reveal from "@/components/Reveal";
 import SectionHead from "@/components/SectionHead";
 import type { Page, Section } from "@/lib/blocks";
 import {
+  foldableAreas,
   parseLocationPage,
   placeName,
-  siblings,
+  siblingIndex,
   stepPairs,
+  withAreaLinks,
 } from "@/lib/location-frame";
 
 /**
@@ -32,13 +35,29 @@ import {
 export default function LocationPage({ page }: { page: Page }) {
   const model = parseLocationPage(page);
   const place = placeName(page.slug);
-  const others = siblings(page.slug);
+  const others = siblingIndex(page.slug);
+
+  /*
+    "ini double, pake yg browser A-Z aja tapi judulnya pake yg areas we
+    provides" — client, 2026-09-17. On the eighteen borough hubs that carry one,
+    the "Service Areas" row is the same seventeen boroughs the index below it
+    already lists, so the row's links join the index and the index takes its
+    heading. No location page carries both that row and the "Our Other
+    Locations" one, so folding can never cost a page a heading it had.
+  */
+  const folded =
+    others && foldableAreas(model.areas)
+      ? {
+          heading: "Service Areas",
+          items: withAreaLinks(others.items, model.areas, page.slug),
+        }
+      : null;
 
   return (
     <main className="flex-1">
       <Hero page={page} model={model} />
 
-      {model.areas.length > 0 && (
+      {model.areas.length > 0 && !folded && (
         <Chips
           title="Service Areas"
           items={model.areas.map((a) => ({ href: a.href, label: a.label }))}
@@ -73,9 +92,41 @@ export default function LocationPage({ page }: { page: Page }) {
       {model.club && <Club section={model.club} />}
       {/* Source order on every one of these pages: questions, then the map. */}
       {model.faqSection && <Faq section={model.faqSection} />}
-      {model.map && <Map map={model.map} place={place} />}
 
-      {model.hasRelated && others.length > 0 && <Others others={others} />}
+      {/*
+        "hapus map jika sudah ada widget browser locationnya" — client,
+        2026-09-17. The map is a Google embed of the page's own place, and on
+        110 of these pages it stands immediately above the A–Z index: two
+        location blocks back to back, the second of which is the one that does
+        something. So the map goes where the index is there to replace it, and
+        stays where there is no index.
+
+        This is the one place the frame drops something the source carries: the
+        "Our Location" heading and its embed. The client asked for it after
+        seeing both on screen.
+      */}
+      {model.map && !others && <Map map={model.map} place={place} />}
+
+      {/*
+        The sibling index, last on the page above the footer — the client's
+        navigational widget applied "ke yg lain juga yg ada lokasi"
+        (2026-09-17). A family runs to seventy-odd places, which as a flat row
+        of chips was a wall you had to read rather than a list you could use.
+
+        The heading is the source's own on the 163 pages that carry the dead
+        `[page-generator-pro-related-links …]` row — 114 off the mirror and the
+        49 built ones, which `lib/planned-locations.ts` gives the same closing
+        heading. The other 32 mirror pages never had it, and until now offered
+        no way across to a neighbouring place at all; those get the control's
+        own label instead of borrowing a heading the page does not have.
+      */}
+      {others && (
+        <LocationIndexSection
+          heading={folded?.heading ?? (model.hasRelated ? "Our Other Locations" : undefined)}
+          title={others.title}
+          locations={folded?.items ?? others.items}
+        />
+      )}
     </main>
   );
 }
@@ -550,41 +601,3 @@ function Faq({ section }: { section: Section }) {
   );
 }
 
-/* ── Siblings ─────────────────────────────────────────────────────────────
-   What "Our Other Locations" was meant to print. On the live site that
-   heading is followed by a WordPress shortcode that never ran. */
-
-function Others({ others }: { others: { slug: string; name: string }[] }) {
-  return (
-    <section className="w-full border-t border-white/[0.07] py-16 lg:py-[104px]">
-      <div className="shell grid gap-6 lg:grid-cols-12 lg:gap-14">
-        <div className="lg:col-span-4">
-          <Reveal>
-            <span aria-hidden className="speed-rule speed-rule-sm" />
-          </Reveal>
-          <Reveal delay={1}>
-            <h2 className="mt-5 font-[family-name:var(--font-sub)] text-[20px] leading-tight text-white uppercase lg:text-[23px]">
-              Our Other Locations
-            </h2>
-          </Reveal>
-        </div>
-        <div className="lg:col-span-8">
-          <Reveal delay={1}>
-            <ul className="flex flex-wrap gap-2">
-              {others.map((o) => (
-                <li key={o.slug}>
-                  <Link
-                    href={`/${o.slug}/`}
-                    className="inline-flex rounded-full bg-white/[0.05] px-4 py-2 text-[14px] font-normal text-white/80 ring-1 ring-white/10 transition-colors hover:bg-gold hover:text-ink hover:ring-gold"
-                  >
-                    {o.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-        </div>
-      </div>
-    </section>
-  );
-}

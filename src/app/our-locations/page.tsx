@@ -7,11 +7,13 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Icon from "@/components/Icon";
 import JsonLd from "@/components/JsonLd";
+import { LocationIndexSection } from "@/components/LocationIndex";
 import Reveal from "@/components/Reveal";
 import Portfolio from "@/components/sections/Portfolio";
 import Testimonials from "@/components/sections/Testimonials";
 import SectionHead from "@/components/SectionHead";
 import { type Block, getPage, type Page, type Section } from "@/lib/blocks";
+import { boroughLocations } from "@/lib/location-frame";
 import { MOVED_LOCATIONS } from "@/lib/location-moves";
 import { pageSchema } from "@/lib/schema";
 
@@ -180,6 +182,7 @@ export default function LocationsPage() {
   if (!page) notFound();
 
   const zones = directory(page);
+  const boroughs = boroughLocations();
   const [hero, ...rest] = page.sections;
   /*
     The last four rows of this page are the homepage's, word for word: the
@@ -287,6 +290,15 @@ export default function LocationsPage() {
         <Portfolio />
         <Testimonials />
         {club && <Club section={club} />}
+
+        {/*
+          The index's own children — the nineteen borough hubs — as the same
+          A–Z control the service hubs close on. The directory above it is a
+          different list doing a different job: forty places crossed with three
+          services, which is where to go when you know the service you want.
+          This is where to go when you know the borough.
+        */}
+        <LocationIndexSection title={boroughs.title} locations={boroughs.items} />
       </main>
       <Footer />
     </>

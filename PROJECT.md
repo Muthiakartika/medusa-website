@@ -164,7 +164,10 @@ Three tiers, cheapest first:
    - `lib/service-frame.ts` + `components/ServicePage.tsx` — the 41 service
      pages (`SERVICE_SLUGS`). Parses out the opening copy, the entry price, the
      coverage list and the FAQ; everything it does not claim is passed through
-     to the ordinary renderer **in document order**.
+     to the ordinary renderer **in document order**. On the three pages that
+     are a location family's hub it closes on `components/LocationIndex.tsx` —
+     the A–Z index of that service's location pages, from `hubLocations()`,
+     which returns null for the other thirty-eight.
    - `lib/location-frame.ts` + `components/LocationPage.tsx` — the 146
      location pages: `our-locations/*`, and the three service-in-a-place
      families in **two URL shapes each**. The SEO plan moved 75 of them under
@@ -173,7 +176,88 @@ Three tiers, cheapest first:
      `LOCATION_FAMILIES` carries a `prefix` and a `hub` and a page counts under
      the hub only when `lib/location-moves.ts` names it — otherwise the hub's
      own service pages would read as places. A family spans both shapes, so
-     "Our Other Locations" still lists all of them.
+     "Our Other Locations" still lists all of them — as the A–Z index below,
+     not as the flat row of seventy chips it used to be.
+
+   **The A–Z index.** Client, 2026-09-17: "Each of these mains will have a
+   navigational widget added at the very bottom of the page, just above the
+   footer… We will use the same navigation widget as on
+   `https://seoboost.co.id/services/seo`", naming `/car-detailing/`,
+   `/mobile-car-wash/` and `/car-valeting/`, each listing "their corresponding
+   location child pages"; then, the same day, "terapkan ke yg lain juga yg ada
+   lokasi". `components/LocationIndex.tsx` is that control in this site's
+   language: a search box, 26 letter keys and a list grouped by initial, inside
+   a `.surface`. `LocationIndexSection` in the same file is the band it sits
+   in, so the call sites are one element each.
+
+   **199 pages carry it**, always last, above the footer:
+
+   | Page | Lists | Heading |
+   | --- | --- | --- |
+   | `/mobile-car-wash/` | its 70 places **+ 7 boroughs** | `AREAS WE PROVIDE STANDARD CAR WASH SERVICES IN LONDON:` |
+   | 18 borough hubs | siblings **+ its areas row** | `Service Areas` |
+   | 163 location pages | the page's siblings | `Our Other Locations` |
+   | `/car-valeting/`, `/car-detailing/` | their 74 / 32 places | `Mobile Car Valeting Locations`, `Mobile Car Detailing Locations` |
+   | `/our-locations/` | its 19 borough children | `All Locations` |
+   | 14 location pages | the page's siblings | their family's title |
+
+   The heading is the source's own wherever the page has one, and the index is
+   what fills a row the source left empty or duplicated:
+
+   - **"Our Other Locations"** — 114 mirror pages and all 49 built ones close on
+     that heading over a WordPress shortcode that never ran. The index replaced
+     the flat row of seventy-odd chips that used to stand in for it.
+   - **The coverage row, folded in.** Client, 2026-09-17: "ini double, pake yg
+     browser A-Z aja tapi judulnya pake yg areas we provides". Two kinds of page
+     carried a list of places *and* the index — `/mobile-car-wash/` with its
+     "AREAS WE PROVIDE…" row and the 18 borough hubs with "Service Areas" — so
+     `withAreaLinks()` folds the row's links into the index and the index takes
+     its heading. It is a merge, not a swap: the row points at borough hubs
+     (`/our-locations/camden/`) and the index at the service in a place
+     (`/mobile-car-wash/barnet/`), so where a name is in both the index's target
+     wins (more specific, and what the heading promises) and the seven names
+     with no page in the family — Camden, Haringey, Kensington and Chelsea… —
+     join as their own rows. **70 becomes 77 and nothing the source names is
+     lost.** No page carries both a coverage row and an "Our Other Locations"
+     one, so the fold can never cost a page a heading it had.
+
+     `/mobile-car-wash/`'s row is not a section of its own — that whole source
+     page is one WPBakery row — so `takeAreasFromBody()` lifts the heading and
+     its paragraph out of the body. Only a page that has an index asks for it,
+     which is what keeps the other 38 service pages' coverage rows exactly where
+     the source put them.
+   - **The list's own title** otherwise. This used to be "Browse A–Z", the
+     reference site's label, and the client's verdict was "judulnya aneh"
+     (2026-09-17): at display size, alone in a half-empty column, beside a card
+     already headed "Mobile Car Detailing Locations", it said nothing and said
+     it twice. So the section wears the family title and the card drops it —
+     one name for the list, in the one place that has room for it.
+
+   **The map goes where the index stands.** Client, 2026-09-17: "hapus map jika
+   sudah ada widget browser locationnya". 110 location pages carried a Google
+   embed of their own place directly above the index — two location blocks back
+   to back — so `LocationPage` renders `model.map` only when there is no index.
+   This is the one place a frame deliberately drops something the source
+   carries (the "Our Location" heading and its embed), against rule 8.2, and it
+   is the client's own call after seeing both on screen. The homepage's own map
+   and `/our-locations/`'s are different components and are untouched.
+
+   A heading over 30 characters takes the smaller uppercase rank rather than the
+   50px section head: `AREAS WE PROVIDE STANDARD CAR WASH SERVICES IN LONDON:`
+   is five lines of capitals at display size, which is the same reason
+   `ServicePage` sized that heading down when it had its own row.
+
+   Three things it does differently from the reference — its rows are real
+   `<Link>`s, because a location here is a page rather than an anchor, which
+   makes the index a page's internal linking as much as it is a control; the
+   whole list is server-rendered, so filtering only hides rows a crawler has
+   already seen; and a letter key scrolls the list's own container, never the
+   window (`scrollIntoView` moved the page 92px and left the widget half off
+   screen). It writes nothing: every name is `placeName()` off a slug the site
+   already publishes, so adding a location page to a family adds a row. A
+   family spans both URL shapes, so every index lists the moved pages and the
+   52 that stayed on `mobile-car-…-in-…` together.
+
 3. **Its own route** — for a page the extractor mangled badly enough that a
    frame cannot save it (`/repairs/headlight-restoration`,
    `/vehicles/motorcycle-valeting-detailing`, the homepage, and the ten others

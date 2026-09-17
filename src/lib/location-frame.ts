@@ -34,19 +34,23 @@ import { PLANNED_SLUGS } from "@/lib/planned-locations";
 const UNDER_HUB = new Set([...MOVED_LOCATIONS, ...PLANNED_SLUGS]);
 
 /**
- * The four families, and the label each one wears in a list of siblings.
+ * The four families, and the title each one's A–Z index wears.
  *
  * `prefix` is the shape the mirror gave these pages; `hub` is where the move
  * put them. A page under `hub` counts only when the move table names it,
  * because the hub's own service pages are its neighbours there and are not
  * places — `/mobile-car-wash/wembley/` is in the family, `/mobile-car-wash/
  * gold-wash/` is not.
+ *
+ * `indexTitle` names what the list holds, so it says the service rather than
+ * repeating the page's own heading back at it. The borough family has no
+ * service of its own — its pages cover all three — so it is "All Locations".
  */
 export const LOCATION_FAMILIES = [
-  { prefix: "our-locations/", hub: null, label: "Locations" },
-  { prefix: "mobile-car-wash-in-", hub: "mobile-car-wash/", label: "Mobile Car Wash" },
-  { prefix: "mobile-car-valeting-in-", hub: "car-valeting/", label: "Mobile Car Valeting" },
-  { prefix: "mobile-car-detailing-in-", hub: "car-detailing/", label: "Mobile Car Detailing" },
+  { prefix: "our-locations/", hub: null, indexTitle: "All Locations" },
+  { prefix: "mobile-car-wash-in-", hub: "mobile-car-wash/", indexTitle: "Mobile Car Wash Locations" },
+  { prefix: "mobile-car-valeting-in-", hub: "car-valeting/", indexTitle: "Mobile Car Valeting Locations" },
+  { prefix: "mobile-car-detailing-in-", hub: "car-detailing/", indexTitle: "Mobile Car Detailing Locations" },
 ] as const;
 
 type Family = (typeof LOCATION_FAMILIES)[number];
@@ -85,10 +89,101 @@ export function placeName(slug: string) {
 export function siblings(slug: string) {
   const family = familyOf(slug);
   if (!family) return [];
+  return membersOf(family).filter((m) => m.slug !== slug);
+}
+
+/**
+ * The same siblings, as the A–Z index takes them: the list and the title that
+ * says what is in it. Null for a page that is not a location page.
+ */
+export function siblingIndex(slug: string) {
+  const family = familyOf(slug);
+  if (!family) return null;
+  const items = membersOf(family).filter((m) => m.slug !== slug);
+  return items.length ? { title: family.indexTitle, items } : null;
+}
+
+/** Every page in a family, by place name. */
+function membersOf(family: Family) {
   return Object.keys(PAGES)
-    .filter((s) => s !== slug && tailOf(family, s) !== null)
+    .filter((s) => tailOf(family, s) !== null)
     .map((s) => ({ slug: s, name: placeName(s) }))
     .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * Every location page a service hub is the parent of — what the A–Z index at
+ * the foot of `/mobile-car-wash/`, `/car-valeting/` and `/car-detailing/`
+ * lists (`components/LocationIndex.tsx`).
+ *
+ * The client asked for "their corresponding location child pages"
+ * (2026-09-17), and a family's children are in two URL shapes: the ones the
+ * SEO plan re-parented under the hub and the ones it left on
+ * `mobile-car-…-in-…`. Both are that service in that place, so both are
+ * listed — the same reading of "family" that "Our Other Locations" uses.
+ *
+ * Empty for every other slug, which is what keeps the index on the three hubs
+ * the client named: no other page is a family's `hub`.
+ */
+export function hubLocations(slug: string) {
+  const family = LOCATION_FAMILIES.find((f) => f.hub === `${slug}/`);
+  if (!family) return null;
+  const items = membersOf(family);
+  return items.length ? { title: family.indexTitle, items } : null;
+}
+
+/**
+ * The A–Z index with a page's "areas we cover" row folded into it.
+ *
+ * Client, 2026-09-17: "ini double, pake yg browser A-Z aja tapi judulnya pake
+ * yg areas we provides". Two pages carry both — `/mobile-car-wash/`, whose
+ * "AREAS WE PROVIDE STANDARD CAR WASH SERVICES IN LONDON:" row is seventeen
+ * borough chips, and each of the nineteen borough hubs, whose "Service Areas"
+ * row is the same seventeen. Read as lists of places they are the same list
+ * twice, so the row's links join the index and the index wears the row's own
+ * heading.
+ *
+ * It is a merge, not a replacement, because the two lists are not the same
+ * pages: the chips point at the borough hubs (`/our-locations/camden/`) and the
+ * index at the service in a place (`/mobile-car-wash/barnet/`). Ten of the
+ * seventeen names are in both — those keep the index's target, which is the
+ * more specific page and the one the heading promises — and the seven that are
+ * not (Camden, Haringey, Kensington and Chelsea…) come in as their own rows.
+ * Nothing the source names is dropped. A link to the page itself is, since a
+ * page listing itself is what the chips row did and the index does not.
+ */
+export function withAreaLinks(
+  items: { slug: string; name: string }[],
+  areas: { href: string; label: string }[],
+  selfSlug: string,
+) {
+  const seen = new Set(items.map((i) => i.name.toLowerCase()));
+  const out = [...items];
+
+  for (const area of areas) {
+    const name = area.label.trim();
+    const slug = area.href.replace(/^\/+|\/+$/g, "");
+    if (!name || !slug || slug === selfSlug) continue;
+    if (seen.has(name.toLowerCase())) continue;
+    seen.add(name.toLowerCase());
+    out.push({ slug, name });
+  }
+
+  return out.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** Can that row be folded in without losing a link the index cannot express? */
+export const foldableAreas = (areas: { href: string; label: string }[]) =>
+  areas.length > 0 && areas.every((a) => a.href.startsWith("/"));
+
+/**
+ * The borough family, for `/our-locations/` — the one hub whose family has no
+ * `hub` prefix, because its children live under the index's own path rather
+ * than under a service.
+ */
+export function boroughLocations() {
+  const family = LOCATION_FAMILIES[0];
+  return { title: family.indexTitle, items: membersOf(family) };
 }
 
 export type Sight = { src: string; alt: string; caption?: string };

@@ -231,6 +231,55 @@ function runs(hub: Page, cuts: string[]) {
   return out;
 }
 
+/**
+ * A section carrying nothing but headings joins the section below it.
+ *
+ * The site's own regrouping rule (PROJECT.md §5): "a heading — or a heading and
+ * its lede — joins the row below it." Here it is load-bearing rather than
+ * cosmetic. `/car-valeting/` writes "FAQs" as one row and its nine questions as
+ * the next, and a run that keeps them apart hands the location frame two rows:
+ * it claims the one holding the `faq` block, renders it in the frame's own FAQ
+ * slot, and leaves the bare title stranded further down the page.
+ *
+ * The last section is left alone — it is the "Our Other Locations" heading, and
+ * there is nothing below it to join.
+ */
+function foldHeadings(sections: Section[]) {
+  const out: Section[] = [];
+  let carried: Block[] = [];
+  for (const [i, section] of sections.entries()) {
+    const headingOnly = section.blocks.every((b) => b.type === "heading");
+    if (headingOnly && i < sections.length - 1) {
+      carried = [...carried, ...section.blocks];
+      continue;
+    }
+    out.push(carried.length ? { ...section, blocks: [...carried, ...section.blocks] } : section);
+    carried = [];
+  }
+  return out;
+}
+
+/**
+ * The per-package spec tables, gone.
+ *
+ * `/car-valeting/`'s "OUR PACKAGES" row prices five packages and then lists what
+ * each one includes as a table — 216 rows across five of them. Carried over,
+ * that made a location page ten times the weight of every other one: 56,343
+ * characters against Preston's 5,824, and the only location page on the site
+ * with a `<table>` in it. The price ladder is what a location page is for; the
+ * line-by-line spec is a click away on the hub and on each package's own page.
+ *
+ * The wash and detailing hubs price in cards rather than tables, so this only
+ * ever fires on the fourteen valeting pages.
+ */
+function dropTables(sections: Section[]) {
+  const walk = (blocks: Block[]): Block[] =>
+    blocks
+      .filter((b) => b.type !== "table")
+      .map((b) => (b.type === "columns" ? { ...b, cols: b.cols.map(walk) } : b));
+  return sections.map((s) => ({ ...s, blocks: walk(s.blocks) }));
+}
+
 /** The same sections with `drop`'s questions gone from every `faq` block. */
 function pruneQuestions(sections: Section[], drop: string[], hub: string) {
   if (drop.length === 0) return sections;
@@ -313,10 +362,14 @@ export function buildPlannedLocations(pages: Record<string, Page>): Record<strin
       h1: heading,
       sections: [
         { blocks: [{ type: "heading", level: 1, text: heading }, opener] },
-        ...pruneQuestions(
-          plan.keep.flatMap((name) => cut.get(norm(name))!),
-          plan.dropQuestions,
-          plan.hub,
+        ...foldHeadings(
+          dropTables(
+            pruneQuestions(
+              plan.keep.flatMap((name) => cut.get(norm(name))!),
+              plan.dropQuestions,
+              plan.hub,
+            ),
+          ),
         ),
         /* The heading the frame answers with the sibling chips — the one row
            these 49 pages do not share with each other. */
