@@ -9,6 +9,7 @@ import SectionHead from "@/components/SectionHead";
 import type { Page, Section } from "@/lib/blocks";
 import {
   foldableAreas,
+  locationDirectory,
   parseLocationPage,
   placeName,
   siblingIndex,
@@ -52,6 +53,7 @@ export default function LocationPage({ page }: { page: Page }) {
           items: withAreaLinks(others.items, model.areas, page.slug),
         }
       : null;
+  const places = folded?.items ?? others?.items ?? [];
 
   return (
     <main className="flex-1">
@@ -124,7 +126,14 @@ export default function LocationPage({ page }: { page: Page }) {
         <LocationIndexSection
           heading={folded?.heading ?? (model.hasRelated ? "Our Other Locations" : undefined)}
           title={others.title}
-          locations={folded?.items ?? others.items}
+          locations={places}
+          /*
+            "terapkan juga ke 195 halaman lokasi" — client, 2026-09-17, after
+            the same directory went on the three mains. Each page's own opening
+            paragraphs are passed so the list never quotes the page back at
+            itself; `locationDirectory` drops the rest of the repeats.
+          */
+          directory={locationDirectory(places, model.introHtml)}
         />
       )}
     </main>

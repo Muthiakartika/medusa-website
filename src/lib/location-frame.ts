@@ -176,6 +176,86 @@ export function withAreaLinks(
 export const foldableAreas = (areas: { href: string; label: string }[]) =>
   areas.length > 0 && areas.every((a) => a.href.startsWith("/"));
 
+export type DirectoryEntry = { slug: string; name: string; blurbHtml?: string };
+
+/** Every block on a page, columns recursed into, in document order. */
+function flatten(blocks: Block[], into: Block[] = []): Block[] {
+  for (const b of blocks) {
+    if (b.type === "columns") b.cols.forEach((c) => flatten(c, into));
+    else into.push(b);
+  }
+  return into;
+}
+
+const plain = (html: string) =>
+  html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+
+/**
+ * The index again, one entry per page, each carrying that page's own words.
+ *
+ * Client, 2026-09-17, against `/car-detailing/`: "thats good, we just need the
+ * extra individual sections below that link to each page" — the other half of
+ * the reference widget, which pairs its A–Z control with one titled block per
+ * item. The control is for finding a place you already have in mind; this is
+ * for reading down them.
+ *
+ * The blurb is the page's own opening paragraph, chosen the way `lib/hub.ts`
+ * chooses a card's: the first one that is prose rather than a phone number.
+ * Nothing is written here and nothing is trimmed — an entry either carries a
+ * paragraph whole or carries none.
+ *
+ * **Two rules decide whether an entry carries one at all**, and both exist for
+ * the same reason: the 49 pages in `lib/planned-locations.ts` have no copy
+ * about their own place. They are built out of their service hub, so their
+ * opening paragraph *is* the hub's, and all of a hub's built pages open on the
+ * same sentence.
+ *
+ * 1. **A paragraph the reading page already carries is skipped.** `skip` is
+ *    that page's own opening paragraphs, so a hub never prints its own sentence
+ *    back under twenty-five place names, and a location page never quotes
+ *    itself in its own list of neighbours.
+ * 2. **A paragraph that is not unique in the list is dropped from all of it.**
+ *    On `/mobile-car-wash/wembley/` the ten built wash pages would otherwise
+ *    each print the hub's sentence — ten identical paragraphs under ten
+ *    different names. A paragraph shared between places is not about either of
+ *    them, so no one gets it.
+ *
+ * Both are self-correcting: when the client writes real copy for a place, that
+ * page stops matching and its blurb appears on its own.
+ */
+export function locationDirectory(
+  items: { slug: string; name: string }[],
+  skip: string[] = [],
+): DirectoryEntry[] {
+  const theirs = new Set(skip.map(plain));
+  const seen = new Map<string, number>();
+
+  const draft = items.map(({ slug, name }): DirectoryEntry & { text?: string } => {
+    const page = PAGES[slug];
+    if (!page) return { slug, name };
+
+    for (const b of flatten(page.sections.flatMap((s) => s.blocks))) {
+      if (b.type !== "paragraph") continue;
+      if (/href="tel:/i.test(b.html)) continue;
+      const text = plain(b.html);
+      if (text.length < 90) continue;
+      if (theirs.has(text)) break;
+      seen.set(text, (seen.get(text) ?? 0) + 1);
+      return { slug, name, blurbHtml: b.html, text };
+    }
+    return { slug, name };
+  });
+
+  return draft.map(({ slug, name, blurbHtml, text }) =>
+    text && seen.get(text)! > 1 ? { slug, name } : { slug, name, blurbHtml },
+  );
+}
+
 /**
  * The borough family, for `/our-locations/` — the one hub whose family has no
  * `hub` prefix, because its children live under the index's own path rather

@@ -233,6 +233,38 @@ Three tiers, cheapest first:
      it twice. So the section wears the family title and the card drops it —
      one name for the list, in the one place that has room for it.
 
+   **The directory under it.** Client, 2026-09-17, against `/car-detailing/`:
+   "thats good, we just need the extra individual sections below that link to
+   each page" — the other half of the reference widget, which pairs its A–Z
+   control with one titled block per item. `locationDirectory()` builds it and
+   `LocationDirectory` in `LocationIndex.tsx` lays it out: grouped by initial
+   like the control, two columns of flowed blocks, each an `<h4>` linking to the
+   page with an `id` to land on, over that page's own opening paragraph —
+   chosen the way `lib/hub.ts` chooses a card blurb, whole and untrimmed.
+
+   **It is on all 199 pages the index is on.** It went on the three mains first;
+   "terapkan juga ke 195 halaman lokasi" (2026-09-17) put it on the rest. The
+   cost was raised before it was built and the client took the call: a location
+   page now republishes sixty-odd of its neighbours' opening paragraphs, so those
+   paragraphs appear on every page of their family rather than on one. If that
+   ever needs undoing it is the `directory` prop on two call sites.
+
+   **Some entries are a link and nothing else**, and two rules decide it:
+
+   - **A paragraph the reading page already carries** is skipped — `skip` is
+     that page's own `introHtml`. So a hub never prints its own sentence back
+     under twenty-five place names, and a location page never quotes itself in
+     its own list of neighbours.
+   - **A paragraph that is not unique in the list** is dropped from all of it.
+     The pages built from a service hub (`lib/planned-locations.ts`) all open on
+     that hub's sentence, so on `/mobile-car-wash/wembley/` the ten built wash
+     pages would print it ten times under ten names. A paragraph shared between
+     places is not about either of them.
+
+   That leaves 25 of 32 bare on `/car-detailing/`, 14 of 74 on `/car-valeting/`,
+   11 of 77 on `/mobile-car-wash/` — **the visible measure of how much per-place
+   copy the client still owes**, and it fills itself in as that copy arrives.
+
    **The map goes where the index stands.** Client, 2026-09-17: "hapus map jika
    sudah ada widget browser locationnya". 110 location pages carried a Google
    embed of their own place directly above the index — two location blocks back

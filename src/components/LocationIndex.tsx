@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Reveal from "@/components/Reveal";
 import SectionHead from "@/components/SectionHead";
+import type { DirectoryEntry } from "@/lib/location-frame";
 
 /**
  * The A–Z index of a set of location pages.
@@ -236,11 +237,14 @@ export function LocationIndexSection({
   heading,
   title,
   locations,
+  directory,
 }: {
   /** The source's own heading for this row, where it has one. */
   heading?: string;
   title: string;
   locations: { slug: string; name: string }[];
+  /** One block per place, under the control — see `LocationDirectory`. */
+  directory?: DirectoryEntry[];
 }) {
   if (!locations.length) return null;
   const borrowed = !heading;
@@ -278,7 +282,82 @@ export function LocationIndexSection({
             <LocationIndex locations={locations} title={borrowed ? undefined : title} />
           </Reveal>
         </div>
+
+        {directory && directory.length > 0 && (
+          <div className="lg:col-span-12">
+            <LocationDirectory entries={directory} />
+          </div>
+        )}
       </div>
     </section>
+  );
+}
+
+/**
+ * The same places again, one block each, under the control.
+ *
+ * Client, 2026-09-17: "thats good, we just need the extra individual sections
+ * below that link to each page." The control above is for finding a place you
+ * came looking for; this is the list you read down, and it is where each page's
+ * own opening paragraph gets said.
+ *
+ * Grouped by initial, like the control, so the two read as one thing — and each
+ * block carries the `id` its place files under, so a link into the page can
+ * land on one. `locationDirectory()` decides which blocks carry a paragraph:
+ * the pages built out of a service hub have no words of their own about the
+ * place, so on that hub they are a link and nothing else rather than the hub's
+ * own sentence repeated under every name.
+ */
+function LocationDirectory({ entries }: { entries: DirectoryEntry[] }) {
+  const groups = new Map<string, DirectoryEntry[]>();
+  for (const entry of entries) {
+    const key = initialOf(entry.name);
+    const bucket = groups.get(key);
+    if (bucket) bucket.push(entry);
+    else groups.set(key, [entry]);
+  }
+
+  return (
+    /*
+      One column flow for the whole list, not a grid and not a flow per letter.
+      An entry is a name and — where the page has one — a paragraph, so the
+      blocks are wildly uneven: a grid sized every row to its tallest cell and
+      left a hole the height of a blurb beside every bare name, and balancing
+      each letter separately left a short column under every small group.
+      Across the whole list the two columns even out. `break-inside-avoid`
+      keeps a name with its paragraph, and `break-after-avoid` keeps a letter
+      from being the last thing in a column.
+    */
+    <div className="mt-14 gap-x-12 border-t border-white/[0.07] pt-12 sm:columns-2 lg:mt-[72px]">
+      {[...groups.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([letter, items]) => (
+          <div key={letter}>
+            <h3 className="mt-8 mb-5 break-after-avoid text-[13px] font-semibold tracking-[0.16em] text-gold first:mt-0">
+              {letter}
+            </h3>
+            {items.map((entry) => (
+              <Reveal key={entry.slug} as="article" className="mb-7 break-inside-avoid">
+                <div id={entry.slug.split("/").pop()} className="scroll-mt-28">
+                  <h4 className="font-[family-name:var(--font-ui)] text-[19px] leading-tight font-semibold text-white lg:text-[21px]">
+                    <Link
+                      href={`/${entry.slug}/`}
+                      className="underline-offset-4 transition-colors hover:text-gold hover:underline hover:decoration-dotted"
+                    >
+                      {entry.name}
+                    </Link>
+                  </h4>
+                  {entry.blurbHtml && (
+                    <p
+                      className="mt-3 text-[15.5px] leading-[26px] font-normal text-body [&_a]:text-gold [&_a:hover]:underline"
+                      dangerouslySetInnerHTML={{ __html: entry.blurbHtml }}
+                    />
+                  )}
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        ))}
+    </div>
   );
 }

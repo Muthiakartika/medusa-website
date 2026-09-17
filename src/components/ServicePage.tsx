@@ -7,7 +7,12 @@ import PriceCard from "@/components/PriceCard";
 import Reveal from "@/components/Reveal";
 import SectionHead from "@/components/SectionHead";
 import type { Page } from "@/lib/blocks";
-import { foldableAreas, hubLocations, withAreaLinks } from "@/lib/location-frame";
+import {
+  foldableAreas,
+  hubLocations,
+  locationDirectory,
+  withAreaLinks,
+} from "@/lib/location-frame";
 import { parseServicePage, takeAreasFromBody } from "@/lib/service-frame";
 
 /**
@@ -51,6 +56,7 @@ export default function ServicePage({ page }: { page: Page }) {
     index && areas && chips && foldableAreas(chips)
       ? { heading: areas.heading, items: withAreaLinks(index.items, chips, page.slug) }
       : null;
+  const places = folded?.items ?? index?.items ?? [];
 
   return (
     <main className="flex-1">
@@ -138,7 +144,15 @@ export default function ServicePage({ page }: { page: Page }) {
         <LocationIndexSection
           heading={folded?.heading}
           title={index.title}
-          locations={folded?.items ?? index.items}
+          locations={places}
+          /*
+            "we just need the extra individual sections below that link to each
+            page" — client, 2026-09-17, against `/car-detailing/`. One block per
+            place under the control, each carrying that page's own opening
+            paragraph. The hub's own opening paragraphs are passed so the 49
+            pages built out of a hub do not repeat its sentence back to it.
+          */
+          directory={locationDirectory(places, model.introHtml)}
         />
       )}
 
