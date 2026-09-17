@@ -1,7 +1,11 @@
 /**
  * The 146 location pages — the borough hubs under `/our-locations/` and the
- * three service-in-a-place families (`/mobile-car-wash-in-…`,
- * `/mobile-car-valeting-in-…`, `/mobile-car-detailing-in-…`).
+ * three service-in-a-place families, each of which now wears two URL shapes:
+ * the 75 pages the SEO plan re-parented under their service hub
+ * (`/mobile-car-wash/wembley/`, `lib/location-moves.ts`) and the 52 it does
+ * not mention, still on the old `/mobile-car-wash-in-…` shape. The plan's 49
+ * pages that had no source at all are built under the hub shape too
+ * (`lib/planned-locations.ts`), so they are location pages here like any other.
  *
  * They are the site's long tail and its worst-served pages. Each one opens on
  * a bare heading; each ends on "Our Other Locations" with nothing under it —
@@ -23,24 +27,48 @@
 
 import type { Block, Page, Section } from "@/lib/blocks";
 import { PAGES } from "@/lib/blocks";
+import { MOVED_LOCATIONS } from "@/lib/location-moves";
+import { PLANNED_SLUGS } from "@/lib/planned-locations";
 
-/** The four families, and the label each one wears in a list of siblings. */
+/** Every location page that sits under a service hub: the 75 moved, the 49 built. */
+const UNDER_HUB = new Set([...MOVED_LOCATIONS, ...PLANNED_SLUGS]);
+
+/**
+ * The four families, and the label each one wears in a list of siblings.
+ *
+ * `prefix` is the shape the mirror gave these pages; `hub` is where the move
+ * put them. A page under `hub` counts only when the move table names it,
+ * because the hub's own service pages are its neighbours there and are not
+ * places — `/mobile-car-wash/wembley/` is in the family, `/mobile-car-wash/
+ * gold-wash/` is not.
+ */
 export const LOCATION_FAMILIES = [
-  { prefix: "our-locations/", label: "Locations" },
-  { prefix: "mobile-car-wash-in-", label: "Mobile Car Wash" },
-  { prefix: "mobile-car-valeting-in-", label: "Mobile Car Valeting" },
-  { prefix: "mobile-car-detailing-in-", label: "Mobile Car Detailing" },
+  { prefix: "our-locations/", hub: null, label: "Locations" },
+  { prefix: "mobile-car-wash-in-", hub: "mobile-car-wash/", label: "Mobile Car Wash" },
+  { prefix: "mobile-car-valeting-in-", hub: "car-valeting/", label: "Mobile Car Valeting" },
+  { prefix: "mobile-car-detailing-in-", hub: "car-detailing/", label: "Mobile Car Detailing" },
 ] as const;
 
+type Family = (typeof LOCATION_FAMILIES)[number];
+
+/** The place part of a slug in this family, or null when it is not one of its pages. */
+function tailOf(family: Family, slug: string) {
+  if (slug.startsWith(family.prefix) && slug !== family.prefix.replace(/\/$/, ""))
+    return slug.slice(family.prefix.length);
+  if (family.hub && slug.startsWith(family.hub) && UNDER_HUB.has(slug))
+    return slug.slice(family.hub.length);
+  return null;
+}
+
 export const isLocationSlug = (slug: string) =>
-  LOCATION_FAMILIES.some((f) => slug.startsWith(f.prefix) && slug !== f.prefix.replace(/\/$/, ""));
+  LOCATION_FAMILIES.some((f) => tailOf(f, slug) !== null);
 
-const familyOf = (slug: string) => LOCATION_FAMILIES.find((f) => slug.startsWith(f.prefix));
+const familyOf = (slug: string) => LOCATION_FAMILIES.find((f) => tailOf(f, slug) !== null);
 
-/** "mobile-car-valeting-in-golders-green" -> "Golders Green" */
+/** "car-valeting/golders-green" -> "Golders Green" */
 export function placeName(slug: string) {
   const family = familyOf(slug);
-  const rest = family ? slug.slice(family.prefix.length) : slug;
+  const rest = (family && tailOf(family, slug)) ?? slug;
   return rest
     .split("-")
     .map((w) => (w === "upon" || w === "and" || w === "of" ? w : w.charAt(0).toUpperCase() + w.slice(1)))
@@ -51,13 +79,14 @@ export function placeName(slug: string) {
  * The page's siblings — what the dead shortcode was supposed to print.
  *
  * Every other page in the same family, in the order `pages.json` holds them,
- * which is the sitemap's order. The page itself is excluded.
+ * which is the sitemap's order. The page itself is excluded. A family spans
+ * both URL shapes, so a page that moved still lists the ones that did not.
  */
 export function siblings(slug: string) {
   const family = familyOf(slug);
   if (!family) return [];
   return Object.keys(PAGES)
-    .filter((s) => s !== slug && s.startsWith(family.prefix) && s !== "our-locations")
+    .filter((s) => s !== slug && tailOf(family, s) !== null)
     .map((s) => ({ slug: s, name: placeName(s) }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }

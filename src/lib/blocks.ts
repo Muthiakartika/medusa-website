@@ -82,6 +82,7 @@ export type Page = {
 
 import raw from "@/content/pages.json";
 import { applyOverrides } from "@/content/overrides";
+import { buildPlannedLocations } from "@/lib/planned-locations";
 
 /**
  * The mirror, with the client's corrections laid over it.
@@ -89,7 +90,21 @@ import { applyOverrides } from "@/content/overrides";
  * `pages.json` is regenerated wholesale from `.cache/html`, so a change the
  * live site has not made yet cannot live in it — see `content/overrides.ts`.
  */
-export const PAGES = applyOverrides(raw as unknown as Record<string, Page>);
+const MIRROR = applyOverrides(raw as unknown as Record<string, Page>);
+
+/**
+ * The mirror plus the 49 location pages the SEO plan asks for that the mirror
+ * has no page for. They are assembled in code, out of the service hubs' own
+ * content, because `npm run content` would wipe anything written into
+ * `pages.json` — see `lib/planned-locations.ts`. Built from `MIRROR` so the
+ * client's corrected prices reach them; every consumer of `PAGES` — the
+ * sitemap, the link checker, the location frame's sibling lists — then picks
+ * them up without knowing the difference.
+ */
+export const PAGES: Record<string, Page> = {
+  ...MIRROR,
+  ...buildPlannedLocations(MIRROR),
+};
 
 /**
  * Pages that have earned their own hand-built route under `app/`, the way the

@@ -12,6 +12,7 @@ import Portfolio from "@/components/sections/Portfolio";
 import Testimonials from "@/components/sections/Testimonials";
 import SectionHead from "@/components/SectionHead";
 import { type Block, getPage, type Page, type Section } from "@/lib/blocks";
+import { MOVED_LOCATIONS } from "@/lib/location-moves";
 import { pageSchema } from "@/lib/schema";
 
 /**
@@ -62,8 +63,26 @@ const SERVICE_OF: [RegExp, string][] = [
   [/^\/mobile-car-detailing-in-/, "Detailing"],
 ];
 
-const serviceName = (href: string) =>
-  SERVICE_OF.find(([re]) => re.test(href))?.[1] ?? "Services";
+/**
+ * The same three, for the 75 pages the SEO plan moved under their service hub.
+ *
+ * The hub prefix alone would claim the hub's own service pages — this grid
+ * links to four of them, `/car-detailing/perfection-detail/` among them — so
+ * the move table decides membership and those keep the generic label they
+ * already had.
+ */
+const MOVED_SERVICE_OF: [string, string][] = [
+  ["mobile-car-wash/", "Wash"],
+  ["car-valeting/", "Valeting"],
+  ["car-detailing/", "Detailing"],
+];
+
+function serviceName(href: string) {
+  const slug = href.replace(/^\/+|\/+$/g, "");
+  if (MOVED_LOCATIONS.has(slug))
+    return MOVED_SERVICE_OF.find(([hub]) => slug.startsWith(hub))?.[1] ?? "Services";
+  return SERVICE_OF.find(([re]) => re.test(href))?.[1] ?? "Services";
+}
 
 /** Is this the columns block that follows a "Service Areas" heading? */
 function areaGrid(blocks: Block[]): Extract<Block, { type: "columns" }> | null {

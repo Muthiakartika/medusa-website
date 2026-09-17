@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { PAGES } from "@/lib/blocks";
 import { INTERIOR, REPAIRS } from "@/lib/hubs";
+import { isLocationSlug } from "@/lib/location-frame";
 import { REDIRECTED_SLUGS } from "@/lib/redirects";
 import { SITE } from "@/lib/site";
 
@@ -51,7 +52,6 @@ function changeFrequency(slug: string): "monthly" | "yearly" {
 function priority(slug: string): number {
   if (!slug) return 1;
   if (isPost(slug)) return 0.4;
-  if (/^mobile-car-(valeting|wash|detailing)-in-/.test(slug)) return 0.6;
-  if (slug.startsWith("our-locations/")) return 0.6;
+  if (isLocationSlug(slug)) return 0.6;
   return 0.8;
 }

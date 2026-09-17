@@ -16,10 +16,10 @@ The clone is **content-identical by design**. Every word, price, phone number
 and photograph comes from the live site. What this project changes is the
 *layout*, not the *content*.
 
-- **256 routes.** 254 in `src/content/pages.json` — the homepage is one of
+- **305 routes.** 254 in `src/content/pages.json` — the homepage is one of
   them, keyed `""` — plus the two **menu-group hubs**, `/repairs` and
-  `/car-interior-cleaning`, which have no source page and are built out of the
-  pages they link to (§5).
+  `/car-interior-cleaning`, and the **49 planned location pages**, all of which
+  have no source page and are built out of pages that do (§5).
 - **Fully static**, served through ISR (§7).
 - Stack: App Router, React 19, Tailwind CSS v4, TypeScript. No CMS, no
   database, no runtime API.
@@ -99,7 +99,8 @@ not in any script in this repo, so `npm run content` against the current mirror
 comes back with the old slugs and about 6,000 lines shorter. `lib/redirects.ts`
 is the map between the two — every rule there is one old URL and the new one it
 became — so re-applying it after a regeneration is what the missing step would
-do. Diff `pages.json` and spot-check before committing anything.
+do. `lib/location-moves.ts` is the second half of that map, for the 75 location
+pages (§5). Diff `pages.json` and spot-check before committing anything.
 
 ---
 
@@ -165,8 +166,14 @@ Three tiers, cheapest first:
      coverage list and the FAQ; everything it does not claim is passed through
      to the ordinary renderer **in document order**.
    - `lib/location-frame.ts` + `components/LocationPage.tsx` — the 146
-     location pages (`mobile-car-{valeting,wash,detailing}-in-*` and
-     `our-locations/*`).
+     location pages: `our-locations/*`, and the three service-in-a-place
+     families in **two URL shapes each**. The SEO plan moved 75 of them under
+     their service hub (`/mobile-car-wash/wembley/`) and left the other 52 on
+     the mirror's `mobile-car-{valeting,wash,detailing}-in-*`, so
+     `LOCATION_FAMILIES` carries a `prefix` and a `hub` and a page counts under
+     the hub only when `lib/location-moves.ts` names it — otherwise the hub's
+     own service pages would read as places. A family spans both shapes, so
+     "Our Other Locations" still lists all of them.
 3. **Its own route** — for a page the extractor mangled badly enough that a
    frame cannot save it (`/repairs/headlight-restoration`,
    `/vehicles/motorcycle-valeting-detailing`, the homepage, and the ten others
@@ -200,6 +207,25 @@ Three tiers, cheapest first:
    interior pages carry twenty-one between three of the nine — and fall back to
    the group's own question-shaped headings where it does not, which is what
    `/repairs` uses.
+
+   **A fifth kind: the 49 planned location pages.** The SEO plan's "Location
+   build list" asks for 49 location pages the mirror has no page for — Luton,
+   Reading, Surrey, Kent and 45 more. `lib/planned-locations.ts` builds each one
+   out of its **service hub's** own content, the way a menu-group hub is built
+   out of its children, and hands it to the ordinary location frame. They join
+   `PAGES` in `lib/blocks.ts` rather than `pages.json`, because `npm run content`
+   rewrites that file wholesale; everything downstream — the sitemap, the link
+   checker, the sibling chips — then sees them as ordinary pages. `verify.mjs`
+   reads the list out of the TypeScript, the way it already reads the redirects.
+
+   The hub is cut into runs at the headings named in the plan's `cuts`, and only
+   the named runs are carried. Two things are left behind on purpose: each hub's
+   closing row, which lists the London boroughs the company covers, and the one
+   FAQ question per hub that prices the service "in London" — on a Kent page
+   both would be a claim about the wrong place. **What remains is the same
+   service copy on all 49, differing only in the place name.** That is the limit
+   of building a page with nothing written about the place; per-place copy from
+   the client replaces it one hub at a time.
 
 Prefer tier 1, then 2. Tier 3 is a maintenance cost — each one is a second
 place the content lives.
@@ -398,7 +424,7 @@ npm run verify
 ```
 
 `npm run verify` needs a server running on :3000 (or set `BASE`). It crawls all
-255 routes and checks: HTTP 200, an `<h1>`, non-trivial body text, every
+305 routes and checks: HTTP 200, an `<h1>`, non-trivial body text, every
 internal link resolves, every `/assets` image exists on disk, parseable JSON-LD,
 plus the sitemap, robots and 404. It prints `ALL CLEAN` or a list.
 

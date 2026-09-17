@@ -20,6 +20,14 @@ const pages = JSON.parse(fs.readFileSync(PAGES_JSON, 'utf8'));
    — see lib/hubs.ts. */
 const EXTRA_ROUTES = ['/repairs', '/car-interior-cleaning'];
 
+/* The 49 location pages the SEO plan asks for that the mirror has no page for.
+   Like the redirect table below, they are read out of the TypeScript rather
+   than imported from it — see lib/planned-locations.ts. */
+const PLANNED = [...fs
+  .readFileSync(path.join(path.dirname(PAGES_JSON), '../lib/planned-locations.ts'), 'utf8')
+  .matchAll(/^ {2}\["([^"]+)", "(?:wash|valeting|detailing)"\],$/gm)].map((m) => '/' + m[1]);
+if (PLANNED.length === 0) throw new Error('verify: no planned locations parsed');
+
 /* The 301 table, read out of the TypeScript rather than imported from it —
    this is a .mjs script and that is a .ts module. Only the sources are needed:
    the sitemap deliberately leaves them out, so without them the count below
@@ -34,6 +42,7 @@ const routes = new Set([
   '/',
   ...Object.keys(pages).filter(Boolean).map((s) => '/' + s),
   ...EXTRA_ROUTES,
+  ...PLANNED,
 ]);
 
 /* Links that are already broken on medusaautodetailing.co.uk (verified 404
@@ -163,7 +172,9 @@ async function checkSeo() {
     const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
     // every route the site serves, minus the ones that only 301
     const want =
-      Object.keys(pages).filter((s) => !REDIRECTED.has(`/${s}/`)).length + EXTRA_ROUTES.length;
+      Object.keys(pages).filter((s) => !REDIRECTED.has(`/${s}/`)).length +
+      EXTRA_ROUTES.length +
+      PLANNED.length;
     if (locs.length !== want) seo.push(`/sitemap.xml :: ${locs.length} urls, expected ${want}`);
     const strays = locs
       .map((u) => new URL(u).pathname.replace(/\/$/, '') || '/')
