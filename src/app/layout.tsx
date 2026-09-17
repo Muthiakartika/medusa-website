@@ -104,6 +104,15 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true },
+  /* Ahrefs Webmaster Tools. The deployment lives on a *.vercel.app subdomain,
+     whose DNS is Vercel's, so the TXT-record method is not open to us; Ahrefs
+     re-checks this tag periodically, so it stays. */
+  verification: {
+    other: {
+      "ahrefs-site-verification":
+        "dc5dd1bce15a92d58fc8a1eb2e876ebb9949c06e0a5a9f6c9b28dd925dc9d71b",
+    },
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
