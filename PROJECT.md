@@ -55,6 +55,7 @@ endpoint; nothing there is required for `npm run dev`.
 | `npm run dev` | Dev server. Pages re-render every request; ISR is inert here. |
 | `npm run build` / `npm start` | Production build (~40 s cold) and server. |
 | `npm run verify` | Crawls every route on a **running** server and checks it. See §9. |
+| `npm run purge` | Flushes the live caches - Next's and Cloudflare's. Paths, or everything. See §7. |
 | `npm run content:fetch` | Re-mirrors the live site into `.cache/html/` (~71 MB, slow, hits the network). |
 | `npm run content` | Rebuilds `pages.json` + assets from that mirror. Needs `.cache/html`. |
 | `npm run content:classify` | Writes `pages.v2.json`. Nothing renders from it; exploratory. |
@@ -502,31 +503,138 @@ desktop/laptop, **50–75 px** on small screens. In practice that is
 
 ---
 
-## 7. ISR
+## 7. Caching
+
+Three caches stand between a render and a visitor, and none of them is flushed
+by the same thing as the next:
+
+| Layer | Holds | Cleared by |
+| --- | --- | --- |
+| Next's prerender cache | the rendered HTML for all 305 routes | a deploy, the hourly TTL, or `revalidatePath` |
+| Cloudflare | whatever it was allowed to cache | a purge, or its own TTL |
+| the browser | assets, mostly | `max-age` |
+
+### ISR
 
 `export const revalidate = 3600` sits in `src/app/layout.tsx`, so it is the
-default for every route beneath it. All 255 pages are prerendered at build and
+default for every route beneath it. All 305 pages are prerendered at build and
 then held as cache entries with a one-hour TTL; `next build` prints
-`Revalidate 1h` against each of them, and the server sends
-`Cache-Control: s-maxage=3600, stale-while-revalidate=31532400`.
+`Revalidate 1h` against each of them, and a self-hosted `next start` sends
+`Cache-Control: s-maxage=3600, stale-while-revalidate=31532400` with them.
 
-Development ignores this — `next dev` re-renders every request.
+**Vercel does not send that.** It owns the ISR cache itself and replaces the
+header with `public, max-age=0, must-revalidate`, so that nothing downstream
+holds a page it cannot purge. Which is the whole of the next section's problem.
+
+Development ignores all of this — `next dev` re-renders every request.
+
+### Cloudflare, one hop further out
+
+`medusaautodetailing.co.uk` resolves to Cloudflare, which proxies to Vercel.
+What each layer was doing, measured 2026-09-18:
+
+| URL | `Cache-Control` reaching Cloudflare | `cf-cache-status` |
+| --- | --- | --- |
+| `/`, and every other page | `public, max-age=0, must-revalidate` | `DYNAMIC` |
+| `/sitemap.xml` | `public, max-age=0, must-revalidate` | `DYNAMIC` |
+| `/robots.txt` | `public, max-age=14400, must-revalidate` | `REVALIDATED` |
+| `/assets/…webp` | `public, max-age=2592000, swr=31536000` | `MISS` then `HIT` |
+
+**`DYNAMIC` means Cloudflare cached nothing.** Every one of the 305 pages was
+fetched from Vercel on every request, and the CDN in front of it was a TLS
+terminator with a nice dashboard. The images were fine — that is the
+`/assets/:path*` header in `next.config.ts` doing its job — and so, by
+accident, was `robots.txt`.
+
+`next.config.ts` now sends an `s-maxage` for `/sitemap.xml` and `/robots.txt`,
+and `no-store` for everything under `/api/`. The pages it cannot fix from here:
+their header is Vercel's, not ours. Caching them means telling Cloudflare to
+ignore it, which is a zone setting rather than anything in this repo — three
+**Cache Rules**, under Rules → Caching, in this order:
+
+1. **Bypass the API.**
+   `starts_with(http.request.uri.path, "/api/")` → *Bypass cache*.
+   Belt and braces over the `no-store` the route already sends. A cached
+   `/api/revalidate/` would mean the second flush of a day silently never
+   happened, and a cached `/api/build/` would have CI purge the cache it is
+   trying to fill.
+
+2. **Leave the origin's own TTLs alone.**
+   `starts_with(http.request.uri.path, "/assets/") or starts_with(http.request.uri.path, "/_next/")`
+   → *Eligible for cache*, Edge TTL **Use cache-control header**.
+   Both already send a long, deliberate `max-age`; rule 3 must not overwrite
+   it.
+
+3. **Cache the pages.**
+   `not starts_with(http.request.uri.path, "/api/") and not starts_with(http.request.uri.path, "/assets/") and not starts_with(http.request.uri.path, "/_next/")`
+   → *Eligible for cache*, Edge TTL **Ignore cache-control header and use this
+   TTL: 1 day**, Browser TTL **Respect origin** (which is `max-age=0`, so a
+   browser still revalidates and a purge is visible immediately).
+
+Two things that look like risks and are not. Cache Rules apply to `GET` and
+`HEAD`, so the enquiry forms — server actions, which `POST` to the page's own
+URL — are untouched. And the RSC payload a client-side navigation fetches
+carries a `?_rsc=<hash>` query, which is part of Cloudflare's default cache
+key, so it never collides with the HTML at the same path; Next's CDN guide says
+the parameter exists for exactly this reason.
+
+A day's edge TTL is only safe because of what follows.
 
 ### On-demand flush
 
-`POST /api/revalidate`, guarded by `REVALIDATE_SECRET`. With the variable unset
-the route answers 503 to everything rather than defaulting to open.
+`POST /api/revalidate/`, guarded by `REVALIDATE_SECRET`. With the variable
+unset the route answers 503 to everything rather than defaulting to open.
+
+It flushes **both** caches: `revalidatePath` for Next's, then a Cloudflare
+purge — `purge_everything` for `{"all":true}`, purge-by-URL for a path list.
+`lib/cloudflare.ts` holds that half and is a no-op that says so when
+`CLOUDFLARE_ZONE_ID` / `CLOUDFLARE_API_TOKEN` are unset, so a preview
+deployment or a local build is not a failure. A purge that was attempted and
+*refused* is a 502, with `revalidated` still reported.
 
 ```bash
-curl -X POST https://example.com/api/revalidate -H "Authorization: Bearer $REVALIDATE_SECRET" -H "Content-Type: application/json" -d '{"paths":["/mini-valet","/blog"]}'
+npm run purge
 ```
 
 ```bash
-curl -X POST https://example.com/api/revalidate -H "Authorization: Bearer $REVALIDATE_SECRET" -H "Content-Type: application/json" -d '{"all":true}'
+npm run purge -- /mobile-car-wash/mini-valet /blog
 ```
+
+`scripts/purge.mjs` reads `REVALIDATE_SECRET` from the shell or `.env.local`
+and posts to `BASE`, which defaults to production here rather than to
+localhost. The raw form:
+
+```bash
+curl -X POST https://medusaautodetailing.co.uk/api/revalidate/ -H "Authorization: Bearer $REVALIDATE_SECRET" -H "Content-Type: application/json" -d '{"paths":["/mobile-car-wash/mini-valet","/blog"]}'
+```
+
+```bash
+curl -X POST https://medusaautodetailing.co.uk/api/revalidate/ -H "Authorization: Bearer $REVALIDATE_SECRET" -H "Content-Type: application/json" -d '{"all":true}'
+```
+
+**The trailing slash is load-bearing.** `trailingSlash: true` is resolved
+before routing, so `/api/revalidate` answers a 308 — and `curl` does not follow
+one unless told to, so the call returns quietly having flushed nothing. The
+version of these two commands that used to be in this file did exactly that.
 
 `{"all":true}` goes through the root layout and takes every page with it.
 Unknown paths are reported back in `unknown` rather than silently accepted.
+
+### Auto-purge on deploy
+
+`.github/workflows/purge-on-deploy.yml`, on every push to `main`.
+
+The order is the point. Vercel starts building the moment the push lands, and
+purging Cloudflare before that build is serving only refills it with the old
+pages — so the job polls `/api/build/` until it answers with the pushed
+commit's SHA, and only then calls `{"all":true}`. `app/api/build/route.ts` is
+the dozen lines that make that possible: `VERCEL_GIT_COMMIT_SHA`, stamped in at
+build, served `no-store`.
+
+One secret, `REVALIDATE_SECRET`, matching the deployment's — the Cloudflare
+credentials stay in Vercel and are never copied into GitHub. Without it the job
+writes a line in the run summary and exits clean rather than failing every
+push.
 
 ### What ISR does and does not buy here
 
@@ -543,6 +651,11 @@ Making time-based revalidation meaningful would mean reading the JSON at
 request time. That was considered and rejected: on a serverless host the
 filesystem is read-only and per-deployment, so it would add fragility and
 change nothing.
+
+It is also why "auto purge when the data updates" is a purge **on deploy**
+rather than a diff of `pages.json`: a data update cannot reach a visitor
+without a build, and once there is a build, every page is potentially different
+anyway.
 
 **Observed behaviour worth knowing:** on a self-hosted `next start`, a path
 that has just been flushed is then served with
@@ -661,4 +774,6 @@ See `.env.example`. All optional in development.
 | --- | --- | --- |
 | `CONTACT_WEBHOOK_URL` | `app/actions.ts` | Enquiries logged to the console; a hard error in production. |
 | `REVALIDATE_SECRET` | `app/api/revalidate/route.ts` | Endpoint refuses every request (503). |
-| `BASE` | `scripts/verify.mjs` | `http://localhost:3000`. |
+| `CLOUDFLARE_ZONE_ID` | `lib/cloudflare.ts` | The Cloudflare half of a flush is skipped, and says so. |
+| `CLOUDFLARE_API_TOKEN` | `lib/cloudflare.ts` | Same. Needs one permission: Zone · Cache Purge · Purge. |
+| `BASE` | `scripts/verify.mjs`, `scripts/purge.mjs` | `http://localhost:3000` for verify; the live origin for purge. |

@@ -358,6 +358,10 @@ export function buildPlannedLocations(pages: Record<string, Page>): Record<strin
       ogImage: hub.ogImage,
       ogW: hub.ogW,
       ogH: hub.ogH,
+      /* Every word on the page is the hub's, so the day the hub was last
+         edited is the only modification date this page has. `app/sitemap.ts`
+         is what reads it. */
+      modified: hub.modified ?? hub.published,
       breadcrumb: [{ name: "Home", href: "/" }, { name: heading }],
       h1: heading,
       sections: [

@@ -1,0 +1,87 @@
+# Flush Cloudflare once the deployment this push produced is the one serving.
+#
+# Vercel builds every push and its own cache is correct the moment it does.
+# Cloudflare, a hop further out, is not: it holds the previous HTML under the
+# same URL until something tells it otherwise. That "something" is this.
+#
+# The wait matters more than the purge. Purging before the new build is live
+# only refills Cloudflare with the old pages, so the job polls /api/build/ for
+# this commit's SHA first and purges nothing until it sees it.
+#
+# One secret, REVALIDATE_SECRET, matching the deployment's. Without it the job
+# says so in the run summary and exits clean, so a fork or a fresh clone does
+# not fail every push on a cache it does not have.
+
+name: Purge CDN after deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  # Two pushes in quick succession: only the newer deployment is worth waiting
+  # for, and its purge covers the older one's pages as well.
+  group: purge-cdn
+  cancel-in-progress: true
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BASE: ${{ vars.PURGE_BASE || 'https://medusaautodetailing.co.uk' }}
+      SECRET: ${{ secrets.REVALIDATE_SECRET }}
+    steps:
+      - name: Check the secret is configured
+        id: cfg
+        run: |
+          if [ -z "$SECRET" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "REVALIDATE_SECRET is not set for this repository - nothing purged." \
+              >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Wait for ${{ github.sha }} to be serving
+        if: steps.cfg.outputs.ready == 'true'
+        run: |
+          set -u
+          for attempt in $(seq 1 60); do
+            live=$(curl -fsS --max-time 10 "$BASE/api/build/" 2>/dev/null | jq -r '.commit // empty' || true)
+            if [ "$live" = "$GITHUB_SHA" ]; then
+              echo "live after $attempt check(s)"
+              exit 0
+            fi
+            echo "attempt $attempt: serving ${live:-<unreachable>}, waiting for $GITHUB_SHA"
+            sleep 15
+          done
+          echo "::error::$BASE never reported $GITHUB_SHA - the deployment failed, or is slower than 15 minutes."
+          exit 1
+
+      - name: Purge
+        if: steps.cfg.outputs.ready == 'true'
+        run: |
+          set -u
+          status=$(curl -sS -o response.json -w '%{http_code}' \
+            -X POST "$BASE/api/revalidate/" \
+            -H "authorization: Bearer $SECRET" \
+            -H 'content-type: application/json' \
+            -d '{"all":true}')
+          echo "HTTP $status"
+          cat response.json
+          {
+            echo '### Cache purge'
+            echo ''
+            echo "\`$BASE\` · HTTP $status"
+            echo ''
+            echo '```json'
+            cat response.json
+            echo ''
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          # 502 is the endpoint's way of saying the Next cache was flushed but
+          # Cloudflare refused the purge - a real failure, and one worth a red
+          # tick rather than a line in a log nobody reads.
+          [ "$status" = "200" ]

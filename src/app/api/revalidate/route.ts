@@ -1,5 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { ALL_SLUGS, CUSTOM_ROUTES, getPage } from "@/lib/blocks";
+import { purgeCloudflare, type PurgeResult } from "@/lib/cloudflare";
+import { SITE } from "@/lib/site";
 
 /**
  * On-demand revalidation, so a page can be refreshed without a redeploy and
@@ -9,17 +11,30 @@ import { ALL_SLUGS, CUSTOM_ROUTES, getPage } from "@/lib/blocks";
  * paragraph on one of 255 pages — is a poor trade, and because a page that is
  * generated on demand has no other way of being told it is stale.
  *
+ * It flushes **both** caches in front of a page: `revalidatePath` for Next's
+ * own prerender cache, then a Cloudflare purge for the CDN a hop further out,
+ * which would otherwise keep serving the copy it already has. `lib/cloudflare.ts`
+ * has the detail, including what happens when no Cloudflare is configured.
+ *
  * Guarded by REVALIDATE_SECRET. With the variable unset the route refuses
  * every request rather than defaulting to open: an unauthenticated flush of
  * the whole site is a denial-of-service primitive, not a convenience.
  *
- *   curl -X POST https://example.com/api/revalidate \
+ * The trailing slash is not optional. `trailingSlash: true` in next.config.ts
+ * is resolved before routing, so a POST to `/api/revalidate` is answered with
+ * a 308 to `/api/revalidate/` — which curl does not follow unless told to, so
+ * the call looks like it worked and nothing is flushed.
+ *
+ *   curl -X POST https://example.com/api/revalidate/ \
  *     -H "Authorization: Bearer $REVALIDATE_SECRET" \
  *     -H "Content-Type: application/json" \
  *     -d '{"paths":["/car-valeting/mini-valet","/blog"]}'
  *
  *   # everything, via the root layout
  *   curl -X POST … -d '{"all":true}'
+ *
+ * `npm run purge` is the same two calls with the secret read out of
+ * `.env.local`; see scripts/purge.mjs.
  */
 
 // Reads a request body, so it could never be prerendered — but say so, rather
@@ -59,6 +74,18 @@ function knownPaths() {
   return paths;
 }
 
+/**
+ * The absolute URL Cloudflare has cached for a path.
+ *
+ * `trailingSlash: true`, so every page is held under its slashed form; the
+ * bare form only ever answered a 308, which is correct forever and worth
+ * leaving in the cache.
+ */
+const cachedUrl = (path: string) => SITE + (path.endsWith("/") ? path : path + "/");
+
+/** A purge that was attempted and failed is the one outcome worth a non-2xx. */
+const purgeFailed = (purge: PurgeResult) => purge.status === "failed";
+
 export async function POST(request: Request) {
   if (!process.env.REVALIDATE_SECRET) {
     return json(503, { error: "REVALIDATE_SECRET is not configured" });
@@ -77,7 +104,12 @@ export async function POST(request: Request) {
   // The whole site, through the layout every page nests under.
   if (body.all === true) {
     revalidatePath("/", "layout");
-    return json(200, { revalidated: "all", at: new Date().toISOString() });
+    const purge = await purgeCloudflare("everything");
+    return json(purgeFailed(purge) ? 502 : 200, {
+      revalidated: "all",
+      purge,
+      at: new Date().toISOString(),
+    });
   }
 
   if (!Array.isArray(body.paths) || !body.paths.length) {
@@ -102,7 +134,14 @@ export async function POST(request: Request) {
   }
 
   if (!done.length) return json(404, { error: "no known paths", unknown });
-  return json(200, { revalidated: done, unknown, at: new Date().toISOString() });
+
+  const purge = await purgeCloudflare(done.map(cachedUrl));
+  return json(purgeFailed(purge) ? 502 : 200, {
+    revalidated: done,
+    unknown,
+    purge,
+    at: new Date().toISOString(),
+  });
 }
 
 /** A GET here is nearly always someone testing the URL in a browser. */

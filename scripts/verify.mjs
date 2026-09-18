@@ -180,11 +180,27 @@ async function checkSeo() {
       .map((u) => new URL(u).pathname.replace(/\/$/, '') || '/')
       .filter((p) => !routes.has(p));
     if (strays.length) seo.push(`/sitemap.xml :: ${strays.length} urls with no route (${strays[0]})`);
+    /* Every URL carries a date: app/sitemap.ts falls back from dateModified to
+       datePublished for the 19 posts the mirror never dated, the hubs take the
+       newest of the pages they are built from, and the 49 planned locations
+       take their hub's. A <url> with no <lastmod> is a kind of page that got
+       past all three. */
+    const undated = [...xml.matchAll(/<url>([\s\S]*?)<\/url>/g)].filter(
+      (m) => !m[1].includes('<lastmod>'),
+    );
+    if (undated.length) seo.push(`/sitemap.xml :: ${undated.length} urls with no lastmod`);
   }
 
   const robots = await fetch(BASE + '/robots.txt');
   if (!robots.ok) seo.push(`/robots.txt :: HTTP ${robots.status}`);
-  else if (!/Sitemap:/i.test(await robots.text())) seo.push('/robots.txt :: no Sitemap line');
+  else {
+    const txt = await robots.text();
+    if (!/Sitemap:/i.test(txt)) seo.push('/robots.txt :: no Sitemap line');
+    /* The cache flush and the build stamp. Neither answers a GET with anything
+       indexable, and a purge endpoint in a crawl log is nobody's idea of a
+       good time. */
+    if (!/^Disallow: \/api\/$/m.test(txt)) seo.push('/robots.txt :: /api/ is crawlable');
+  }
 
   const missing = await fetch(BASE + '/definitely-not-a-real-page');
   if (missing.status !== 404) seo.push(`404 handling :: HTTP ${missing.status}, expected 404`);

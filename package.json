@@ -10,7 +10,8 @@
     "content:fetch": "node scripts/fetch-html.mjs",
     "content": "node scripts/extract-content.mjs && node scripts/fetch-assets.mjs && node scripts/probe-images.mjs",
     "content:classify": "node scripts/classify.mjs",
-    "verify": "node scripts/verify.mjs"
+    "verify": "node scripts/verify.mjs",
+    "purge": "node scripts/purge.mjs"
   },
   "dependencies": {
     "next": "16.3.0",

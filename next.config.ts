@@ -56,6 +56,55 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+
+      /*
+        The two crawl surfaces. Both are prerendered, and both left the build
+        with `max-age=0, must-revalidate`, which is Vercel's default for a
+        static file and which tells every cache between here and the crawler
+        to ask again every time. Nothing about a 275-URL sitemap needs to be
+        that fresh: it can only change when a deployment changes it, and a
+        deployment purges the CDN anyway (§7).
+
+        `max-age=0` still, so a browser revalidates; `s-maxage` is the part the
+        CDN reads.
+      */
+      {
+        source: "/sitemap.xml",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        source: "/robots.txt",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        ],
+      },
+
+      /*
+        Nothing under /api may be cached anywhere, by anyone.
+
+        /api/revalidate is the flush itself, and a cached 200 would mean the
+        second flush of a day silently never happened. /api/build is how CI
+        decides the new deployment is live, so an answer one build out of date
+        makes it purge the cache it is trying to fill. Both are one request a
+        deploy; there is nothing to gain and a whole failure mode to lose.
+      */
+      {
+        source: "/api/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store, max-age=0" },
+          /* Cloudflare's own cache rules bypass /api too, but a zone is
+             edited by hand and this is not - see PROJECT.md §7. */
+          { key: "CDN-Cache-Control", value: "no-store" },
+        ],
+      },
     ];
   },
 

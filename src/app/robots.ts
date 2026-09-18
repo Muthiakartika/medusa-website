@@ -8,9 +8,19 @@ import { SITE } from "@/lib/site";
  */
 export default function robots(): MetadataRoute.Robots {
   return {
-    // /preview holds design candidates — real routes, but not site content,
-    // and each carries its own noindex.
-    rules: { userAgent: "*", allow: "/", disallow: "/preview/" },
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: [
+        // /preview holds design candidates — real routes, but not site
+        // content, and each carries its own noindex.
+        "/preview/",
+        // The operational endpoints. Neither answers a GET with anything a
+        // crawler can index, and the cache flush in particular has no reason
+        // to appear in a crawl at all.
+        "/api/",
+      ],
+    },
     sitemap: `${SITE}/sitemap.xml`,
     host: SITE,
   };
