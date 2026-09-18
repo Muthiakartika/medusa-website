@@ -249,21 +249,28 @@ Three tiers, cheapest first:
    paragraphs appear on every page of their family rather than on one. If that
    ever needs undoing it is the `directory` prop on two call sites.
 
-   **Some entries are a link and nothing else**, and two rules decide it:
+   **Every entry carries a line**, from one of two sources:
 
-   - **A paragraph the reading page already carries** is skipped — `skip` is
-     that page's own `introHtml`. So a hub never prints its own sentence back
-     under twenty-five place names, and a location page never quotes itself in
-     its own list of neighbours.
-   - **A paragraph that is not unique in the list** is dropped from all of it.
-     The pages built from a service hub (`lib/planned-locations.ts`) all open on
-     that hub's sentence, so on `/mobile-car-wash/wembley/` the ten built wash
-     pages would print it ten times under ten names. A paragraph shared between
-     places is not about either of them.
+   1. **The page's own opening paragraph**, whole. Not used when it is not the
+      page's to lend: when the reading page already carries it (`skip` is that
+      page's own `introHtml`, so a hub never prints its own sentence back under
+      twenty-five place names and a location page never quotes itself), or when
+      another place in the same list opens on it too. Both mean the same thing —
+      the 49 pages built from a service hub all open on that hub's sentence, and
+      a sentence shared between places is about none of them.
+   2. **The page's meta description** in that case. The built pages' are 150
+      characters, all 49 distinct, and they at least name the place: "Mobile Car
+      Detailing in Barnet. Car detailing refers to…". One mirror page needs the
+      fallback for its own reason — `/our-locations/city-of-westminster/` has no
+      paragraph block of any length.
 
-   That leaves 25 of 32 bare on `/car-detailing/`, 14 of 74 on `/car-valeting/`,
-   11 of 77 on `/mobile-car-wash/` — **the visible measure of how much per-place
-   copy the client still owes**, and it fills itself in as that copy arrives.
+   The first cut of this left those entries as a bare link, which is the honest
+   rendering; the client looked at it and asked for the fallback anyway — "gak
+   apa isi deskripsi singkat aja" (2026-09-17). So 25 of 32 lines on
+   `/car-detailing/`, 14 of 74 on `/car-valeting/` and 10 of 77 on
+   `/mobile-car-wash/` read alike below the place name. **That count is the
+   per-place copy the client still owes**, and each one turns into a real
+   paragraph on its own the moment that copy lands, with no change here.
 
    **The map goes where the index stands.** Client, 2026-09-17: "hapus map jika
    sudah ada widget browser locationnya". 110 location pages carried a Google
@@ -289,6 +296,39 @@ Three tiers, cheapest first:
    already publishes, so adding a location page to a family adds a row. A
    family spans both URL shapes, so every index lists the moved pages and the
    52 that stayed on `mobile-car-…-in-…` together.
+
+   **The footer strip.** Client, 2026-09-18: "all the new location pages can be
+   in a scroll in the footer, like each being a location word then clicking into
+   the location page… like our seo boost one, but a bit better with claude
+   help", then "jangan lupa kasih pin point". `components/FooterLocations.tsx`
+   puts all 195 location pages across the foot of **every** page, under the
+   navigation's own label, "Our Locations".
+
+   The reference is one drag-to-scroll strip of six country names, each behind a
+   spinning globe. Four things had to change at 195 places:
+
+   - **Four strips, one per family.** A place here is up to four pages — Barnet
+     is a borough hub, a car wash and a detailing page — so one strip would
+     carry the same word three times going three different places. The label at
+     the head of each strip is what tells them apart, and it is never dropped on
+     a phone; it moves above the strip instead.
+   - **They scroll themselves**, alternating direction, and **stop on hover and
+     on focus**, because the point is to click a name and a moving name cannot
+     be clicked. Each strip's duration is set from its length (2.6s a name), so
+     the 32 detailing places do not race past while the 74 valeting ones crawl.
+   - **A touch screen gets no animation at all** — `@media (hover: none)` leaves
+     a plain swipe-to-scroll strip, which is the reference's own behaviour and
+     the only thing that works where there is no hover to pause with. Reduced
+     motion gets the same, and both drop the duplicate half of the track, since
+     it only exists to hide the seam in a loop that is no longer running.
+   - **The loop is seamless** because the track holds each list twice and
+     translates exactly −50%. The second copy is `aria-hidden` and its links
+     carry `tabIndex={-1}`, so every page is announced and reachable once.
+
+   The pin before each name is `Icon`'s own `pin`, carried as a CSS `mask` on
+   `.loc-chip::before` rather than as 390 inline SVGs. `.loc-chip` itself exists
+   for the same reason: the fourteen Tailwind utilities it replaces were adding
+   **~250 KB to every page on the site** when repeated 390 times.
 
 3. **Its own route** — for a page the extractor mangled badly enough that a
    frame cannot save it (`/repairs/headlight-restoration`,

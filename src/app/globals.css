@@ -311,6 +311,139 @@
       0 20px 44px -26px rgb(0 0 0 / 0.5);
   }
 
+  /* ── Marquee ──────────────────────────────────────────────────────────
+     The footer's scrolling location strips. The track holds the list twice,
+     so translating it exactly -50% lands the second copy where the first
+     started and the loop has no seam; the duplicate is aria-hidden and its
+     links are untabbable, so only one of each reaches the keyboard.
+
+     It stops on hover and on focus, because the whole point is to click a
+     name, and a name you have to chase is a name you cannot click. Under
+     prefers-reduced-motion nothing moves at all and the strip becomes an
+     ordinary horizontal scroller — which it also is on a touch screen, where
+     the animation is paused the moment a finger lands on it. */
+  .marquee {
+    overflow: hidden;
+    /* The names fade out at both ends instead of being cut mid-word. The fade
+       scales with the viewport: a fixed 4rem ate a third of a 375px phone. */
+    --fade: clamp(1.25rem, 5vw, 4rem);
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0,
+      #000 var(--fade),
+      #000 calc(100% - var(--fade)),
+      transparent 100%
+    );
+  }
+
+  /* One class rather than fourteen utilities repeated 390 times: the strip
+     carries every location twice, and inline the Tailwind added ~100 KB of
+     duplicated class text to every page on the site. */
+  .loc-chip {
+    display: inline-block;
+    white-space: nowrap;
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    font-size: 13.5px;
+    font-weight: 400;
+    line-height: 1;
+    color: rgb(255 255 255 / 0.7);
+    background-color: rgb(255 255 255 / 0.04);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07);
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  /* A map pin before every name, the way the reference strip marks each of
+     its regions. It is `Icon`'s own `pin` — the 24px grid, the 1.75 stroke —
+     carried as a mask rather than 390 inline SVGs, so it costs nothing per
+     chip and takes its colour from `background-color` like any other paint. */
+  .loc-chip::before {
+    content: "";
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    margin-right: 7px;
+    vertical-align: -1.5px;
+    background-color: var(--color-gold-bright);
+    transition: background-color 0.2s ease;
+    mask:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 10.5c0 5-7 10-7 10s-7-5-7-10a7 7 0 0 1 14 0Z'/%3E%3Ccircle cx='12' cy='10.3' r='2.6'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+  }
+
+  .loc-chip:hover {
+    color: var(--color-ink);
+    background-color: var(--color-gold);
+    box-shadow: inset 0 0 0 1px var(--color-gold);
+  }
+
+  /* On gold the bright gold pin disappears; it goes to ink with the label. */
+  .loc-chip:hover::before {
+    background-color: var(--color-ink);
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee-left var(--marquee-duration, 90s) linear infinite;
+  }
+
+  .marquee-track[data-reverse="true"] {
+    animation-name: marquee-right;
+  }
+
+  .marquee:hover .marquee-track,
+  .marquee:focus-within .marquee-track,
+  .marquee:active .marquee-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes marquee-left {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes marquee-right {
+    from {
+      transform: translateX(-50%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  /* No hover, no pause — so on a touch screen it does not move at all and the
+     strip is a plain swipe-to-scroll list, which is what the reference is on
+     every device. A name you have to catch is a name you cannot tap. The same
+     goes for anyone who has asked for less motion. The second copy of the list
+     only exists to make the loop seamless, so with the loop off it is dropped
+     and a thumb has half as far to travel. */
+  @media (hover: none), (prefers-reduced-motion: reduce) {
+    .marquee {
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+    }
+
+    .marquee-track {
+      animation: none;
+    }
+
+    /* `!important` because the list carries Tailwind's `flex`, and a utility
+       beats a component rule on layer order however specific this selector is.
+       An important declaration reverses that order, which is the only lever
+       here short of moving the rule out of the layer. */
+    .marquee-track > ul[aria-hidden="true"] {
+      display: none !important;
+    }
+  }
+
   /* ── Speed rule ───────────────────────────────────────────────────────
      The system's section marker: a gold bar cut off at the slant, like a
      livery stripe terminating on a body panel. It replaces the eyebrow

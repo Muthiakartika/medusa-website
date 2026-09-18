@@ -34,6 +34,15 @@ import type { DirectoryEntry } from "@/lib/location-frame";
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
+/**
+ * The id a block lands on, off the place rather than off the slug: the two URL
+ * shapes would otherwise give "wembley" one anchor and
+ * "mobile-car-detailing-in-colindale" another. Names are unique inside a
+ * family — `withAreaLinks` de-duplicates on them — so these are too.
+ */
+const anchorOf = (name: string) =>
+  name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
 /** The key a place files under: its initial, or "#" for a name starting with a digit. */
 const initialOf = (name: string) => {
   const c = name.trim().charAt(0).toUpperCase();
@@ -338,7 +347,7 @@ function LocationDirectory({ entries }: { entries: DirectoryEntry[] }) {
             </h3>
             {items.map((entry) => (
               <Reveal key={entry.slug} as="article" className="mb-7 break-inside-avoid">
-                <div id={entry.slug.split("/").pop()} className="scroll-mt-28">
+                <div id={anchorOf(entry.name)} className="scroll-mt-28">
                   <h4 className="font-[family-name:var(--font-ui)] text-[19px] leading-tight font-semibold text-white lg:text-[21px]">
                     <Link
                       href={`/${entry.slug}/`}

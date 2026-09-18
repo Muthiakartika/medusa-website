@@ -45,12 +45,34 @@ const UNDER_HUB = new Set([...MOVED_LOCATIONS, ...PLANNED_SLUGS]);
  * `indexTitle` names what the list holds, so it says the service rather than
  * repeating the page's own heading back at it. The borough family has no
  * service of its own — its pages cover all three — so it is "All Locations".
+ * `rowLabel` is the same name at the head of a footer strip, where the space is
+ * one line and the word "Locations" is already implied by everything in it.
  */
 export const LOCATION_FAMILIES = [
-  { prefix: "our-locations/", hub: null, indexTitle: "All Locations" },
-  { prefix: "mobile-car-wash-in-", hub: "mobile-car-wash/", indexTitle: "Mobile Car Wash Locations" },
-  { prefix: "mobile-car-valeting-in-", hub: "car-valeting/", indexTitle: "Mobile Car Valeting Locations" },
-  { prefix: "mobile-car-detailing-in-", hub: "car-detailing/", indexTitle: "Mobile Car Detailing Locations" },
+  {
+    prefix: "our-locations/",
+    hub: null,
+    indexTitle: "All Locations",
+    rowLabel: "Boroughs",
+  },
+  {
+    prefix: "mobile-car-wash-in-",
+    hub: "mobile-car-wash/",
+    indexTitle: "Mobile Car Wash Locations",
+    rowLabel: "Car Wash",
+  },
+  {
+    prefix: "mobile-car-valeting-in-",
+    hub: "car-valeting/",
+    indexTitle: "Mobile Car Valeting Locations",
+    rowLabel: "Valeting",
+  },
+  {
+    prefix: "mobile-car-detailing-in-",
+    hub: "car-detailing/",
+    indexTitle: "Mobile Car Detailing Locations",
+    rowLabel: "Detailing",
+  },
 ] as const;
 
 type Family = (typeof LOCATION_FAMILIES)[number];
@@ -133,6 +155,27 @@ export function hubLocations(slug: string) {
 }
 
 /**
+ * Every location page, as one strip per family — the footer's scrolling
+ * directory.
+ *
+ * Client, 2026-09-18: "all the new location pages can be in a scroll in the
+ * footer, like each being a location word then clicking into the location
+ * page… like our seo boost one, but a bit better".
+ *
+ * **One strip per family rather than one long strip.** A place is not a page
+ * here, it is up to four: Barnet has a borough hub, a car wash page and a
+ * detailing page. Run together, the strip would carry "Barnet" three times with
+ * three different destinations and no way to tell them apart. Split by family,
+ * each strip's label says which of the three a name goes to.
+ */
+export function locationStrips() {
+  return LOCATION_FAMILIES.map((family) => ({
+    label: family.rowLabel,
+    items: membersOf(family),
+  })).filter((strip) => strip.items.length > 0);
+}
+
+/**
  * The A–Z index with a page's "areas we cover" row folded into it.
  *
  * Client, 2026-09-17: "ini double, pake yg browser A-Z aja tapi judulnya pake
@@ -204,57 +247,63 @@ const plain = (html: string) =>
  * item. The control is for finding a place you already have in mind; this is
  * for reading down them.
  *
- * The blurb is the page's own opening paragraph, chosen the way `lib/hub.ts`
- * chooses a card's: the first one that is prose rather than a phone number.
- * Nothing is written here and nothing is trimmed — an entry either carries a
- * paragraph whole or carries none.
+ * **Every entry carries a line.** Two sources, in order:
  *
- * **Two rules decide whether an entry carries one at all**, and both exist for
- * the same reason: the 49 pages in `lib/planned-locations.ts` have no copy
- * about their own place. They are built out of their service hub, so their
- * opening paragraph *is* the hub's, and all of a hub's built pages open on the
- * same sentence.
+ * 1. **The page's own opening paragraph**, chosen the way `lib/hub.ts` chooses
+ *    a card blurb — the first that is prose rather than a phone number — and
+ *    used whole. Nothing is written and nothing is trimmed.
+ * 2. **The page's meta description**, where that paragraph is not the page's
+ *    own to lend. Two ways it can fail to be: it is a paragraph the reading
+ *    page already carries (`skip`), or it is shared with another place in the
+ *    same list. Both mean the same thing — the 49 pages in
+ *    `lib/planned-locations.ts` are built out of their service hub, so they all
+ *    open on the hub's sentence, and a sentence shared between places is about
+ *    none of them. Their descriptions at least name the place: "Mobile Car
+ *    Detailing in Barnet. Car detailing refers to…", 150 characters, and all 49
+ *    distinct. One mirror page needs the fallback for a different reason —
+ *    `/our-locations/city-of-westminster/` carries no paragraph block at all.
  *
- * 1. **A paragraph the reading page already carries is skipped.** `skip` is
- *    that page's own opening paragraphs, so a hub never prints its own sentence
- *    back under twenty-five place names, and a location page never quotes
- *    itself in its own list of neighbours.
- * 2. **A paragraph that is not unique in the list is dropped from all of it.**
- *    On `/mobile-car-wash/wembley/` the ten built wash pages would otherwise
- *    each print the hub's sentence — ten identical paragraphs under ten
- *    different names. A paragraph shared between places is not about either of
- *    them, so no one gets it.
- *
- * Both are self-correcting: when the client writes real copy for a place, that
- * page stops matching and its blurb appears on its own.
+ * The client was shown the bare version first and asked for the fallback
+ * anyway: "gak apa isi deskripsi singkat aja" (2026-09-17). So these entries
+ * read alike below the place name until per-place copy replaces them, at which
+ * point the paragraph wins on its own with no change here.
  */
 export function locationDirectory(
   items: { slug: string; name: string }[],
   skip: string[] = [],
 ): DirectoryEntry[] {
   const theirs = new Set(skip.map(plain));
-  const seen = new Map<string, number>();
+  const count = new Map<string, number>();
 
-  const draft = items.map(({ slug, name }): DirectoryEntry & { text?: string } => {
+  const draft = items.map(({ slug, name }) => {
     const page = PAGES[slug];
-    if (!page) return { slug, name };
+    let para: { text: string; html: string } | null = null;
 
-    for (const b of flatten(page.sections.flatMap((s) => s.blocks))) {
+    for (const b of flatten(page?.sections.flatMap((s) => s.blocks) ?? [])) {
       if (b.type !== "paragraph") continue;
       if (/href="tel:/i.test(b.html)) continue;
       const text = plain(b.html);
       if (text.length < 90) continue;
+      // The reading page's own words. Nothing further down will be better.
       if (theirs.has(text)) break;
-      seen.set(text, (seen.get(text) ?? 0) + 1);
-      return { slug, name, blurbHtml: b.html, text };
+      para = { text, html: b.html };
+      break;
     }
-    return { slug, name };
+
+    if (para) count.set(para.text, (count.get(para.text) ?? 0) + 1);
+    return { slug, name, page, para };
   });
 
-  return draft.map(({ slug, name, blurbHtml, text }) =>
-    text && seen.get(text)! > 1 ? { slug, name } : { slug, name, blurbHtml },
-  );
+  return draft.map(({ slug, name, page, para }): DirectoryEntry => {
+    if (para && count.get(para.text) === 1) return { slug, name, blurbHtml: para.html };
+    const meta = (page?.description ?? "").trim();
+    return meta ? { slug, name, blurbHtml: escapeHtml(meta) } : { slug, name };
+  });
 }
+
+/** The meta description is plain text; it is rendered through the same prop. */
+const escapeHtml = (text: string) =>
+  text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /**
  * The borough family, for `/our-locations/` — the one hub whose family has no

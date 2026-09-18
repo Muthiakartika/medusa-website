@@ -1,9 +1,14 @@
 import Image from "next/image";
+import FooterLocations from "@/components/FooterLocations";
 import { CONTACT, FOOTER } from "@/lib/site";
 
 export default function Footer() {
   return (
     <footer className="w-full bg-[#0d0d0d]">
+      {/* The location directory, above the footer's own columns — client,
+          2026-09-18. See components/FooterLocations.tsx. */}
+      <FooterLocations />
+
       <div className="shell py-16">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           {/* Brand */}
