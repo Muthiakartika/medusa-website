@@ -537,20 +537,36 @@ What each layer was doing, measured 2026-09-18:
 | --- | --- | --- |
 | `/`, and every other page | `public, max-age=0, must-revalidate` | `DYNAMIC` |
 | `/sitemap.xml` | `public, max-age=0, must-revalidate` | `DYNAMIC` |
+| `/_next/image/?url=…&w=64&q=75` | `public, max-age=2592000, swr=31536000` | `DYNAMIC` |
 | `/robots.txt` | `public, max-age=14400, must-revalidate` | `REVALIDATED` |
 | `/assets/…webp` | `public, max-age=2592000, swr=31536000` | `MISS` then `HIT` |
+| `/_next/static/…woff2` | `public, max-age=31536000, immutable` | `MISS` then `HIT` |
 
-**`DYNAMIC` means Cloudflare cached nothing.** Every one of the 305 pages was
-fetched from Vercel on every request, and the CDN in front of it was a TLS
-terminator with a nice dashboard. The images were fine — that is the
-`/assets/:path*` header in `next.config.ts` doing its job — and so, by
-accident, was `robots.txt`.
+**`DYNAMIC` means Cloudflare cached nothing.** Two separate holes, with
+separate causes:
+
+- **Every one of the 305 pages** was fetched from Vercel on every request. The
+  CDN in front of it was a TLS terminator with a nice dashboard.
+- **Every optimised image too** — and that one is not about the header, which
+  is a perfectly good month. `/_next/image/` has no file extension, and
+  Cloudflare's default caching is extension-driven, so it declines to cache a
+  response it was explicitly invited to keep. The homepage alone carries **264
+  `/_next/image` URLs**, so a single pageview was 264 round trips into a
+  *metered* image optimiser. The block at the top of `next.config.ts` records
+  what happens when that meter runs out: `402` and 525 blank photographs.
+
+What was fine: `/assets` and `/_next/static`, both cached by extension off
+their own long `max-age`, and — by accident — `robots.txt`.
 
 `next.config.ts` now sends an `s-maxage` for `/sitemap.xml` and `/robots.txt`,
-and `no-store` for everything under `/api/`. The pages it cannot fix from here:
-their header is Vercel's, not ours. Caching them means telling Cloudflare to
-ignore it, which is a zone setting rather than anything in this repo — three
-**Cache Rules**, under Rules → Caching, in this order:
+and `no-store` for everything under `/api/`. The rest cannot be fixed from
+here: the pages' header is Vercel's, not ours, and `/_next/image`'s is already
+right. Both need Cloudflare told what to do, which is a zone setting rather
+than anything in this repo — three **Cache Rules**, under Caching → Cache
+Rules.
+
+The three expressions partition every path between them, so no request matches
+two and the order they sit in is presentation, not behaviour.
 
 1. **Bypass the API.**
    `starts_with(http.request.uri.path, "/api/")` → *Bypass cache*.
@@ -559,11 +575,16 @@ ignore it, which is a zone setting rather than anything in this repo — three
    happened, and a cached `/api/build/` would have CI purge the cache it is
    trying to fill.
 
-2. **Leave the origin's own TTLs alone.**
+2. **Cache what already asked to be cached.**
    `starts_with(http.request.uri.path, "/assets/") or starts_with(http.request.uri.path, "/_next/")`
    → *Eligible for cache*, Edge TTL **Use cache-control header**.
-   Both already send a long, deliberate `max-age`; rule 3 must not overwrite
-   it.
+   This is the `/_next/image` fix, and the biggest single win of the three:
+   `/assets` and `/_next/static` were already cached by extension and lose
+   nothing by being named, while `/_next/image` goes from `DYNAMIC` to `HIT`.
+   Nothing about their TTL is overridden — the origin's month and year stand.
+   Cloudflare's cache key includes the query string, so each `w`/`q` variant is
+   its own entry, and Vercel's `&dpl=` deployment id means a deploy retires the
+   old ones rather than serving them.
 
 3. **Cache the pages.**
    `not starts_with(http.request.uri.path, "/api/") and not starts_with(http.request.uri.path, "/assets/") and not starts_with(http.request.uri.path, "/_next/")`
@@ -578,7 +599,10 @@ carries a `?_rsc=<hash>` query, which is part of Cloudflare's default cache
 key, so it never collides with the HTML at the same path; Next's CDN guide says
 the parameter exists for exactly this reason.
 
-A day's edge TTL is only safe because of what follows.
+Rules 1 and 2 are safe on their own and can go in first. **Rule 3 is the one
+with a day's worth of teeth**, and it is only safe once the purge below is
+actually wired — until `REVALIDATE_SECRET` is set, a corrected price would sit
+behind it for 24 hours.
 
 ### On-demand flush
 
