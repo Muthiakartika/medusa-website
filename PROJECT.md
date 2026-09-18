@@ -272,14 +272,33 @@ Three tiers, cheapest first:
    per-place copy the client still owes**, and each one turns into a real
    paragraph on its own the moment that copy lands, with no change here.
 
-   **The map goes where the index stands.** Client, 2026-09-17: "hapus map jika
-   sudah ada widget browser locationnya". 110 location pages carried a Google
-   embed of their own place directly above the index — two location blocks back
-   to back — so `LocationPage` renders `model.map` only when there is no index.
-   This is the one place a frame deliberately drops something the source
-   carries (the "Our Location" heading and its embed), against rule 8.2, and it
-   is the client's own call after seeing both on screen. The homepage's own map
-   and `/our-locations/`'s are different components and are untouched.
+   **The map, on every location page.** It came off on 2026-09-17 — "hapus map
+   jika sudah ada widget browser locationnya", when 110 pages showed a Google
+   embed directly above the index — and went back on the next day, against
+   `/mobile-car-wash-in-hounslow/`: "bisa gak tambahin map locationnya untuk
+   semua location pages saja, tapi sesuain titiknya". So all 195 carry one now,
+   in the source's own position: after the questions, before the neighbours.
+
+   **The point is never guessed.** The source's embeds are
+   `//maps.google.com/maps?q=<place>&output=embed`, and `mapFor()` fills that
+   `q` from three places in order:
+
+   | Source | Pages | |
+   | --- | --- | --- |
+   | the page's own embed | 121 | used exactly as it stands |
+   | a sibling page's, same place | 27 | `/our-locations/barnet/` has none; `/mobile-car-wash/barnet/` does |
+   | the place name **and the country** | 47 | the site has never mapped these |
+
+   The country is not decoration. Bare `?q=Reading` or `?q=Surrey` can land in
+   Pennsylvania or British Columbia; `, UK` resolves them to 51.455,-0.979 and
+   51.262,-0.467 — Berkshire and England. The source disambiguates the same way
+   where it had to: nine of its own queries are not just the place name, among
+   them "Preston London" (otherwise Lancashire), "Watford Hertfordshire" and
+   "Royal Borough of Windsor".
+
+   The heading is "Our Location", which is what the source writes above 110 of
+   these maps. The homepage's own map and `/our-locations/`'s are different
+   components and are untouched.
 
    A heading over 30 characters takes the smaller uppercase rank rather than the
    50px section head: `AREAS WE PROVIDE STANDARD CAR WASH SERVICES IN LONDON:`
@@ -301,34 +320,46 @@ Three tiers, cheapest first:
    in a scroll in the footer, like each being a location word then clicking into
    the location page… like our seo boost one, but a bit better with claude
    help", then "jangan lupa kasih pin point". `components/FooterLocations.tsx`
-   puts all 195 location pages across the foot of **every** page, under the
-   navigation's own label, "Our Locations".
+   is that strip, under the navigation's own label, "Our Locations".
+
+   **It is on 199 pages and carries one family.** The first cut put all four
+   families on all 305; shown that, the client scoped it — "is it possible to
+   only show the location slider on these 3 pages and then just all the location
+   pages", against the three service hubs, and "berdasarkan servicenya ya jangan
+   semua ditambahkan". So a location page shows its own family, a service hub
+   shows the family it is the hub of, and every other page shows nothing. The
+   page itself is left out of its own strip.
+
+   That is why one family is enough now. Four were needed when every page
+   carried them all: a place here is up to four pages — Barnet is a borough hub,
+   a car wash and a detailing page — so an unlabelled mix would have carried
+   "Barnet" three times going three different places. A page that belongs to one
+   family has no such ambiguity, and the label still names it.
+
+   `Footer` takes an optional `slug` and only the catch-all passes one, so every
+   hand-built route gets no strip by default rather than by remembering to.
+   Dropping it from the homepage alone took that page from 661 KB to 258 KB.
 
    The reference is one drag-to-scroll strip of six country names, each behind a
-   spinning globe. Four things had to change at 195 places:
+   spinning globe. Three things are different:
 
-   - **Four strips, one per family.** A place here is up to four pages — Barnet
-     is a borough hub, a car wash and a detailing page — so one strip would
-     carry the same word three times going three different places. The label at
-     the head of each strip is what tells them apart, and it is never dropped on
-     a phone; it moves above the strip instead.
-   - **They scroll themselves**, alternating direction, and **stop on hover and
-     on focus**, because the point is to click a name and a moving name cannot
-     be clicked. Each strip's duration is set from its length (2.6s a name), so
-     the 32 detailing places do not race past while the 74 valeting ones crawl.
+   - **It scrolls itself** and **stops on hover and on focus**, because the
+     point is to click a name and a moving name cannot be clicked. The duration
+     comes off the strip's length (2.6s a name), so a 32-place strip does not
+     race past while a 74-place one crawls.
    - **A touch screen gets no animation at all** — `@media (hover: none)` leaves
      a plain swipe-to-scroll strip, which is the reference's own behaviour and
      the only thing that works where there is no hover to pause with. Reduced
      motion gets the same, and both drop the duplicate half of the track, since
      it only exists to hide the seam in a loop that is no longer running.
-   - **The loop is seamless** because the track holds each list twice and
+   - **The loop is seamless** because the track holds the list twice and
      translates exactly −50%. The second copy is `aria-hidden` and its links
      carry `tabIndex={-1}`, so every page is announced and reachable once.
 
    The pin before each name is `Icon`'s own `pin`, carried as a CSS `mask` on
-   `.loc-chip::before` rather than as 390 inline SVGs. `.loc-chip` itself exists
-   for the same reason: the fourteen Tailwind utilities it replaces were adding
-   **~250 KB to every page on the site** when repeated 390 times.
+   `.loc-chip::before` rather than as an inline SVG per chip. `.loc-chip` itself
+   exists for the same reason: the fourteen Tailwind utilities it replaces were
+   adding ~250 KB to every page when the strip carried all four families.
 
 3. **Its own route** — for a page the extractor mangled badly enough that a
    frame cannot save it (`/repairs/headlight-restoration`,

@@ -10,6 +10,7 @@ import type { Page, Section } from "@/lib/blocks";
 import {
   foldableAreas,
   locationDirectory,
+  mapFor,
   parseLocationPage,
   placeName,
   siblingIndex,
@@ -54,6 +55,7 @@ export default function LocationPage({ page }: { page: Page }) {
         }
       : null;
   const places = folded?.items ?? others?.items ?? [];
+  const map = mapFor(page.slug, model.map);
 
   return (
     <main className="flex-1">
@@ -96,18 +98,17 @@ export default function LocationPage({ page }: { page: Page }) {
       {model.faqSection && <Faq section={model.faqSection} />}
 
       {/*
-        "hapus map jika sudah ada widget browser locationnya" — client,
-        2026-09-17. The map is a Google embed of the page's own place, and on
-        110 of these pages it stands immediately above the A–Z index: two
-        location blocks back to back, the second of which is the one that does
-        something. So the map goes where the index is there to replace it, and
-        stays where there is no index.
+        The map, on every location page, in the source's own position — after
+        the questions and before the neighbours.
 
-        This is the one place the frame drops something the source carries: the
-        "Our Location" heading and its embed. The client asked for it after
-        seeing both on screen.
+        Taken off on 2026-09-17 ("hapus map jika sudah ada widget browser
+        locationnya") and put back on all 195 the next day, against
+        `/mobile-car-wash-in-hounslow/`: "bisa gak tambahin map locationnya
+        untuk semua location pages saja, tapi sesuain titiknya". `mapFor` is
+        where the point comes from — the page's own embed, a sibling's for the
+        same place, or the place and the country, in that order.
       */}
-      {model.map && !others && <Map map={model.map} place={place} />}
+      {map && <Map map={map} place={place} />}
 
       {/*
         The sibling index, last on the page above the footer — the client's

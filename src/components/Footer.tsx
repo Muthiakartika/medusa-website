@@ -2,12 +2,17 @@ import Image from "next/image";
 import FooterLocations from "@/components/FooterLocations";
 import { CONTACT, FOOTER } from "@/lib/site";
 
-export default function Footer() {
+/**
+ * `slug` is only for the location strip — see `FooterLocations`. A route that
+ * does not pass one gets no strip, which is what every page outside the three
+ * service hubs and the 195 location pages should have.
+ */
+export default function Footer({ slug }: { slug?: string } = {}) {
   return (
     <footer className="w-full bg-[#0d0d0d]">
-      {/* The location directory, above the footer's own columns — client,
-          2026-09-18. See components/FooterLocations.tsx. */}
-      <FooterLocations />
+      {/* This page's own service's locations, above the footer's own columns
+          — client, 2026-09-18. See components/FooterLocations.tsx. */}
+      <FooterLocations slug={slug} />
 
       <div className="shell py-16">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">

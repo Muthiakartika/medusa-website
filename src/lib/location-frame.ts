@@ -155,24 +155,100 @@ export function hubLocations(slug: string) {
 }
 
 /**
- * Every location page, as one strip per family — the footer's scrolling
- * directory.
+ * The map every location page shows, centred on its own place.
+ *
+ * Client, 2026-09-18, pointing at `/mobile-car-wash-in-hounslow/`: "bisa gak
+ * tambahin map locationnya untuk semua location pages saja, tapi sesuain
+ * titiknya". This reverses the instruction of the day before, which took the
+ * map off the pages that had one; it is now on all 195.
+ *
+ * **The point is never guessed.** The source's own embeds are
+ * `//maps.google.com/maps?q=<place>&output=embed`, and three sources fill that
+ * `q`, in order:
+ *
+ * 1. **The page's own embed**, where the mirror gave it one — 121 pages. Used
+ *    exactly as it stands.
+ * 2. **A sibling page's, for the same place** — 27 more. `/our-locations/barnet/`
+ *    has no map of its own but `/mobile-car-wash/barnet/` does, and it is the
+ *    same point.
+ * 3. **The place name and the country**, for the 47 places the site has never
+ *    mapped. The country matters: bare `?q=Reading` or `?q=Surrey` can land in
+ *    Pennsylvania or British Columbia, and the source disambiguates the same
+ *    way where it had to — its own queries include "Preston London", "Watford
+ *    Hertfordshire" and "Royal Borough of Windsor", none of which is just the
+ *    place name.
+ *
+ * The heading is "Our Location", which is what the source writes above 110 of
+ * these maps.
+ */
+const mapQueries = (() => {
+  let index: Map<string, string> | null = null;
+  return () => {
+    if (index) return index;
+    index = new Map<string, string>();
+    for (const slug of Object.keys(PAGES)) {
+      if (!isLocationSlug(slug)) continue;
+      const embed = flatten(PAGES[slug].sections.flatMap((s) => s.blocks)).find(
+        (b) => b.type === "embed",
+      );
+      if (embed?.type !== "embed") continue;
+      const q = decodeURIComponent((embed.src.match(/[?&]q=([^&]*)/) ?? [])[1] ?? "").replace(
+        /\+/g,
+        " ",
+      );
+      const key = placeName(slug).toLowerCase();
+      if (q && !index.has(key)) index.set(key, q);
+    }
+    return index;
+  };
+})();
+
+/** The page's own map, or one built for its place. Null off a location page. */
+export function mapFor(slug: string, own?: LocationModel["map"]): LocationModel["map"] {
+  if (own) return own;
+  if (!isLocationSlug(slug)) return undefined;
+
+  const place = placeName(slug);
+  const query = mapQueries().get(place.toLowerCase()) ?? `${place}, UK`;
+
+  return {
+    heading: "Our Location",
+    embed: {
+      type: "embed",
+      src: `https://maps.google.com/maps?q=${encodeURIComponent(query)}&output=embed`,
+      title: place,
+    },
+  };
+}
+
+/**
+ * The one strip of places a page's footer shows — its own family's.
  *
  * Client, 2026-09-18: "all the new location pages can be in a scroll in the
  * footer, like each being a location word then clicking into the location
- * page… like our seo boost one, but a bit better".
+ * page… like our seo boost one, but a bit better", then, seeing all four strips
+ * on all 305 pages: "is it possible to only show the location slider on these 3
+ * pages and then just all the location pages", against the three service hubs —
+ * and "berdasarkan servicenya ya jangan semua ditambahkan".
  *
- * **One strip per family rather than one long strip.** A place is not a page
- * here, it is up to four: Barnet has a borough hub, a car wash page and a
- * detailing page. Run together, the strip would carry "Barnet" three times with
- * three different destinations and no way to tell them apart. Split by family,
- * each strip's label says which of the three a name goes to.
+ * So the strip appears on **199 pages and carries one family**: a location
+ * page shows its own, a service hub shows the one it is the hub of, and every
+ * other page gets nothing. That is also why it can be one family — the reason
+ * there were four was that a place is up to four pages here (Barnet is a
+ * borough hub, a car wash page and a detailing page) and an unlabelled mix
+ * would carry "Barnet" three times going three different places. A page that
+ * belongs to one family has no such ambiguity: it shows that family, and the
+ * label still names it.
+ *
+ * The page itself is left out of its own strip.
  */
-export function locationStrips() {
-  return LOCATION_FAMILIES.map((family) => ({
-    label: family.rowLabel,
-    items: membersOf(family),
-  })).filter((strip) => strip.items.length > 0);
+export function footerStrip(slug: string) {
+  const family =
+    familyOf(slug) ?? LOCATION_FAMILIES.find((f) => f.hub === `${slug}/`);
+  if (!family) return null;
+
+  const items = membersOf(family).filter((m) => m.slug !== slug);
+  return items.length ? { label: family.rowLabel, items } : null;
 }
 
 /**

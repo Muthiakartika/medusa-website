@@ -53,7 +53,7 @@ export default async function CatchAllPage({ params }: PageProps<"/[...slug]">) 
         <JsonLd data={pageSchema(page)} />
         <Header />
         <ServicePage page={page} />
-        <Footer />
+        <Footer slug={page.slug} />
       </>
     );
   }
@@ -68,7 +68,7 @@ export default async function CatchAllPage({ params }: PageProps<"/[...slug]">) 
         <JsonLd data={pageSchema(page)} />
         <Header />
         <LocationPage page={page} />
-        <Footer />
+        <Footer slug={page.slug} />
       </>
     );
   }
@@ -95,7 +95,7 @@ export default async function CatchAllPage({ params }: PageProps<"/[...slug]">) 
           bands={page.post ? "content" : "alternate"}
         />
       </main>
-      <Footer />
+      <Footer slug={page.slug} />
     </>
   );
 }

@@ -1,26 +1,28 @@
 import Link from "next/link";
-import { locationStrips } from "@/lib/location-frame";
+import { footerStrip } from "@/lib/location-frame";
 
 /**
- * Every location page the site has, scrolling across the foot of every page.
+ * The places of this page's own service, scrolling across the foot of it.
  *
  * Client, 2026-09-18: "all the new location pages can be in a scroll in the
  * footer, like each being a location word then clicking into the location
- * page… like our seo boost one, but a bit better with claude help."
+ * page… like our seo boost one, but a bit better with claude help", then "is it
+ * possible to only show the location slider on these 3 pages and then just all
+ * the location pages" — the three service hubs — and "berdasarkan servicenya ya
+ * jangan semua ditambahkan".
  *
- * The reference is a single drag-to-scroll strip of six country names. This is
- * the same idea at 195 places, and the differences are what "a bit better" had
- * to mean at that size:
+ * So `slug` decides everything: `footerStrip()` returns that page's own family
+ * and nothing else, and null off the 199 pages that have one. A page that does
+ * not pass a slug — every hand-built route — gets no strip at all, which is the
+ * safe default rather than a thing to remember.
  *
- * - **Four strips, one per family** (`locationStrips()`). A place here is up to
- *   four pages — Barnet is a borough hub, a car wash and a detailing page — so
- *   one long strip would carry the same word three times going three different
- *   places. The label at the head of each strip is what tells them apart.
- * - **They scroll on their own**, alternating direction, and **stop on hover or
- *   focus** so a name can actually be clicked. The reference only drags.
- * - **Each strip runs at the same speed** whatever its length: the duration is
- *   set from the number of names, not fixed, so the 32 detailing places do not
- *   race past while the 74 valeting ones crawl.
+ * The reference is a drag-to-scroll strip of six country names. Three things
+ * are different here:
+ *
+ * - **It scrolls on its own** and **stops on hover or focus**, so a name can
+ *   actually be clicked. The reference only drags.
+ * - **Its duration comes off its length** (2.6s a name), so a 32-place strip
+ *   does not race past while a 74-place one crawls.
  * - **A touch screen gets no animation at all**, just a swipe-to-scroll strip —
  *   the reference's own behaviour. There is no hover there to pause with, and a
  *   name that keeps moving is a name that cannot be tapped. Anyone who has
@@ -29,9 +31,9 @@ import { locationStrips } from "@/lib/location-frame";
  * The strip writes nothing. Every word is `placeName()` off a slug the site
  * already publishes, so a new location page joins the footer by existing.
  */
-export default function FooterLocations() {
-  const strips = locationStrips();
-  if (!strips.length) return null;
+export default function FooterLocations({ slug }: { slug?: string }) {
+  const strip = slug ? footerStrip(slug) : null;
+  if (!strip) return null;
 
   return (
     <section
@@ -50,10 +52,8 @@ export default function FooterLocations() {
         </h2>
       </div>
 
-      <div className="shell mt-7 flex flex-col gap-3">
-        {strips.map((strip, i) => (
-          <Strip key={strip.label} {...strip} reverse={i % 2 === 1} />
-        ))}
+      <div className="shell mt-7">
+        <Strip {...strip} />
       </div>
     </section>
   );
@@ -62,11 +62,9 @@ export default function FooterLocations() {
 function Strip({
   label,
   items,
-  reverse,
 }: {
   label: string;
   items: { slug: string; name: string }[];
-  reverse: boolean;
 }) {
   /* One name every 2.6 seconds, so every strip reads at the same pace however
      many it carries. The track holds the list twice, hence the doubling. */
@@ -85,7 +83,6 @@ function Strip({
       <div className="marquee min-w-0 flex-1">
         <div
           className="marquee-track"
-          data-reverse={reverse}
           style={{ "--marquee-duration": duration } as React.CSSProperties}
         >
           <Row items={items} label={label} />
