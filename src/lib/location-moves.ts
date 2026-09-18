@@ -15,11 +15,16 @@
  * same hub — `/mobile-car-wash/wembley/` is one, `/mobile-car-wash/gold-wash/`
  * is not.
  *
- * No 301s: the client asked for the URLs to change and the old ones to go,
- * so unlike `lib/redirects.ts` nothing here is served. The `from` column is
- * kept because `npm run content` keys `pages.json` off the mirror, which still
- * publishes the old URLs — this is the map back, the same job the redirect
- * table does for the 2026-09-15 move (PROJECT.md §3).
+ * The `from` column does two jobs. It is the map back for `npm run content`,
+ * which keys `pages.json` off the mirror and the mirror still publishes the
+ * old URLs (PROJECT.md §3). And since 2026-09-18 it is also a 301: this table
+ * is spread into `lib/redirects.ts`, so every old URL sends a visitor and a
+ * crawler to the page that replaced it.
+ *
+ * It did not, at first. The sheet asked for the URLs to change and the old
+ * ones to go, and they went — 404, no forwarding address, on 75 URLs that were
+ * all in the WordPress site's own sitemap and therefore all indexed. Adding
+ * the redirects was the client's call on being shown that.
  */
 export const LOCATION_MOVES: ReadonlyArray<readonly [from: string, to: string]> = [
 

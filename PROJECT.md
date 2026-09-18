@@ -101,7 +101,9 @@ comes back with the old slugs and about 6,000 lines shorter. `lib/redirects.ts`
 is the map between the two — every rule there is one old URL and the new one it
 became — so re-applying it after a regeneration is what the missing step would
 do. `lib/location-moves.ts` is the second half of that map, for the 75 location
-pages (§5). Diff `pages.json` and spot-check before committing anything.
+pages (§5) - and since 2026-09-18 those same 75 pairs are 301s too, spread
+into the redirect table rather than copied out. Diff `pages.json` and
+spot-check before committing anything.
 
 ---
 
@@ -172,8 +174,10 @@ Three tiers, cheapest first:
    - `lib/location-frame.ts` + `components/LocationPage.tsx` — the 146
      location pages: `our-locations/*`, and the three service-in-a-place
      families in **two URL shapes each**. The SEO plan moved 75 of them under
-     their service hub (`/mobile-car-wash/wembley/`) and left the other 52 on
-     the mirror's `mobile-car-{valeting,wash,detailing}-in-*`, so
+     their service hub (`/mobile-car-wash/wembley/`) - the 75 old URLs 301
+     there, which they did not at first: all 75 were in the WordPress site's
+     own sitemap and all 75 answered 404 - and left the other 52 on the
+     mirror's `mobile-car-{valeting,wash,detailing}-in-*`, so
      `LOCATION_FAMILIES` carries a `prefix` and a `hub` and a page counts under
      the hub only when `lib/location-moves.ts` names it — otherwise the hub's
      own service pages would read as places. A family spans both shapes, so

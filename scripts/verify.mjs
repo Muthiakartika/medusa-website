@@ -29,14 +29,24 @@ const PLANNED = [...fs
 if (PLANNED.length === 0) throw new Error('verify: no planned locations parsed');
 
 /* The 301 table, read out of the TypeScript rather than imported from it —
-   this is a .mjs script and that is a .ts module. Only the sources are needed:
-   the sitemap deliberately leaves them out, so without them the count below
-   compares against every page in the mirror and is permanently wrong. */
-const REDIRECTED = new Set(
-  [...fs
-    .readFileSync(path.join(path.dirname(PAGES_JSON), '../lib/redirects.ts'), 'utf8')
-    .matchAll(/\["(\/[^"]*)", "\/[^"]*"\]/g)].map((m) => m[1]),
-);
+   this is a .mjs script and that is a .ts module. Two files, because the 75
+   location moves are spread into the table from lib/location-moves.ts rather
+   than written out in it, and a regex over one file would miss them.
+
+   The sources drive the sitemap count: the sitemap deliberately leaves them
+   out, so without them it compares against every page in the mirror and is
+   permanently wrong. The destinations drive the check below. */
+const lib = (name) => path.join(path.dirname(PAGES_JSON), '../lib/' + name);
+const REDIRECT_PAIRS = [
+  ...[...fs
+    .readFileSync(lib('redirects.ts'), 'utf8')
+    .matchAll(/\["(\/[^"]*)", "(\/[^"]*)"\]/g)].map((m) => [m[1], m[2]]),
+  ...[...fs
+    .readFileSync(lib('location-moves.ts'), 'utf8')
+    .matchAll(/^ {2}\["([^"]+)", "([^"]+)"\],$/gm)].map((m) => [`/${m[1]}/`, `/${m[2]}/`]),
+];
+if (REDIRECT_PAIRS.length < 150) throw new Error('verify: redirect table parsed short');
+const REDIRECTED = new Set(REDIRECT_PAIRS.map(([from]) => from));
 
 const routes = new Set([
   '/',
@@ -44,6 +54,17 @@ const routes = new Set([
   ...EXTRA_ROUTES,
   ...PLANNED,
 ]);
+
+/* A redirect that lands on a 404 is worse than no redirect: it spends a
+   crawler's budget to arrive nowhere, and it looks like it worked. Static, so
+   it fails before a single page is fetched. */
+const strandedTargets = REDIRECT_PAIRS
+  .map(([, to]) => to)
+  .filter((to) => !routes.has(to.replace(/\/$/, '') || '/'));
+if (strandedTargets.length)
+  throw new Error(
+    `verify: ${strandedTargets.length} redirect target(s) have no route, e.g. ${strandedTargets[0]}`,
+  );
 
 /* Links that are already broken on medusaautodetailing.co.uk (verified 404
    there), so reproducing them is correct clone behaviour, not a defect. */

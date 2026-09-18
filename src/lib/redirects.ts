@@ -1,11 +1,14 @@
+import { LOCATION_MOVES } from "./location-moves";
+
 /**
  * Every URL that no longer serves a page, and where it goes instead.
  *
  * Most of it is the old WordPress site, from the "301 redirects" tab of the
  * Menu update workbook - 75 rules, one per row, written with the trailing
- * slashes the sheet insists on. The last group is this clone's own history:
- * two menu groups moved on 2026-09-15 at the client's request, and those URLs
- * have been live here long enough to be worth keeping.
+ * slashes the sheet insists on. Then this clone's own history: two menu groups
+ * moved on 2026-09-15 at the client's request, and those URLs have been live
+ * here long enough to be worth keeping. Then the 75 location moves, which are
+ * not written out here at all - see the note above them.
  *
  * No source appears twice and no destination is itself a source, so none of
  * these can chain. That is why the 2026-09-15 move also rewrote the
@@ -115,6 +118,23 @@ export const REDIRECTS: ReadonlyArray<readonly [from: string, to: string]> = [
   ["/car-detailing/engine-bay-steam-cleaning/", "/repairs/engine-bay-steam-cleaning/"],
   ["/car-detailing/car-graffiti-removal/", "/repairs/car-graffiti-removal/"],
   ["/car-detailing/paint-overspray-removal/", "/repairs/paint-overspray-removal/"],
+
+  /*
+    The 75 location pages the SEO plan re-parented under their service hub.
+
+    These shipped without 301s, because the sheet asked for the URLs to change
+    and the old ones to go. What that cost was measurable: all 75 were in the
+    WordPress site's own Yoast sitemap, so every one of them is a URL Google
+    has indexed, and every one of them answered 404 while the page that
+    replaced it - same place, same service, same words - sat one path away
+    serving 200. Nothing was transferred; it was dropped.
+
+    Derived from `LOCATION_MOVES` rather than written out, because that table
+    already holds all 75 pairs and a second copy would only be a second thing
+    to keep in step. Its shape is bare slugs, so each one grows the slashes the
+    rest of this file wears.
+  */
+  ...LOCATION_MOVES.map(([from, to]) => [`/${from}/`, `/${to}/`] as const),
 ];
 
 /** The redirected paths as bare slugs, the form `PAGES` is keyed by. */
