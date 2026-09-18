@@ -295,8 +295,6 @@ export function withAreaLinks(
 export const foldableAreas = (areas: { href: string; label: string }[]) =>
   areas.length > 0 && areas.every((a) => a.href.startsWith("/"));
 
-export type DirectoryEntry = { slug: string; name: string; blurbHtml?: string };
-
 /** Every block on a page, columns recursed into, in document order. */
 function flatten(blocks: Block[], into: Block[] = []): Block[] {
   for (const b of blocks) {
@@ -305,81 +303,6 @@ function flatten(blocks: Block[], into: Block[] = []): Block[] {
   }
   return into;
 }
-
-const plain = (html: string) =>
-  html
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/\s+/g, " ")
-    .trim();
-
-/**
- * The index again, one entry per page, each carrying that page's own words.
- *
- * Client, 2026-09-17, against `/car-detailing/`: "thats good, we just need the
- * extra individual sections below that link to each page" — the other half of
- * the reference widget, which pairs its A–Z control with one titled block per
- * item. The control is for finding a place you already have in mind; this is
- * for reading down them.
- *
- * **Every entry carries a line.** Two sources, in order:
- *
- * 1. **The page's own opening paragraph**, chosen the way `lib/hub.ts` chooses
- *    a card blurb — the first that is prose rather than a phone number — and
- *    used whole. Nothing is written and nothing is trimmed.
- * 2. **The page's meta description**, where that paragraph is not the page's
- *    own to lend. Two ways it can fail to be: it is a paragraph the reading
- *    page already carries (`skip`), or it is shared with another place in the
- *    same list. Both mean the same thing — the 49 pages in
- *    `lib/planned-locations.ts` are built out of their service hub, so they all
- *    open on the hub's sentence, and a sentence shared between places is about
- *    none of them. Their descriptions at least name the place: "Mobile Car
- *    Detailing in Barnet. Car detailing refers to…", 150 characters, and all 49
- *    distinct. One mirror page needs the fallback for a different reason —
- *    `/our-locations/city-of-westminster/` carries no paragraph block at all.
- *
- * The client was shown the bare version first and asked for the fallback
- * anyway: "gak apa isi deskripsi singkat aja" (2026-09-17). So these entries
- * read alike below the place name until per-place copy replaces them, at which
- * point the paragraph wins on its own with no change here.
- */
-export function locationDirectory(
-  items: { slug: string; name: string }[],
-  skip: string[] = [],
-): DirectoryEntry[] {
-  const theirs = new Set(skip.map(plain));
-  const count = new Map<string, number>();
-
-  const draft = items.map(({ slug, name }) => {
-    const page = PAGES[slug];
-    let para: { text: string; html: string } | null = null;
-
-    for (const b of flatten(page?.sections.flatMap((s) => s.blocks) ?? [])) {
-      if (b.type !== "paragraph") continue;
-      if (/href="tel:/i.test(b.html)) continue;
-      const text = plain(b.html);
-      if (text.length < 90) continue;
-      // The reading page's own words. Nothing further down will be better.
-      if (theirs.has(text)) break;
-      para = { text, html: b.html };
-      break;
-    }
-
-    if (para) count.set(para.text, (count.get(para.text) ?? 0) + 1);
-    return { slug, name, page, para };
-  });
-
-  return draft.map(({ slug, name, page, para }): DirectoryEntry => {
-    if (para && count.get(para.text) === 1) return { slug, name, blurbHtml: para.html };
-    const meta = (page?.description ?? "").trim();
-    return meta ? { slug, name, blurbHtml: escapeHtml(meta) } : { slug, name };
-  });
-}
-
-/** The meta description is plain text; it is rendered through the same prop. */
-const escapeHtml = (text: string) =>
-  text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /**
  * The borough family, for `/our-locations/` — the one hub whose family has no

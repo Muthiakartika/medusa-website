@@ -233,44 +233,20 @@ Three tiers, cheapest first:
      it twice. So the section wears the family title and the card drops it —
      one name for the list, in the one place that has room for it.
 
-   **The directory under it.** Client, 2026-09-17, against `/car-detailing/`:
-   "thats good, we just need the extra individual sections below that link to
-   each page" — the other half of the reference widget, which pairs its A–Z
-   control with one titled block per item. `locationDirectory()` builds it and
-   `LocationDirectory` in `LocationIndex.tsx` lays it out: grouped by initial
-   like the control, two columns of flowed blocks, each an `<h4>` linking to the
-   page with an `id` to land on, over that page's own opening paragraph —
-   chosen the way `lib/hub.ts` chooses a card blurb, whole and untrimmed.
+   **A per-place directory under it was built and then removed.** On 2026-09-17
+   the client asked for "the extra individual sections below that link to each
+   page" — the other half of the reference widget, one titled block per place
+   over that page's own opening paragraph — first on the three mains, then on
+   all 195 location pages. Seeing it, they cut it the next day: "lets delete
+   this old version for each page (keep the search bar one above)". So the
+   control is the whole of it now.
 
-   **It is on all 199 pages the index is on.** It went on the three mains first;
-   "terapkan juga ke 195 halaman lokasi" (2026-09-17) put it on the rest. The
-   cost was raised before it was built and the client took the call: a location
-   page now republishes sixty-odd of its neighbours' opening paragraphs, so those
-   paragraphs appear on every page of their family rather than on one. If that
-   ever needs undoing it is the `directory` prop on two call sites.
-
-   **Every entry carries a line**, from one of two sources:
-
-   1. **The page's own opening paragraph**, whole. Not used when it is not the
-      page's to lend: when the reading page already carries it (`skip` is that
-      page's own `introHtml`, so a hub never prints its own sentence back under
-      twenty-five place names and a location page never quotes itself), or when
-      another place in the same list opens on it too. Both mean the same thing —
-      the 49 pages built from a service hub all open on that hub's sentence, and
-      a sentence shared between places is about none of them.
-   2. **The page's meta description** in that case. The built pages' are 150
-      characters, all 49 distinct, and they at least name the place: "Mobile Car
-      Detailing in Barnet. Car detailing refers to…". One mirror page needs the
-      fallback for its own reason — `/our-locations/city-of-westminster/` has no
-      paragraph block of any length.
-
-   The first cut of this left those entries as a bare link, which is the honest
-   rendering; the client looked at it and asked for the fallback anyway — "gak
-   apa isi deskripsi singkat aja" (2026-09-17). So 25 of 32 lines on
-   `/car-detailing/`, 14 of 74 on `/car-valeting/` and 10 of 77 on
-   `/mobile-car-wash/` read alike below the place name. **That count is the
-   per-place copy the client still owes**, and each one turns into a real
-   paragraph on its own the moment that copy lands, with no change here.
+   Worth keeping in mind if it is ever asked for again: it could not say much.
+   The 49 pages built from a service hub all open on that hub's sentence, so 25
+   of 32 blocks on `/car-detailing/` fell back to the page's meta description
+   and read alike below the place name. **That ratio is the per-place copy the
+   client still owes**, and it is the thing to fix before rebuilding the
+   directory rather than after.
 
    **The map, on every location page.** It came off on 2026-09-17 — "hapus map
    jika sudah ada widget browser locationnya", when 110 pages showed a Google

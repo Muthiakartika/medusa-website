@@ -9,7 +9,6 @@ import SectionHead from "@/components/SectionHead";
 import type { Page, Section } from "@/lib/blocks";
 import {
   foldableAreas,
-  locationDirectory,
   mapFor,
   parseLocationPage,
   placeName,
@@ -128,13 +127,6 @@ export default function LocationPage({ page }: { page: Page }) {
           heading={folded?.heading ?? (model.hasRelated ? "Our Other Locations" : undefined)}
           title={others.title}
           locations={places}
-          /*
-            "terapkan juga ke 195 halaman lokasi" — client, 2026-09-17, after
-            the same directory went on the three mains. Each page's own opening
-            paragraphs are passed so the list never quotes the page back at
-            itself; `locationDirectory` drops the rest of the repeats.
-          */
-          directory={locationDirectory(places, model.introHtml)}
         />
       )}
     </main>
