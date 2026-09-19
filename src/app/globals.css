@@ -324,6 +324,32 @@
      the animation is paused the moment a finger lands on it. */
   .marquee {
     overflow: hidden;
+    /*
+      The track is 8,619px of chips on `/mobile-car-wash` — 17,238px while the
+      loop's second copy is still in play — and `overflow: hidden` is not enough
+      to keep that out of the document's scrollable overflow. It is enough on a
+      pointer device, where both axes are hidden. It is *not* enough on a touch
+      screen, where the media query below turns this into `overflow-x: auto` so
+      a thumb can swipe the strip: the moment one axis scrolls, the track's full
+      width lands back on `<html>`, and the document measures 8,565px wide
+      inside a 365px viewport.
+
+      `html { overflow-x: clip }` hid that on desktop and hid it from every
+      check we had. It does not hide it on a phone. Android Chrome gives up on
+      `width=device-width`, zooms out to its minimum scale to fit a document
+      twenty times too wide, and paints the whole site as a narrow strip down
+      the left edge with the fixed header stretched off to the right. The client
+      reported it as happening on the location pages and the three service hubs
+      and nowhere else, which is exactly the 199 pages that carry this strip.
+
+      `contain: paint` is what actually promises containment: descendants are
+      clipped to the padding box *and* excluded from the ancestors' scrollable
+      overflow. Measured: the document goes back to 365px, and the strip is
+      still swipeable. Kept out of the media query on purpose — the invariant is
+      "this element never widens the page", and that should not depend on which
+      branch a device takes.
+    */
+    contain: paint;
     /* The names fade out at both ends instead of being cut mid-word. The fade
        scales with the viewport: a fixed 4rem ate a third of a 375px phone. */
     --fade: clamp(1.25rem, 5vw, 4rem);

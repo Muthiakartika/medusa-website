@@ -80,8 +80,12 @@ function Submit({ label }: { label: string }) {
   );
 }
 
+/* `text-[16px]` rather than the 15px the label above it uses, for the same
+   reason as the search box in `components/LocationIndex.tsx`: under 16px, iOS
+   Safari zooms the page when the control takes focus and leaves it zoomed. On
+   an enquiry form that happens on the first tap and lasts the whole form. */
 const CONTROL =
-  "w-full rounded-[10px] border border-white/15 bg-black/40 px-4 py-3.5 text-[15px] font-normal text-white transition-colors placeholder:text-white/40 focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none";
+  "w-full rounded-[10px] border border-white/15 bg-black/40 px-4 py-3.5 text-[16px] font-normal text-white transition-colors placeholder:text-white/40 focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none";
 
 function Field({
   field,

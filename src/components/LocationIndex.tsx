@@ -133,7 +133,16 @@ export default function LocationIndex({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search locations…"
-          className="w-full rounded-[12px] bg-white/[0.05] px-4 py-3 text-[15px] font-normal text-white ring-1 ring-white/10 transition-colors outline-none placeholder:text-white/40 focus:bg-white/[0.07] focus:ring-gold"
+          /* 16px, not the 15px the rest of the card is set in. Below 16px iOS
+             Safari zooms the page when the field takes focus, and it does not
+             zoom back out: the reader taps search and the layout jumps to about
+             1.07x with the right edge of the page off screen. It is the one
+             control on these 199 pages, which is why the client could report
+             this as happening on the location pages and the three service hubs
+             and nowhere else. No `maximum-scale` in the viewport meta to stop
+             it with, either — that would disable pinch-zoom for everyone, which
+             is a real accessibility cost to fix a 1px type decision. */
+          className="w-full rounded-[12px] bg-white/[0.05] px-4 py-3 text-[16px] font-normal text-white ring-1 ring-white/10 transition-colors outline-none placeholder:text-white/40 focus:bg-white/[0.07] focus:ring-gold"
         />
       </label>
 
