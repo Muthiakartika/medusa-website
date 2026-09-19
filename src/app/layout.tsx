@@ -104,9 +104,12 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true },
-  /* Ahrefs Webmaster Tools. The deployment lives on a *.vercel.app subdomain,
-     whose DNS is Vercel's, so the TXT-record method is not open to us; Ahrefs
-     re-checks this tag periodically, so it stays. */
+  /* Ahrefs Webmaster Tools. This was added when the deployment lived on a
+     *.vercel.app subdomain, whose DNS was Vercel's and where the TXT-record
+     method was therefore not open to us. The site is on its own domain now,
+     so a TXT record is available and would be the tidier proof — but Ahrefs
+     re-checks this tag periodically and swapping methods risks un-verifying
+     the property, so it stays until someone has the Cloudflare zone open. */
   verification: {
     other: {
       "ahrefs-site-verification":

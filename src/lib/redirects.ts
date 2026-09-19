@@ -4,10 +4,22 @@ import { LOCATION_MOVES } from "./location-moves";
  * Every URL that no longer serves a page, and where it goes instead.
  *
  * Most of it is the old WordPress site, from the "301 redirects" tab of the
- * Menu update workbook - 75 rules, one per row. Then this clone's own history:
- * two menu groups moved on 2026-09-15 at the client's request, and those URLs
- * have been live here long enough to be worth keeping. Then the 127 location
- * moves, which are not written out here at all - see the note above them.
+ * Menu update workbook - 75 rules, one per row - plus WordPress's own archive
+ * URLs. Then this clone's own history: two menu groups moved on 2026-09-15 at
+ * the client's request, and those URLs have been live here long enough to be
+ * worth keeping. Then the 127 location moves, which are not written out here
+ * at all - see the note above them.
+ *
+ * **The client's "Medusa redirect list" sheet (2026-09-19) is the authority**,
+ * now that the site answers on its own domain rather than a preview one. Its
+ * 262 rows were checked against this table row by row: 211 are genuine
+ * redirects and every one of them is here, with the same destination; the other
+ * 51 name a page that still exists and differ only by the trailing slash the
+ * sheet's left column carries, which Next normalises without a rule. The 11
+ * rules below that the sheet does not mention are this clone's own
+ * (`/ceramic-coating/*`, `/car-detailing/*` -> `/repairs/*`): URLs that only
+ * ever existed on this build, so no sheet about the WordPress site would list
+ * them, and dropping them would 404 something that shipped.
  *
  * **Every path here is written without a trailing slash**, which is the form
  * these rules are matched against: `trailingSlash` is off, so Next normalises
@@ -77,6 +89,28 @@ export const REDIRECTS: ReadonlyArray<readonly [from: string, to: string]> = [
   ["/wheeluv", "/mobile-car-wash/alloy-wheel-cleaning"],
   ["/winter-protection", "/car-valeting/winter-protection"],
   ["/zeus-full-valet", "/car-valeting/premium-full-valet"],
+
+  /*
+    WordPress's own archive URLs, from the client's redirect sheet
+    (2026-09-19). Nothing on this site answers them: the blog paginated at ten
+    on the source, and `/blog` here loads ten at a time out of the full set
+    (PROJECT.md §10), so there is no page 2; and `category/uncategorized` is the
+    default category every post was filed under, which this build has no
+    archive for at all. Both were indexed, and both 404'd until now.
+
+    Written out rather than matched with `/blog/page/:n`, because the table is
+    literal everywhere else and `REDIRECTED_SLUGS` derives exact slugs from it.
+    The sheet names pages 2 to 5, which is as far as the source ever went.
+  */
+  ["/blog/page/2", "/blog"],
+  ["/blog/page/3", "/blog"],
+  ["/blog/page/4", "/blog"],
+  ["/blog/page/5", "/blog"],
+  ["/category/uncategorized", "/blog"],
+  ["/category/uncategorized/page/2", "/blog"],
+  ["/category/uncategorized/page/3", "/blog"],
+  ["/category/uncategorized/page/4", "/blog"],
+  ["/category/uncategorized/page/5", "/blog"],
 
   /* Pages whose content the plan folds into another page. */
   ["/2020/10/17/why-local-car-washes-do-more-harm-than-good-to-your-car", "/2024/04/28/car-wash-vs-valeting-vs-detailing-whats-the-difference"],

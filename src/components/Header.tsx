@@ -96,7 +96,15 @@ export default function Header() {
             panel belongs to the item rather than being a gap that drops the
             hover. */}
         <nav className="hidden self-stretch xl:block">
-          <ul className="flex h-full items-stretch gap-x-4 2xl:gap-x-7">
+          {/* The gap closes up in the one band where the row does not fit.
+              Every item is `whitespace-nowrap` and the logo is `shrink-0`, so a
+              row that is too wide does not wrap or scroll — it spills past the
+              bar's own padding into the 90px gutter, silently, because
+              `html { overflow-x: clip }` means there is nothing to scroll.
+              Measured at `xl` (1280px), where the desktop nav first appears:
+              49px past the padding edge at 16px gaps, 1px at 10px gaps. The
+              spill is gone by 1340px, which is where the normal gap returns. */}
+          <ul className="flex h-full items-stretch gap-x-2.5 min-[1340px]:gap-x-4 2xl:gap-x-7">
             {NAV.map((item) =>
               item.mega ? (
                 <MegaTrigger
@@ -186,9 +194,28 @@ export default function Header() {
       <div
         /* `overscroll-contain` so that reaching the end of the drawer does not
            hand the gesture on to the page underneath — the root lock already
-           stops that everywhere except iOS Safari, which needs both. */
+           stops that everywhere except iOS Safari, which needs both.
+
+           The ceiling is the viewport less **the bar's actual height**, which
+           is 110px until the page is scrolled and 90px after. A flat 90px
+           assumed the scrolled bar, so opening the drawer at the top of the
+           page — which is when anyone opens it — put its last 20px below the
+           fold: the drawer reported itself fully scrolled with 20px of padding
+           still off screen.
+
+           `dvh` and not `vh`, which is the same bug one layer out. On a phone
+           `100vh` is the *large* viewport — measured with the URL bar
+           retracted — so `100vh` less the bar still overshoots by the height of
+           a browser chrome that is on screen the moment the page loads. `dvh`
+           tracks the viewport that is actually visible. It cannot flicker while
+           the drawer is open, either: the root is scroll-locked, so the URL bar
+           has nothing to react to. */
         className={`overflow-y-auto overscroll-contain bg-[#0d0d0d] transition-[max-height] duration-500 xl:hidden ${
-          open ? "max-h-[calc(100vh-90px)]" : "max-h-0"
+          open
+            ? scrolled
+              ? "max-h-[calc(100dvh-90px)]"
+              : "max-h-[calc(100dvh-110px)]"
+            : "max-h-0"
         }`}
       >
         <ul className="px-6 pb-10">
