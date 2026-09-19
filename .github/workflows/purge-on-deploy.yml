@@ -5,8 +5,11 @@
 # same URL until something tells it otherwise. That "something" is this.
 #
 # The wait matters more than the purge. Purging before the new build is live
-# only refills Cloudflare with the old pages, so the job polls /api/build/ for
+# only refills Cloudflare with the old pages, so the job polls /api/build for
 # this commit's SHA first and purges nothing until it sees it.
+#
+# Both URLs below are written without a trailing slash: `trailingSlash` is off,
+# so the slashed form answers a 308 that neither curl call follows.
 #
 # One secret, REVALIDATE_SECRET, matching the deployment's. Without it the job
 # says so in the run summary and exits clean, so a fork or a fresh clone does
@@ -49,7 +52,7 @@ jobs:
         run: |
           set -u
           for attempt in $(seq 1 60); do
-            live=$(curl -fsS --max-time 10 "$BASE/api/build/" 2>/dev/null | jq -r '.commit // empty' || true)
+            live=$(curl -fsS --max-time 10 "$BASE/api/build" 2>/dev/null | jq -r '.commit // empty' || true)
             if [ "$live" = "$GITHUB_SHA" ]; then
               echo "live after $attempt check(s)"
               exit 0
@@ -65,7 +68,7 @@ jobs:
         run: |
           set -u
           status=$(curl -sS -o response.json -w '%{http_code}' \
-            -X POST "$BASE/api/revalidate/" \
+            -X POST "$BASE/api/revalidate" \
             -H "authorization: Bearer $SECRET" \
             -H 'content-type: application/json' \
             -d '{"all":true}')

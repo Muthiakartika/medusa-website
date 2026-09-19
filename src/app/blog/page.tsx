@@ -40,11 +40,11 @@ export function generateMetadata(): Metadata {
   return {
     title: page.title,
     description: page.description,
-    alternates: { canonical: `/${SLUG}/` },
+    alternates: { canonical: `/${SLUG}` },
     openGraph: {
       title: page.title,
       description: page.description,
-      url: `/${SLUG}/`,
+      url: `/${SLUG}`,
       images: page.ogImage ? [{ url: page.ogImage }] : undefined,
     },
   };
@@ -157,7 +157,7 @@ function Lead({ post }: { post: Post }) {
       <div className="shell">
         <Reveal>
           <Link
-            href={`/${post.slug}/`}
+            href={`/${post.slug}`}
             className="group surface grid overflow-hidden lg:grid-cols-12"
           >
             {post.cover && (

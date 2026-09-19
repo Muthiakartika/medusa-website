@@ -34,7 +34,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   return slugs.map(({ slug, modified }) => ({
-    url: SITE + (slug ? `/${slug}/` : "/"),
+    url: SITE + (slug ? `/${slug}` : "/"),
     lastModified: modified,
     changeFrequency: changeFrequency(slug),
     priority: priority(slug),

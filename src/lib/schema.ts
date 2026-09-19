@@ -13,8 +13,8 @@ const LOGO_ID = `${SITE}/#/schema/logo/image/`;
 
 const abs = (path: string) => (path.startsWith("http") ? path : SITE + path);
 
-/** "" -> "https://…/", "car-valeting/mini-valet" -> "https://…/car-valeting/mini-valet/" */
-const url = (slug: string) => `${SITE}/${slug ? `${slug}/` : ""}`;
+/** "" -> "https://…/", "car-valeting/mini-valet" -> "https://…/car-valeting/mini-valet" */
+const url = (slug: string) => `${SITE}/${slug}`;
 
 const organization = {
   "@type": "Organization",
@@ -81,7 +81,7 @@ function breadcrumbList(page: Page) {
       position: i + 1,
       name: c.name,
       // The trailing crumb is the current page, so it carries no item link.
-      ...(c.href ? { item: c.href === "/" ? `${SITE}/` : `${SITE}${c.href}/` } : {}),
+      ...(c.href ? { item: `${SITE}${c.href}` } : {}),
     })),
   };
 }

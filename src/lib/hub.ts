@@ -295,7 +295,7 @@ export function hubQuestions(spec: HubSpec): HubQuestion[] {
     if (!a.length) throw new Error(`${spec.slug}: nothing under "${heading}" on /${slug}`);
 
     const card = of(slug);
-    return { q: heading, a, href: card?.href ?? `/${slug}/`, name: card?.name ?? slug };
+    return { q: heading, a, href: card?.href ?? `/${slug}`, name: card?.name ?? slug };
   });
 }
 

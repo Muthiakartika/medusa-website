@@ -195,7 +195,7 @@ export default function LocationIndex({
                 {items.map((item) => (
                   <li key={item.slug}>
                     <Link
-                      href={`/${item.slug}/`}
+                      href={`/${item.slug}`}
                       title={item.name}
                       className="block truncate rounded-[9px] px-3 py-2 text-[14.5px] font-normal text-white/80 transition-all duration-200 ease-[var(--ease-out-expo)] hover:translate-x-1 hover:bg-white/[0.06] hover:text-gold"
                     >

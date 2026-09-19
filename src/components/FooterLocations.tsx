@@ -113,7 +113,7 @@ function Row({
       {items.map((item) => (
         <li key={item.slug}>
           <Link
-            href={`/${item.slug}/`}
+            href={`/${item.slug}`}
             tabIndex={clone ? -1 : undefined}
             className="loc-chip"
           >

@@ -20,6 +20,16 @@ and photograph comes from the live site. What this project changes is the
   them, keyed `""` — plus the two **menu-group hubs**, `/repairs` and
   `/car-interior-cleaning`, and the **49 planned location pages**, all of which
   have no source page and are built out of pages that do (§5).
+- **No trailing slashes**, since 2026-09-19. The client asked for it - "I think
+  URLs without a trailing dash is better" - so `next.config.ts` leaves
+  `trailingSlash` at its default and `/mobile-car-wash/bronze-wash/` 308s to
+  `/mobile-car-wash/bronze-wash`. Write every path bare: canonicals, the
+  sitemap, `lib/site.ts`, the hrefs inside `pages.json`, **and the 301 table**,
+  which Next matches after normalising and so would never fire on a rule that
+  kept the slash. The cost is that a legacy WordPress URL takes two hops
+  (`/valeting/` → 308 `/valeting` → 308 `/car-valeting`); nothing this site
+  renders points at a slashed URL, so nothing internal chains. The API
+  endpoints are bare too, and there the slash is a silent failure - see §7.
 - **Fully static**, served through ISR (§7).
 - Stack: App Router, React 19, Tailwind CSS v4, TypeScript. No CMS, no
   database, no runtime API.
@@ -95,13 +105,14 @@ regeneration changed 201 of 254 pages. Worse, `extract-content.mjs` takes each
 page's slug straight off its mirror filename, and the mirror is the *live*
 site — which still publishes the old WordPress URLs (`/correction/`,
 `/wheeluv/`, `/valeting/`). The committed `pages.json` is keyed by the **new**
-structure, and its internal links are rewritten to match. That remapping is
-not in any script in this repo, so `npm run content` against the current mirror
-comes back with the old slugs and about 6,000 lines shorter. `lib/redirects.ts`
-is the map between the two — every rule there is one old URL and the new one it
-became — so re-applying it after a regeneration is what the missing step would
-do. `lib/location-moves.ts` is the second half of that map, for the 75 location
-pages (§5) - and since 2026-09-18 those same 75 pairs are 301s too, spread
+structure, and its internal links are rewritten to match — and since 2026-09-19
+they carry **no trailing slash** either, which the extractor does not know
+about. That remapping is not in any script in this repo, so `npm run content`
+against the current mirror comes back with the old slugs and about 6,000 lines
+shorter. `lib/redirects.ts` is the map between the two — every rule there is one
+old URL and the new one it became — so re-applying it after a regeneration is
+what the missing step would do. `lib/location-moves.ts` is the second half of
+that map, for all 127 location pages (§5), and those pairs are 301s too, spread
 into the redirect table rather than copied out. Diff `pages.json` and
 spot-check before committing anything.
 
@@ -173,16 +184,18 @@ Three tiers, cheapest first:
      which returns null for the other thirty-eight.
    - `lib/location-frame.ts` + `components/LocationPage.tsx` — the 146
      location pages: `our-locations/*`, and the three service-in-a-place
-     families in **two URL shapes each**. The SEO plan moved 75 of them under
-     their service hub (`/mobile-car-wash/wembley/`) - the 75 old URLs 301
-     there, which they did not at first: all 75 were in the WordPress site's
-     own sitemap and all 75 answered 404 - and left the other 52 on the
-     mirror's `mobile-car-{valeting,wash,detailing}-in-*`, so
-     `LOCATION_FAMILIES` carries a `prefix` and a `hub` and a page counts under
-     the hub only when `lib/location-moves.ts` names it — otherwise the hub's
-     own service pages would read as places. A family spans both shapes, so
-     "Our Other Locations" still lists all of them — as the A–Z index below,
-     not as the flat row of seventy chips it used to be.
+     families, **all of which now live under their service hub**
+     (`/mobile-car-wash/wembley`). The SEO plan moved 75 of them there and left
+     the other 52 on the mirror's `mobile-car-{valeting,wash,detailing}-in-*`;
+     the client closed that gap on 2026-09-19, sending a crawl of the
+     deployment with the remaining 52 pairs on it, so `lib/location-moves.ts`
+     is 127 rows and one URL shape. Every old URL 301s, which the first 75 did
+     not at first: all 75 were in the WordPress site's own sitemap and all 75
+     answered 404. A page counts under the hub only when
+     `lib/location-moves.ts` or `lib/planned-locations.ts` names it — otherwise
+     the hub's own service pages would read as places. "Our Other Locations"
+     lists the whole family — as the A–Z index below, not as the flat row of
+     seventy chips it used to be.
 
    **The A–Z index.** Client, 2026-09-17: "Each of these mains will have a
    navigational widget added at the very bottom of the page, just above the
@@ -294,8 +307,9 @@ Three tiers, cheapest first:
    window (`scrollIntoView` moved the page 92px and left the widget half off
    screen). It writes nothing: every name is `placeName()` off a slug the site
    already publishes, so adding a location page to a family adds a row. A
-   family spans both URL shapes, so every index lists the moved pages and the
-   52 that stayed on `mobile-car-…-in-…` together.
+   family is every page under its hub that `lib/location-moves.ts` or
+   `lib/planned-locations.ts` names, so every index lists the mirror's own
+   pages and the built ones together.
 
    **The footer strip.** Client, 2026-09-18: "all the new location pages can be
    in a scroll in the footer, like each being a location word then clicking into
@@ -625,7 +639,7 @@ npm run purge
 ```
 
 ```bash
-npm run purge -- /mobile-car-wash/mini-valet /blog
+npm run purge -- /car-valeting/mini-valet /blog
 ```
 
 `scripts/purge.mjs` reads `REVALIDATE_SECRET` from the shell or `.env.local`
@@ -633,17 +647,20 @@ and posts to `BASE`, which defaults to production here rather than to
 localhost. The raw form:
 
 ```bash
-curl -X POST https://medusaautodetailing.co.uk/api/revalidate/ -H "Authorization: Bearer $REVALIDATE_SECRET" -H "Content-Type: application/json" -d '{"paths":["/mobile-car-wash/mini-valet","/blog"]}'
+curl -X POST https://medusaautodetailing.co.uk/api/revalidate -H "Authorization: Bearer $REVALIDATE_SECRET" -H "Content-Type: application/json" -d '{"paths":["/car-valeting/mini-valet","/blog"]}'
 ```
 
 ```bash
-curl -X POST https://medusaautodetailing.co.uk/api/revalidate/ -H "Authorization: Bearer $REVALIDATE_SECRET" -H "Content-Type: application/json" -d '{"all":true}'
+curl -X POST https://medusaautodetailing.co.uk/api/revalidate -H "Authorization: Bearer $REVALIDATE_SECRET" -H "Content-Type: application/json" -d '{"all":true}'
 ```
 
-**The trailing slash is load-bearing.** `trailingSlash: true` is resolved
-before routing, so `/api/revalidate` answers a 308 — and `curl` does not follow
-one unless told to, so the call returns quietly having flushed nothing. The
-version of these two commands that used to be in this file did exactly that.
+**The absence of a trailing slash is load-bearing**, and since 2026-09-19 it is
+load-bearing the other way round. Normalisation is resolved before routing, and
+`trailingSlash` is now off, so `/api/revalidate/` answers a 308 — and `curl`
+does not follow one unless told to, so the call returns quietly having flushed
+nothing. Every command in this file, `scripts/purge.mjs` and the deploy
+workflow has been flipped; an older copy of one of these lines will silently
+flush nothing.
 
 `{"all":true}` goes through the root layout and takes every page with it.
 Unknown paths are reported back in `unknown` rather than silently accepted.
@@ -654,7 +671,7 @@ Unknown paths are reported back in `unknown` rather than silently accepted.
 
 The order is the point. Vercel starts building the moment the push lands, and
 purging Cloudflare before that build is serving only refills it with the old
-pages — so the job polls `/api/build/` until it answers with the pushed
+pages — so the job polls `/api/build` until it answers with the pushed
 commit's SHA, and only then calls `{"all":true}`. `app/api/build/route.ts` is
 the dozen lines that make that possible: `VERCEL_GIT_COMMIT_SHA`, stamped in at
 build, served `no-store`.

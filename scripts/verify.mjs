@@ -29,9 +29,12 @@ const PLANNED = [...fs
 if (PLANNED.length === 0) throw new Error('verify: no planned locations parsed');
 
 /* The 301 table, read out of the TypeScript rather than imported from it —
-   this is a .mjs script and that is a .ts module. Two files, because the 75
+   this is a .mjs script and that is a .ts module. Two files, because the 127
    location moves are spread into the table from lib/location-moves.ts rather
    than written out in it, and a regex over one file would miss them.
+
+   Every path is bare, as both files now write them: `trailingSlash` is off, so
+   that is the form the rules match and the form a route is keyed by here.
 
    The sources drive the sitemap count: the sitemap deliberately leaves them
    out, so without them it compares against every page in the mirror and is
@@ -43,7 +46,7 @@ const REDIRECT_PAIRS = [
     .matchAll(/\["(\/[^"]*)", "(\/[^"]*)"\]/g)].map((m) => [m[1], m[2]]),
   ...[...fs
     .readFileSync(lib('location-moves.ts'), 'utf8')
-    .matchAll(/^ {2}\["([^"]+)", "([^"]+)"\],$/gm)].map((m) => [`/${m[1]}/`, `/${m[2]}/`]),
+    .matchAll(/^ {2}\["([^"]+)", "([^"]+)"\],$/gm)].map((m) => [`/${m[1]}`, `/${m[2]}`]),
 ];
 if (REDIRECT_PAIRS.length < 150) throw new Error('verify: redirect table parsed short');
 const REDIRECTED = new Set(REDIRECT_PAIRS.map(([from]) => from));
@@ -193,7 +196,7 @@ async function checkSeo() {
     const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
     // every route the site serves, minus the ones that only 301
     const want =
-      Object.keys(pages).filter((s) => !REDIRECTED.has(`/${s}/`)).length +
+      Object.keys(pages).filter((s) => !REDIRECTED.has(`/${s}`)).length +
       EXTRA_ROUTES.length +
       PLANNED.length;
     if (locs.length !== want) seo.push(`/sitemap.xml :: ${locs.length} urls, expected ${want}`);

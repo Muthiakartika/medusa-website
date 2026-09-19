@@ -3,13 +3,33 @@ import { REDIRECTS } from "./src/lib/redirects";
 
 const nextConfig: NextConfig = {
   /*
-    The old site is WordPress, so every URL with any history behind it ends in
-    a slash - and Next resolves the trailing-slash normalisation before it
-    consults the redirect table. Without this, /valeting/ would 308 to
-    /valeting and only then to /car-valeting/: a two-hop chain on the exact
-    form of the URL these redirects exist to catch.
+    No `trailingSlash`, so Next's default stands: /mobile-car-wash/bronze-wash/
+    redirects to /mobile-car-wash/bronze-wash, and the short form is what every
+    canonical, every sitemap entry and every internal link on the site says.
+
+    Client, 2026-09-19: "I think URLs without a trailing dash is better".
+
+    Everything here is a **308**, not a 301 — both the normalisation above and
+    `permanent: true` below, which is what that flag has always meant in Next.
+    308 is the method-preserving permanent redirect and search engines treat it
+    exactly as they do a 301, so the rest of this repo calls them 301s; this is
+    the one file where the actual code is decided, so it says the number.
+
+    Two things follow from dropping the slash, both handled rather than
+    inherited:
+
+    - **The redirect table is written without slashes** (`lib/redirects.ts`).
+      Next resolves the trailing-slash normalisation before it consults that
+      table, so `/valeting/` arrives at it as `/valeting`; a rule still wearing
+      the workbook's slash would never match anything.
+    - **A legacy WordPress URL now takes two hops.** `/valeting/` 308s to
+      `/valeting` and then 308s to `/car-valeting`. That is the cost of the
+      switch and it is paid by inbound links only: nothing this site renders
+      points at a slashed URL any more, so no internal link and no sitemap
+      entry chains. Removing the extra hop would mean `skipTrailingSlashRedirect`
+      and a proxy to do the normalising by hand, which puts a function in front
+      of 305 static pages to save a crawler one redirect it already follows.
   */
-  trailingSlash: true,
 
   /*
     Next's image optimiser is off, and this is a billing decision rather than a

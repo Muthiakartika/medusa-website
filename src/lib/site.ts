@@ -44,9 +44,13 @@ export const BUSINESS = {
 /* ── Navigation ───────────────────────────────────────────────────────── */
 
 /**
- * A menu entry. `href` is optional: "Services" is a label that only opens the
- * mega-menu, and six hubs in the proposed structure have no page behind them
- * yet - both render as plain text rather than a link that would 404.
+ * A menu entry. `href` is optional for a column head: "Services" is a label
+ * that only opens the mega-menu and "Other Vehicles" heads a column with no
+ * page of its own, so both render as plain text rather than as a link to a 404.
+ *
+ * No *leaf* is href-less any more. Three were - Soft Top Redye & Restoration,
+ * Motorhome Cleaning and Van Valeting - and the client had them removed on
+ * 2026-09-19 rather than carry a dimmed, unclickable name in three menus.
  */
 export type NavItem = {
   label: string;
@@ -68,39 +72,36 @@ export const NAV: NavItem[] = [  { label: "Home", href: "/" },
     children: [
       {
         label: "Car Wash",
-        href: "/mobile-car-wash/",
+        href: "/mobile-car-wash",
         children: [
-          { label: "Bronze Wash", href: "/mobile-car-wash/bronze-wash/" },
-          { label: "Silver Wash", href: "/mobile-car-wash/silver-wash/" },
-          { label: "Gold Wash", href: "/mobile-car-wash/gold-wash/" },
-          { label: "Platinum Wash", href: "/mobile-car-wash/platinum-wash/" },
-          { label: "Exterior Wash", href: "/mobile-car-wash/exterior-wash/" },
-          { label: "Exterior Plus Wash", href: "/mobile-car-wash/exterior-plus-wash/" },
-          { label: "Alloy Wheel Cleaning", href: "/mobile-car-wash/alloy-wheel-cleaning/" },
+          { label: "Bronze Wash", href: "/mobile-car-wash/bronze-wash" },
+          { label: "Silver Wash", href: "/mobile-car-wash/silver-wash" },
+          { label: "Gold Wash", href: "/mobile-car-wash/gold-wash" },
+          { label: "Platinum Wash", href: "/mobile-car-wash/platinum-wash" },
+          { label: "Exterior Wash", href: "/mobile-car-wash/exterior-wash" },
+          { label: "Exterior Plus Wash", href: "/mobile-car-wash/exterior-plus-wash" },
+          { label: "Alloy Wheel Cleaning", href: "/mobile-car-wash/alloy-wheel-cleaning" },
         ],
       },
       {
         label: "Car Valeting",
-        href: "/car-valeting/",
+        href: "/car-valeting",
         children: [
-          { label: "Deep Clean Full Valet", href: "/car-valeting/deep-clean-full-valet/" },
-          { label: "Mini Valet", href: "/car-valeting/mini-valet/" },
+          { label: "Deep Clean Full Valet", href: "/car-valeting/deep-clean-full-valet" },
+          { label: "Mini Valet", href: "/car-valeting/mini-valet" },
           {
             label: "Convertible Roof Cleaning",
-            href: "/car-valeting/convertible-roof-cleaning/",
-            children: [
-              { label: "Soft Top Redye & Restoration" },
-            ],
+            href: "/car-valeting/convertible-roof-cleaning",
           },
-          { label: "Winter Protection", href: "/car-valeting/winter-protection/" },
-          { label: "Premium Full Valet", href: "/car-valeting/premium-full-valet/" },
-          { label: "Summer Glow Valet", href: "/car-valeting/summer-glow-valet/" },
-          { label: "Pre-Sale / End of Lease Valet", href: "/car-valeting/pre-sale-valet/" },
+          { label: "Winter Protection", href: "/car-valeting/winter-protection" },
+          { label: "Premium Full Valet", href: "/car-valeting/premium-full-valet" },
+          { label: "Summer Glow Valet", href: "/car-valeting/summer-glow-valet" },
+          { label: "Pre-Sale / End of Lease Valet", href: "/car-valeting/pre-sale-valet" },
           /* Moved out of the Car Wash column at the client's request
              (2026-09-08). The URL stays under /mobile-car-wash/ — they asked
              for the menu entry to move, not the page, and changing the path
              would break every existing link to it. */
-          { label: "Car Wax Service", href: "/mobile-car-wash/car-wax-service/" },
+          { label: "Car Wax Service", href: "/mobile-car-wash/car-wax-service" },
         ],
       },
       {
@@ -114,16 +115,16 @@ export const NAV: NavItem[] = [  { label: "Home", href: "/" },
            /ceramic-coating/ moved, and Ceramic Coating's own hub page with
            them. `lib/redirects.ts` carries the 301 for each. */
         label: "Car Detailing",
-        href: "/car-detailing/",
+        href: "/car-detailing",
         children: [
-          { label: "Ceramic Coating", href: "/car-detailing/ceramic-coating/" },
-          { label: "New Car Protection", href: "/car-detailing/new-car-protection/" },
-          { label: "Paint Correction", href: "/car-detailing/paint-correction/" },
-          { label: "Machine Polish", href: "/car-detailing/machine-polish/" },
-          { label: "Windscreen Protection", href: "/car-detailing/windscreen-protection/" },
-          { label: "Enhancement", href: "/car-detailing/enhancement-detail/" },
-          { label: "Perfection", href: "/car-detailing/perfection-detail/" },
-          { label: "Mini Car Detail", href: "/car-detailing/mini-detail/" },
+          { label: "Ceramic Coating", href: "/car-detailing/ceramic-coating" },
+          { label: "New Car Protection", href: "/car-detailing/new-car-protection" },
+          { label: "Paint Correction", href: "/car-detailing/paint-correction" },
+          { label: "Machine Polish", href: "/car-detailing/machine-polish" },
+          { label: "Windscreen Protection", href: "/car-detailing/windscreen-protection" },
+          { label: "Enhancement", href: "/car-detailing/enhancement-detail" },
+          { label: "Perfection", href: "/car-detailing/perfection-detail" },
+          { label: "Mini Car Detail", href: "/car-detailing/mini-detail" },
         ],
       },
       {
@@ -134,12 +135,12 @@ export const NAV: NavItem[] = [  { label: "Home", href: "/" },
            childs". Both are done — the head is a link now, and `app/repairs`
            builds that page out of these four pages' own copy. */
         label: "Repairs & Restoration",
-        href: "/repairs/",
+        href: "/repairs",
         children: [
-          { label: "Headlight Restoration", href: "/repairs/headlight-restoration/" },
-          { label: "Engine Bay Steam Cleaning", href: "/repairs/engine-bay-steam-cleaning/" },
-          { label: "Car Graffiti Removal", href: "/repairs/car-graffiti-removal/" },
-          { label: "Paint Overspray Removal", href: "/repairs/paint-overspray-removal/" },
+          { label: "Headlight Restoration", href: "/repairs/headlight-restoration" },
+          { label: "Engine Bay Steam Cleaning", href: "/repairs/engine-bay-steam-cleaning" },
+          { label: "Car Graffiti Removal", href: "/repairs/car-graffiti-removal" },
+          { label: "Paint Overspray Removal", href: "/repairs/paint-overspray-removal" },
         ],
       },
       {
@@ -148,52 +149,50 @@ export const NAV: NavItem[] = [  { label: "Home", href: "/" },
            builds it out of these nine pages' own copy, so the head is a link
            now rather than a heading. */
         label: "Interior Cleaning",
-        href: "/car-interior-cleaning/",
+        href: "/car-interior-cleaning",
         children: [
-          { label: "Interior Valet", href: "/car-interior-cleaning/interior-valet/" },
-          { label: "Premium Interior Wash", href: "/car-interior-cleaning/premium-interior-wash/" },
-          { label: "Mould Removal & Sterilisation", href: "/car-interior-cleaning/mould-removal/" },
-          { label: "Car Steam Cleaning", href: "/car-interior-cleaning/steam-cleaning/" },
-          { label: "Odour Removal", href: "/car-interior-cleaning/odour-removal/" },
-          { label: "Leather Cleaning", href: "/car-interior-cleaning/leather-cleaning/" },
-          { label: "Pet Hair Removal", href: "/car-interior-cleaning/pet-hair-removal/" },
-          { label: "Flood & Water Damage", href: "/car-interior-cleaning/flooded-car-cleaning/" },
-          { label: "Sickness & Biohazard Cleaning", href: "/car-interior-cleaning/vomit-cleaning/" },
+          { label: "Interior Valet", href: "/car-interior-cleaning/interior-valet" },
+          { label: "Premium Interior Wash", href: "/car-interior-cleaning/premium-interior-wash" },
+          { label: "Mould Removal & Sterilisation", href: "/car-interior-cleaning/mould-removal" },
+          { label: "Car Steam Cleaning", href: "/car-interior-cleaning/steam-cleaning" },
+          { label: "Odour Removal", href: "/car-interior-cleaning/odour-removal" },
+          { label: "Leather Cleaning", href: "/car-interior-cleaning/leather-cleaning" },
+          { label: "Pet Hair Removal", href: "/car-interior-cleaning/pet-hair-removal" },
+          { label: "Flood & Water Damage", href: "/car-interior-cleaning/flooded-car-cleaning" },
+          { label: "Sickness & Biohazard Cleaning", href: "/car-interior-cleaning/vomit-cleaning" },
         ],
       },
       {
         label: "Other Vehicles",
         children: [
-          { label: "Caravan Cleaning", href: "/vehicles/caravan-cleaning/" },
-          { label: "Motorhome Cleaning" },
-          { label: "Motorcycle Valeting & Detailing", href: "/vehicles/motorcycle-valeting-detailing/" },
+          { label: "Caravan Cleaning", href: "/vehicles/caravan-cleaning" },
+          { label: "Motorcycle Valeting & Detailing", href: "/vehicles/motorcycle-valeting-detailing" },
         ],
       },
     ],
   },
   {
     label: "Commercial & Fleet",
-    href: "/commercial-valeting/",
+    href: "/commercial-valeting",
     children: [
-      { label: "Van Valeting" },
-      { label: "Truck & HGV Cleaning", href: "/commercial-valeting/mobile-truck-cleaning/" },
-      { label: "Aircraft Cleaning", href: "/commercial-valeting/aircraft-cleaning/" },
-      { label: "Vehicle Signage & Vinyl Removal", href: "/commercial-valeting/car-van-stickers-removal/" },
+      { label: "Truck & HGV Cleaning", href: "/commercial-valeting/mobile-truck-cleaning" },
+      { label: "Aircraft Cleaning", href: "/commercial-valeting/aircraft-cleaning" },
+      { label: "Vehicle Signage & Vinyl Removal", href: "/commercial-valeting/car-van-stickers-removal" },
     ],
   },
-  { label: "Regular Car Cleaning", href: "/car-lovers-club/" },
+  { label: "Regular Car Cleaning", href: "/car-lovers-club" },
   {
     label: "About",
-    href: "/about-us/",
+    href: "/about-us",
     children: [
-      { label: "Blog", href: "/blog/" },
-      { label: "Gift Card", href: "/gift-card/" },
-      { label: "Careers & Franchising", href: "/careers-franchising/" },
-      { label: "Terms And Conditions", href: "/terms-and-conditions/" },
+      { label: "Blog", href: "/blog" },
+      { label: "Gift Card", href: "/gift-card" },
+      { label: "Careers & Franchising", href: "/careers-franchising" },
+      { label: "Terms And Conditions", href: "/terms-and-conditions" },
     ],
   },
-  { label: "Our Locations", href: "/our-locations/" },
-  { label: "Contact Us", href: "/contact-us/" },
+  { label: "Our Locations", href: "/our-locations" },
+  { label: "Contact Us", href: "/contact-us" },
 ];
 
 
@@ -223,8 +222,8 @@ export const HERO = {
   ],
   buttons: [
     { label: "BOOK NOW", href: BOOK_URL },
-    { label: "VALETING PACKAGES", href: "/car-valeting/" },
-    { label: "DETAILING PACKAGES", href: "/car-detailing/" },
+    { label: "VALETING PACKAGES", href: "/car-valeting" },
+    { label: "DETAILING PACKAGES", href: "/car-detailing" },
     { label: "COMPARE OUR PACKAGES", href: "#services" },
   ],
   /* Transcoded from the source .mov (12.4 MB, H.264 1.4 Mbps + an MP3 track
@@ -791,25 +790,25 @@ export const EXTRA_SERVICES = [
     body: "Our skilled professionals meticulously apply the wax to ensure maximum coverage and durability, giving your car a lasting protective layer and an exceptional shine. Autoglym HD Wax—for those who want the very best for their vehicle's care.",
     image:
       "/assets/2024/10/bf24ca41-deff-4cfe-a8ce-ea5ce4aa0220.__CR00300300_PT0_SX300_V1___.webp",
-    href: "/mobile-car-wash/car-wax-service/",
+    href: "/mobile-car-wash/car-wax-service",
   },
   {
     title: "Engine bay cleaning",
     body: "Discover more about our Engine Bay Steam Cleaning service below, and see how we can help your vehicle shine from the inside out, making a lasting impression both under the hood and with potential buyers.",
     image: "/assets/2024/10/wipping-car-engine-080520210315.webp",
-    href: "/repairs/engine-bay-steam-cleaning/",
+    href: "/repairs/engine-bay-steam-cleaning",
   },
   {
     title: "OZONE Odour Removal",
     body: "When conventional methods fall short, an ozone treatment may be your best option. At Medusa Auto Detailing, we bring the ozone treatment directly to you!",
     image: "/assets/2024/10/car-ozon-600x400-1.webp",
-    href: "/car-interior-cleaning/odour-removal/",
+    href: "/car-interior-cleaning/odour-removal",
   },
   {
     title: "Pet Hair Removal",
     body: "Our specialized techniques and keen attention to detail make us the top choice for pet hair removal, leaving your car looking and smelling as good as new. With our expert services, you can enjoy a fresh interior without the hassle of pet-related messes!",
     image: "/assets/2024/10/dog-hair-remover.webp",
-    href: "/car-interior-cleaning/pet-hair-removal/",
+    href: "/car-interior-cleaning/pet-hair-removal",
   },
 ];
 
@@ -825,31 +824,31 @@ export const DETAILING = [
     title: "LEVEL 1",
     subtitle: "NEW CAR / PROTECTION",
     prices: [349, 399, 449, 499] as [number, number, number, number],
-    href: "/car-detailing/new-car-protection/",
+    href: "/car-detailing/new-car-protection",
   },
   {
     title: "LEVEL 2",
     subtitle: "MINI CAR DETAIL",
     prices: [300, 325, 350, 375] as [number, number, number, number],
-    href: "/car-detailing/mini-detail/",
+    href: "/car-detailing/mini-detail",
   },
   {
     title: "LEVEL 3",
     subtitle: "ENHANCEMENT",
     prices: [450, 500, 550, 600] as [number, number, number, number],
-    href: "/car-detailing/enhancement-detail/",
+    href: "/car-detailing/enhancement-detail",
   },
   {
     title: "LEVEL 4",
     subtitle: "CORRECTION",
     prices: [600, 650, 700, 750] as [number, number, number, number],
-    href: "/car-detailing/paint-correction/",
+    href: "/car-detailing/paint-correction",
   },
   {
     title: "LEVEL 5",
     subtitle: "PERFECTION",
     prices: [1200, 1400, 1500, 1600] as [number, number, number, number],
-    href: "/car-detailing/perfection-detail/",
+    href: "/car-detailing/perfection-detail",
   },
 ];
 
@@ -868,7 +867,7 @@ export const CARWASH = [
     prices: [59, 65, 69, 73] as const,
     image:
       "/assets/2025/02/car-cleaning-with-high-pressure-in-exterior-carwas-2023-11-27-05-35-22-utc-1.webp",
-    href: "/mobile-car-wash/silver-wash/",
+    href: "/mobile-car-wash/silver-wash",
     features: [
       "Wash",
       "Wax",
@@ -888,7 +887,7 @@ export const CARWASH = [
     prices: [110, 120, 130, 140] as const,
     image:
       "/assets/2025/02/professional-car-wash-with-high-pressure-washer-an-2023-11-27-05-33-04-utc-e1720860612612.webp",
-    href: "/mobile-car-wash/gold-wash/",
+    href: "/mobile-car-wash/gold-wash",
     features: [
       "Thorough Exterior Wash",
       "Paste Wax",
@@ -910,7 +909,7 @@ export const CARWASH = [
     prices: [170, 190, 210, 225] as const,
     image:
       "/assets/2025/02/professional-cleaning-process-for-leather-car-seat-2023-11-27-05-05-14-utc-e1720861019858.webp",
-    href: "/mobile-car-wash/platinum-wash/",
+    href: "/mobile-car-wash/platinum-wash",
     features: [
       "Thorough Exterior Wash",
       "Hybrid Ceramic Wax - SiO2 Paint Protection",
@@ -933,7 +932,7 @@ export const CARWASH = [
     prices: [115, 125, 135, 145] as const,
     image:
       "/assets/2025/02/professional-car-cleaning-cleaning-the-steering-w-2023-11-27-05-30-02-utc-e1720860904413.webp",
-    href: "/car-interior-cleaning/premium-interior-wash/",
+    href: "/car-interior-cleaning/premium-interior-wash",
     features: [
       "The Ultimate Interior Clean",
       "Deep Vacuum",
@@ -950,7 +949,7 @@ export const CARWASH = [
     price: "£49-£65",
     prices: [49, 55, 60, 65] as const,
     image: "/assets/2025/02/water-2023-11-27-05-35-50-utc-1-e1720862985495-1.webp",
-    href: "/mobile-car-wash/exterior-plus-wash/",
+    href: "/mobile-car-wash/exterior-plus-wash",
     features: [
       "Thorough Exterior Wash",
       "Buff & Dry",
@@ -998,7 +997,7 @@ export const CLUB = {
   kicker: "LOOKING TO SET UP SOMETHING MORE REGULAR?",
   title: "The Car Lovers Club",
   body: "Elevate your car care routine with our subscription service. Enjoy the luxury of regular vehicle maintenance tailored to your schedule—weekly, fortnightly, or monthly. Maintain your vehicle's pristine condition, enhance its longevity, and enjoy the peace of mind that comes with professional care at your convenience.",
-  cta: { label: "FIND OUT MORE", href: "/car-lovers-club/" },
+  cta: { label: "FIND OUT MORE", href: "/car-lovers-club" },
   bg: "/assets/2022/01/brad-starkey-eP8h7YVhFHk-unsplash-min-scaled.webp",
 };
 
@@ -1097,16 +1096,16 @@ export const FOOTER = {
   quickLinks: [
     {
       label: "Commercial Valeting and Detailing",
-      href: "/commercial-valeting/",
+      href: "/commercial-valeting",
     },
-    { label: "Careers & Franchising", href: "/careers-franchising/" },
-    { label: "Our Partners", href: "/our-partners/" },
-    { label: "Caravan Valeting", href: "/vehicles/caravan-cleaning/" },
-    { label: "Blog", href: "/blog/" },
+    { label: "Careers & Franchising", href: "/careers-franchising" },
+    { label: "Our Partners", href: "/our-partners" },
+    { label: "Caravan Valeting", href: "/vehicles/caravan-cleaning" },
+    { label: "Blog", href: "/blog" },
   ],
   legal: [
-    { label: "Privacy Policy & Cookies", href: "/privacy-policy-cookies/" },
-    { label: "Terms & Conditions", href: "/terms-and-conditions/" },
+    { label: "Privacy Policy & Cookies", href: "/privacy-policy-cookies" },
+    { label: "Terms & Conditions", href: "/terms-and-conditions" },
   ],
   timings: [
     "Open 7 Days a week",

@@ -23,10 +23,10 @@ import { pageSchema } from "@/lib/schema";
  * The source page repeats its borough directory three times — once under
  * "Mobile Car Wash Popular Services", once under valeting and once under
  * detailing — with the same six zones and the same place names each time, and
- * only the link targets differing (`/mobile-car-wash-in-brent`,
- * `/mobile-car-valeting-in-brent`, `/mobile-car-detailing-in-brent`). Rendered
- * faithfully that is the same forty place names printed three times, ninety
- * links deep in a 378-block page, each list a `<br>`-separated paragraph.
+ * only the link targets differing (`/mobile-car-wash/brent`,
+ * `/car-valeting/brent`, `/car-detailing/brent`). Rendered faithfully that is
+ * the same forty place names printed three times, ninety links deep in a
+ * 378-block page, each list a `<br>`-separated paragraph.
  *
  * Here the three are read off the page and folded into one directory: a row
  * per place, with its three services as separate links. Every place name and
@@ -43,11 +43,11 @@ export function generateMetadata(): Metadata {
   return {
     title: page.title,
     description: page.description,
-    alternates: { canonical: `/${SLUG}/` },
+    alternates: { canonical: `/${SLUG}` },
     openGraph: {
       title: page.title,
       description: page.description,
-      url: `/${SLUG}/`,
+      url: `/${SLUG}`,
       images: page.ogImage ? [{ url: page.ogImage }] : undefined,
     },
   };
@@ -58,22 +58,19 @@ export function generateMetadata(): Metadata {
 type Place = { name: string; links: { label: string; href: string }[] };
 type Zone = { zone: string; places: Place[] };
 
-/** Which service a `/mobile-car-…-in-<place>` href belongs to. */
-const SERVICE_OF: [RegExp, string][] = [
-  [/^\/mobile-car-wash-in-/, "Wash"],
-  [/^\/mobile-car-valeting-in-/, "Valeting"],
-  [/^\/mobile-car-detailing-in-/, "Detailing"],
-];
-
 /**
- * The same three, for the 75 pages the SEO plan moved under their service hub.
+ * Which service a location href belongs to.
  *
  * The hub prefix alone would claim the hub's own service pages — this grid
- * links to four of them, `/car-detailing/perfection-detail/` among them — so
- * the move table decides membership and those keep the generic label they
- * already had.
+ * links to four of them, `/car-detailing/perfection-detail` among them — so the
+ * move table decides membership and anything else keeps the generic label.
+ *
+ * The source wrote these hrefs as `/mobile-car-wash-in-brent`, and until
+ * 2026-09-19 a second table here read that shape too. All 127 of those pages
+ * are under their hub now (`lib/location-moves.ts`), so there is one shape to
+ * recognise.
  */
-const MOVED_SERVICE_OF: [string, string][] = [
+const SERVICE_OF: [string, string][] = [
   ["mobile-car-wash/", "Wash"],
   ["car-valeting/", "Valeting"],
   ["car-detailing/", "Detailing"],
@@ -81,9 +78,8 @@ const MOVED_SERVICE_OF: [string, string][] = [
 
 function serviceName(href: string) {
   const slug = href.replace(/^\/+|\/+$/g, "");
-  if (MOVED_LOCATIONS.has(slug))
-    return MOVED_SERVICE_OF.find(([hub]) => slug.startsWith(hub))?.[1] ?? "Services";
-  return SERVICE_OF.find(([re]) => re.test(href))?.[1] ?? "Services";
+  if (!MOVED_LOCATIONS.has(slug)) return "Services";
+  return SERVICE_OF.find(([hub]) => slug.startsWith(hub))?.[1] ?? "Services";
 }
 
 /** Is this the columns block that follows a "Service Areas" heading? */

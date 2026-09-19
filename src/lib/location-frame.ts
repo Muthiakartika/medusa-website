@@ -1,11 +1,10 @@
 /**
  * The 146 location pages — the borough hubs under `/our-locations/` and the
- * three service-in-a-place families, each of which now wears two URL shapes:
- * the 75 pages the SEO plan re-parented under their service hub
- * (`/mobile-car-wash/wembley/`, `lib/location-moves.ts`) and the 52 it does
- * not mention, still on the old `/mobile-car-wash-in-…` shape. The plan's 49
- * pages that had no source at all are built under the hub shape too
- * (`lib/planned-locations.ts`), so they are location pages here like any other.
+ * three service-in-a-place families, all of which now wear one URL shape: the
+ * 127 pages the mirror has, re-parented under their service hub
+ * (`/mobile-car-wash/wembley`, `lib/location-moves.ts`), and the 49 that had no
+ * source at all, built under the same shape (`lib/planned-locations.ts`).
+ * The mirror's own `/mobile-car-wash-in-…` URLs all 301 here.
  *
  * They are the site's long tail and its worst-served pages. Each one opens on
  * a bare heading; each ends on "Our Other Locations" with nothing under it —
@@ -30,17 +29,23 @@ import { PAGES } from "@/lib/blocks";
 import { MOVED_LOCATIONS } from "@/lib/location-moves";
 import { PLANNED_SLUGS } from "@/lib/planned-locations";
 
-/** Every location page that sits under a service hub: the 75 moved, the 49 built. */
+/** Every location page that sits under a service hub: the 127 moved, the 49 built. */
 const UNDER_HUB = new Set([...MOVED_LOCATIONS, ...PLANNED_SLUGS]);
 
 /**
  * The four families, and the title each one's A–Z index wears.
  *
- * `prefix` is the shape the mirror gave these pages; `hub` is where the move
- * put them. A page under `hub` counts only when the move table names it,
- * because the hub's own service pages are its neighbours there and are not
- * places — `/mobile-car-wash/wembley/` is in the family, `/mobile-car-wash/
- * gold-wash/` is not.
+ * Three of them live entirely under a service `hub`, and a page there counts
+ * only when `UNDER_HUB` names it, because the hub's own service pages are its
+ * neighbours and are not places — `/mobile-car-wash/wembley` is in the family,
+ * `/mobile-car-wash/gold-wash` is not. The borough family is the other way
+ * round: it has no service of its own, so it is every page under the `prefix`
+ * its index sits on.
+ *
+ * Until 2026-09-19 the three service families each spanned two URL shapes, and
+ * carried a `prefix` of their own for the 52 pages the SEO plan's move list
+ * never mentioned. Those moved too (`lib/location-moves.ts`), so there is one
+ * shape per family again.
  *
  * `indexTitle` names what the list holds, so it says the service rather than
  * repeating the page's own heading back at it. The borough family has no
@@ -56,19 +61,19 @@ export const LOCATION_FAMILIES = [
     rowLabel: "Boroughs",
   },
   {
-    prefix: "mobile-car-wash-in-",
+    prefix: null,
     hub: "mobile-car-wash/",
     indexTitle: "Mobile Car Wash Locations",
     rowLabel: "Car Wash",
   },
   {
-    prefix: "mobile-car-valeting-in-",
+    prefix: null,
     hub: "car-valeting/",
     indexTitle: "Mobile Car Valeting Locations",
     rowLabel: "Valeting",
   },
   {
-    prefix: "mobile-car-detailing-in-",
+    prefix: null,
     hub: "car-detailing/",
     indexTitle: "Mobile Car Detailing Locations",
     rowLabel: "Detailing",
@@ -79,7 +84,7 @@ type Family = (typeof LOCATION_FAMILIES)[number];
 
 /** The place part of a slug in this family, or null when it is not one of its pages. */
 function tailOf(family: Family, slug: string) {
-  if (slug.startsWith(family.prefix) && slug !== family.prefix.replace(/\/$/, ""))
+  if (family.prefix && slug.startsWith(family.prefix) && slug !== family.prefix.replace(/\/$/, ""))
     return slug.slice(family.prefix.length);
   if (family.hub && slug.startsWith(family.hub) && UNDER_HUB.has(slug))
     return slug.slice(family.hub.length);
@@ -105,8 +110,9 @@ export function placeName(slug: string) {
  * The page's siblings — what the dead shortcode was supposed to print.
  *
  * Every other page in the same family, in the order `pages.json` holds them,
- * which is the sitemap's order. The page itself is excluded. A family spans
- * both URL shapes, so a page that moved still lists the ones that did not.
+ * which is the sitemap's order. The page itself is excluded. A family is the
+ * mirror's own pages and the ones built for it alike, so a page the plan named
+ * still lists the ones it did not.
  */
 export function siblings(slug: string) {
   const family = familyOf(slug);
@@ -135,14 +141,14 @@ function membersOf(family: Family) {
 
 /**
  * Every location page a service hub is the parent of — what the A–Z index at
- * the foot of `/mobile-car-wash/`, `/car-valeting/` and `/car-detailing/`
- * lists (`components/LocationIndex.tsx`).
+ * the foot of `/mobile-car-wash`, `/car-valeting` and `/car-detailing` lists
+ * (`components/LocationIndex.tsx`).
  *
  * The client asked for "their corresponding location child pages"
- * (2026-09-17), and a family's children are in two URL shapes: the ones the
- * SEO plan re-parented under the hub and the ones it left on
- * `mobile-car-…-in-…`. Both are that service in that place, so both are
- * listed — the same reading of "family" that "Our Other Locations" uses.
+ * (2026-09-17), and a family's children come from two places: the ones the
+ * mirror has a page for and the ones the SEO plan asked to be built. Both are
+ * that service in that place, so both are listed — the same reading of
+ * "family" that "Our Other Locations" uses.
  *
  * Empty for every other slug, which is what keeps the index on the three hubs
  * the client named: no other page is a family's `hub`.

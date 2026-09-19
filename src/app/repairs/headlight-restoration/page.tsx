@@ -37,11 +37,11 @@ export function generateMetadata(): Metadata {
   return {
     title: page.title,
     description: page.description,
-    alternates: { canonical: `/${SLUG}/` },
+    alternates: { canonical: `/${SLUG}` },
     openGraph: {
       title: page.title,
       description: page.description,
-      url: `/${SLUG}/`,
+      url: `/${SLUG}`,
       images: page.ogImage ? [{ url: page.ogImage }] : undefined,
     },
   };
@@ -465,7 +465,7 @@ function Cta() {
               Book Now
               <Icon name="arrow" size={18} className="ml-2.5" />
             </a>
-            <Link href="/contact-us/" className="btn btn-outline w-full rounded-full sm:w-auto">
+            <Link href="/contact-us" className="btn btn-outline w-full rounded-full sm:w-auto">
               Contact Us
             </Link>
           </div>

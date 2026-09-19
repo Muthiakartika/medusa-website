@@ -500,37 +500,37 @@ const RETIRED_WASHES = ["BRONZE WASH", "EXTERIOR WASH"];
  * `restoreTilePhotos`. Sizes are the files on disk.
  */
 const VALETING_TILES: Record<string, TilePhoto> = {
-  "/car-valeting/deep-clean-full-valet/": {
+  "/car-valeting/deep-clean-full-valet": {
     src: "/assets/2020/11/20201116_141403.webp",
     w: 2016,
     h: 1512,
   },
-  "/car-valeting/pre-sale-valet/": {
+  "/car-valeting/pre-sale-valet": {
     src: "/assets/2021/12/20210214_144341-scaled.webp",
     w: 2560,
     h: 1920,
   },
-  "/car-interior-cleaning/mould-removal/": {
+  "/car-interior-cleaning/mould-removal": {
     src: "/assets/2021/12/20210225_161935-scaled.webp",
     w: 2560,
     h: 1920,
   },
-  "/car-valeting/summer-glow-valet/": {
+  "/car-valeting/summer-glow-valet": {
     src: "/assets/2022/01/shutterstock_552095587-min-scaled.webp",
     w: 2560,
     h: 1707,
   },
-  "/car-valeting/winter-protection/": {
+  "/car-valeting/winter-protection": {
     src: "/assets/2022/11/4-1.webp",
     w: 576,
     h: 576,
   },
-  "/mobile-car-wash/": {
+  "/mobile-car-wash": {
     src: "/assets/2022/01/brad-starkey-eP8h7YVhFHk-unsplash-min-scaled.webp",
     w: 2560,
     h: 1707,
   },
-  "/car-valeting/convertible-roof-cleaning/": {
+  "/car-valeting/convertible-roof-cleaning": {
     src: "/assets/2023/08/3-a.webp",
     w: 1024,
     h: 768,

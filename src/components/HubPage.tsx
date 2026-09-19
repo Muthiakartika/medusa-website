@@ -196,7 +196,7 @@ export default function HubPage({ spec }: { spec: HubSpec }) {
                         it opens rather than reading "Read More". */}
                     <div className="mt-auto flex flex-wrap gap-2.5 pt-7">
                       <a
-                        href={card.priceFrom ? BOOK_URL : "/contact-us/"}
+                        href={card.priceFrom ? BOOK_URL : "/contact-us"}
                         className="btn btn-gold w-full rounded-full sm:w-auto"
                         {...(card.priceFrom
                           ? { target: "_blank", rel: "noopener noreferrer" }

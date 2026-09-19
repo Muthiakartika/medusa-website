@@ -8,7 +8,7 @@
  * `C:/Program Files/Git/blog` before node is handed it. Either form works
  * everywhere else, and the check below catches the one that does not.
  *
- * One POST to /api/revalidate/, which flushes Next's prerender cache and then
+ * One POST to /api/revalidate, which flushes Next's prerender cache and then
  * purges Cloudflare — see app/api/revalidate/route.ts and lib/cloudflare.ts
  * for what each half does and when each one matters.
  *
@@ -72,9 +72,10 @@ console.log(
     : `purge: everything on ${BASE}`,
 );
 
-/* The trailing slash is load-bearing: `trailingSlash: true` answers the bare
-   form with a 308, and a POST that is not followed looks like a success. */
-const response = await fetch(`${BASE}/api/revalidate/`, {
+/* No trailing slash: `trailingSlash` is off, so the slashed form answers with
+   a 308, and a POST that is not followed looks like a success. `redirect:
+   'error'` below is the belt to that braces. */
+const response = await fetch(`${BASE}/api/revalidate`, {
   method: 'POST',
   headers: {
     authorization: `Bearer ${SECRET}`,

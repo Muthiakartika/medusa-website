@@ -20,12 +20,14 @@ import { SITE } from "@/lib/site";
  * every request rather than defaulting to open: an unauthenticated flush of
  * the whole site is a denial-of-service primitive, not a convenience.
  *
- * The trailing slash is not optional. `trailingSlash: true` in next.config.ts
- * is resolved before routing, so a POST to `/api/revalidate` is answered with
- * a 308 to `/api/revalidate/` — which curl does not follow unless told to, so
- * the call looks like it worked and nothing is flushed.
+ * Post to the bare path. Trailing-slash normalisation is resolved before
+ * routing, and `trailingSlash` is off since 2026-09-19, so a POST to
+ * `/api/revalidate/` is answered with a 308 to `/api/revalidate` — which curl
+ * does not follow unless told to, so the call looks like it worked and nothing
+ * is flushed. (This used to be the other way round; the slash the older
+ * commands in this repo carried is now the one that fails.)
  *
- *   curl -X POST https://example.com/api/revalidate/ \
+ *   curl -X POST https://example.com/api/revalidate \
  *     -H "Authorization: Bearer $REVALIDATE_SECRET" \
  *     -H "Content-Type: application/json" \
  *     -d '{"paths":["/car-valeting/mini-valet","/blog"]}'
@@ -77,11 +79,11 @@ function knownPaths() {
 /**
  * The absolute URL Cloudflare has cached for a path.
  *
- * `trailingSlash: true`, so every page is held under its slashed form; the
- * bare form only ever answered a 308, which is correct forever and worth
+ * `trailingSlash` is off, so every page is held under its bare form; the
+ * slashed form only ever answered a 308, which is correct forever and worth
  * leaving in the cache.
  */
-const cachedUrl = (path: string) => SITE + (path.endsWith("/") ? path : path + "/");
+const cachedUrl = (path: string) => SITE + (path === "/" ? "/" : path.replace(/\/+$/, ""));
 
 /** A purge that was attempted and failed is the one outcome worth a non-2xx. */
 const purgeFailed = (purge: PurgeResult) => purge.status === "failed";

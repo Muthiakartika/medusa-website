@@ -8,11 +8,11 @@ export function generateMetadata(): Metadata {
   return {
     title: page.title,
     description: page.description,
-    alternates: { canonical: `/${REPAIRS.slug}/` },
+    alternates: { canonical: `/${REPAIRS.slug}` },
     openGraph: {
       title: page.title,
       description: page.description,
-      url: `/${REPAIRS.slug}/`,
+      url: `/${REPAIRS.slug}`,
     },
   };
 }
