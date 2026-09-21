@@ -623,8 +623,36 @@ two and the order they sit in is presentation, not behaviour.
 3. **Cache the pages.**
    `not starts_with(http.request.uri.path, "/api/") and not starts_with(http.request.uri.path, "/assets/") and not starts_with(http.request.uri.path, "/_next/")`
    → *Eligible for cache*, Edge TTL **Ignore cache-control header and use this
-   TTL: 1 day**, Browser TTL **Respect origin** (which is `max-age=0`, so a
-   browser still revalidates and a purge is visible immediately).
+   TTL: 1 day**, Browser TTL **Override origin: 2 hours**.
+
+   Browser TTL was *Respect origin* until 2026-09-21, and what it respected was
+   Vercel's `public, max-age=0, must-revalidate` — which cannot be changed from
+   this repo. `headers()` in `next.config.ts` reaches `/sitemap.xml` and
+   `/robots.txt`, because those are route handlers; it does not reach a
+   prerendered page, whose header Vercel owns so that nothing downstream holds a
+   page it cannot purge. So every repeat document load fetched the whole page
+   again, and since Vercel sends **no `ETag` and no `Last-Modified`** with an ISR
+   page, that revalidation could never come back as an empty 304. It was 27 KB
+   of homepage on the wire every time, on a `cf-cache-status: HIT`.
+
+   The override now sends `public, max-age=7200, must-revalidate`, and **the
+   `must-revalidate` is not the part that mattered** — it only forbids serving a
+   response that is already stale. Under `max-age=0` every response was stale on
+   arrival, so it applied to every request; at 7200 it does nothing until the two
+   hours are up. 2 hours is the floor of the dropdown in this dashboard.
+
+   The cost is printed on the setting itself: **a purge does not reach a
+   browser.** `npm run purge` and the deploy workflow still clear the edge
+   instantly, but a visitor who loaded a page in the last two hours keeps their
+   copy — the client among them, checking the site after a change they asked
+   for. A Transform Rule is the way below the dropdown's floor if that becomes a
+   problem: Rules → Modify Response Header → set `Cache-Control` to
+   `public, max-age=300, stale-while-revalidate=3600` on this rule's expression,
+   with Browser TTL back on *Respect origin*.
+
+   `/sitemap.xml` and `/robots.txt` match this rule too, so the `s-maxage` set
+   for them above is overridden at the browser. A crawler keeps no browser
+   cache, so it costs nothing.
 
 Two things that look like risks and are not. Cache Rules apply to `GET` and
 `HEAD`, so the enquiry forms — server actions, which `POST` to the page's own
