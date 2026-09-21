@@ -224,7 +224,8 @@ Three tiers, cheapest first:
    a `.surface`. `LocationIndexSection` in the same file is the band it sits
    in, so the call sites are one element each.
 
-   **199 pages carry it**, always last, above the footer:
+   **199 pages carry it**, above the footer and last on all but eighteen —
+   the borough hubs whose top-sight row now closes the page below it (below):
 
    | Page | Lists | Heading |
    | --- | --- | --- |
@@ -309,6 +310,26 @@ Three tiers, cheapest first:
    The heading is "Our Location", which is what the source writes above 110 of
    these maps. The homepage's own map and `/our-locations/`'s are different
    components and are untouched.
+
+   **The top sights, last band on the page.** Client, 2026-09-21, against
+   `/our-locations/buckinghamshire/`: "can you please move this top sight
+   section to the bottom of every our-locations/* page", and then, of a first
+   pass that put it above the A–Z index: "Section Top Sight harus muncul
+   setelah semua section/konten lainnya dan tepat sebelum footer". So it is
+   below the index too, and it is the one row that is — **this supersedes the
+   2026-09-17 instruction** that put the navigational widget "at the very
+   bottom of the page, just above the footer", on these eighteen pages only.
+
+   The 18 borough hubs that carry a "<Place>'s Top Sight" row are the only
+   pages on the site that have one, and it stood third on them — nine museums,
+   palaces and markets between the page's opening sentence and every package
+   it sells, so the page led on the borough rather than on the service. The
+   foot of a borough hub now reads questions, map, index, sights.
+
+   Nothing about the row itself changed: same photographs, same captions, same
+   grid, same `Sights` component. It takes one hairline of its own in the move
+   — the one the chips row above it used to lend — and the footer's own
+   `#0d0d0d` band closes it below, so there is no double rule at the seam.
 
    A heading over 30 characters takes the smaller uppercase rank rather than the
    50px section head: `AREAS WE PROVIDE STANDARD CAR WASH SERVICES IN LONDON:`

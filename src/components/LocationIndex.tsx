@@ -228,7 +228,9 @@ export default function LocationIndex({
 }
 
 /**
- * The index as a section: the page's last band, above the footer.
+ * The index as a section: the page's closing band, above the footer — and
+ * below it on the eighteen borough hubs that carry a top-sight row, which
+ * the client moved under the index on 2026-09-21.
  *
  * One wrapper rather than five copies of the same grid — the three service
  * hubs, `/our-locations/` and every location page all close on this.

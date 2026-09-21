@@ -71,8 +71,6 @@ export default function LocationPage({ page }: { page: Page }) {
         <Chips title={model.neighbourhoods.heading} items={model.neighbourhoods.items} />
       )}
 
-      {model.sights && <Sights sights={model.sights} />}
-
       {model.body.length > 0 && (
         <Sections
           sections={model.body}
@@ -110,10 +108,10 @@ export default function LocationPage({ page }: { page: Page }) {
       {map && <Map map={map} place={place} />}
 
       {/*
-        The sibling index, last on the page above the footer — the client's
-        navigational widget applied "ke yg lain juga yg ada lokasi"
-        (2026-09-17). A family runs to seventy-odd places, which as a flat row
-        of chips was a wall you had to read rather than a list you could use.
+        The sibling index — the client's navigational widget applied "ke yg
+        lain juga yg ada lokasi" (2026-09-17). A family runs to seventy-odd
+        places, which as a flat row of chips was a wall you had to read rather
+        than a list you could use.
 
         The heading is the source's own on the 163 pages that carry the dead
         `[page-generator-pro-related-links …]` row — 114 off the mirror and the
@@ -129,6 +127,25 @@ export default function LocationPage({ page }: { page: Page }) {
           locations={places}
         />
       )}
+
+      {/*
+        The place's own photographs — the page's last band, under everything
+        else and against the footer.
+
+        Client, 2026-09-21, against `/our-locations/buckinghamshire/`: "can
+        you please move this top sight section to the bottom of every
+        our-locations/* page", then, of a first pass that put it above the
+        index: "Section Top Sight harus muncul setelah semua section/konten
+        lainnya dan tepat sebelum footer". So it is after the index too — the
+        one row that now sits below the navigational widget, which the client
+        had asked on 2026-09-17 to keep "at the very bottom of the page".
+
+        It stood third on the eighteen borough hubs that carry one: nine
+        museums, palaces and markets between the page's opening sentence and
+        every package it sells. Nothing about the row itself changed in the
+        move — same photographs, same captions, same grid.
+      */}
+      {model.sights && <Sights sights={model.sights} />}
     </main>
   );
 }
@@ -316,7 +333,10 @@ function Chips({
 
 /* ── Top sights ───────────────────────────────────────────────────────────
    Nine 324px photographs, each followed by its caption. Stacked as the source
-   leaves them that is a 3,000px column of pictures with a line under each. */
+   leaves them that is a 3,000px column of pictures with a line under each.
+
+   The hairline is the one the chips row above used to lend it: closing the
+   page it follows the A–Z index, which rules its own top and not its foot. */
 
 function Sights({
   sights,
@@ -324,7 +344,7 @@ function Sights({
   sights: NonNullable<ReturnType<typeof parseLocationPage>["sights"]>;
 }) {
   return (
-    <section className="w-full py-16 lg:py-[104px]">
+    <section className="w-full border-t border-white/[0.07] py-16 lg:py-[104px]">
       <div className="shell">
         <SectionHead title={sights.heading} />
         <ul className="mt-11 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
