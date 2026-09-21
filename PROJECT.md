@@ -482,8 +482,33 @@ narrow article column. Four sections qualify.
 
 `components/blocks-groups.tsx` is what makes tier 1 look designed: it detects
 runs of blocks that mean something together (`PriceGrid`, `AddonCards`,
-`Gallery`, `FeatureCards`, `Steps`, `LinkChips`) and renders them as a
-component instead of a flat list.
+`Gallery`, `FeatureCards`, `Steps`, `LinkChips`, `ReviewBadges`) and renders
+them as a component instead of a flat list.
+
+**The review row is the newest of those, and the narrowest.** Client,
+2026-09-21, of the 18 borough hubs on a phone: "tampilan ini aneh di mobile".
+The three review sources are a `columns` row whose every cell is a 128px mark
+over "5/5 Stars", and the generic columns renderer stacks below `lg` — which
+is right for a cell carrying a heading and prose and wrong for this: three
+140px blocks of logo over caption, 484px of column with the width beside them
+empty, adrift on the gold band. `asReviewBadges()` claims a row only when
+**every** cell is exactly a mark plus a caption of 24 characters or less, a
+shape that occurs once on the site, and `ReviewBadges` sets them as the tiles
+`components/sections/Testimonials` already gives the same three on the
+homepage — the mark at 38px and the label, on one line. A tile is 70px instead
+of 140, so the section is 1324px on a phone rather than 1574.
+
+**Without the homepage's stars.** That tile ends on five gold ones; the client
+saw them here and said "bintangnya hapus aja" (2026-09-21), so this row has
+the mark and the label and nothing else. They were decoration of the label
+rather than anything the cell said, so the tile lost nothing the source wrote
+— which is also why the homepage keeps its own.
+
+Layout only, as ever: the words are the cell's own, and the mark keeps the
+source's own `alt` — "Google Pin", and two that are the upload's filename —
+rather than the homepage's empty one, because the ordinary image renderer
+keeps it. `/our-locations/` and the homepage carry the same three badges
+through their own routes and are untouched.
 
 **Tables render twice.** `/valeting` is the only page carrying `table` blocks,
 and its package matrix is 7 columns by 58 rows — 1062px wide and 18,633px tall

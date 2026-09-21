@@ -394,6 +394,42 @@ export function asAddonCards(
   return cards.map(({ price, icon, rest }) => ({ price, icon, rest }));
 }
 
+export type ReviewBadge = { icon: Extract<Block, { type: "image" }>; label: string };
+
+/**
+ * A row whose every cell is a mark and a few words — the three review
+ * sources, and the only row on the site with that shape (checked against all
+ * 305 pages).
+ *
+ * As an ordinary columns row it stacks on a phone into three 140px blocks of
+ * logo over caption, adrift on the band with the width beside them empty. The
+ * homepage writes these same three as tiles — the mark, the label, the stars —
+ * in `components/sections/Testimonials`, so this hands the pages that carry
+ * the row as *content* the treatment the site already gives it. Layout only:
+ * every word is the cell's own.
+ */
+export function asReviewBadges(
+  block: Extract<Block, { type: "columns" }>,
+): ReviewBadge[] | null {
+  const cells = block.cols.filter((col) => col.some(contentful));
+  if (cells.length < 2) return null;
+
+  const badges: ReviewBadge[] = [];
+  for (const col of cells) {
+    const [mark, caption, ...rest] = col.filter(contentful);
+    if (rest.length || !isIcon(mark)) return null;
+    // A caption, not a sentence: "5/5 Stars" is nine characters.
+    const label = textOnly(text(caption));
+    if (!label || label.length > 24) return null;
+    badges.push({ icon: mark as Extract<Block, { type: "image" }>, label });
+  }
+  return badges;
+}
+
+/** A block that puts something on the page — the source pads cells with blanks. */
+const contentful = (b: Block) =>
+  !((b.type === "paragraph" && !textOnly(b.html)) || (b.type === "heading" && !b.text.trim()));
+
 /**
  * Where a column's vehicle-class ladder begins — the first `icon → h3 →
  * (note) → £heading` run long enough for `group` to collapse into a table.
@@ -963,6 +999,54 @@ export function AddonCards({
           <div className="[&>*:first-child]:mt-4 [&>h3]:text-[16px] [&>h4]:text-[15px] [&>p]:mt-3 [&>p]:text-[14.5px] [&>p]:leading-[23px]">
             {renderBlocks(c.rest)}
           </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * The review sources, as the homepage's own tiles.
+ *
+ * `components/sections/Testimonials` sets these three the same way — a 38px
+ * mark and the label on one line — and that shape is what makes them work on
+ * a phone: a tile is one 70px line rather than a 140px column of logo over
+ * caption.
+ *
+ * The homepage draws five gold stars at the end of each of its tiles. This
+ * row does not: the client asked for them off (2026-09-21, "bintangnya hapus
+ * aja"). They were decoration of the label rather than anything the cell
+ * said, so the tile loses nothing the source wrote.
+ *
+ * The mark keeps the source's own `alt` — "Google Pin", and two that are the
+ * upload's filename — rather than the homepage's empty one, because the
+ * ordinary image renderer keeps it and this row is content, not chrome.
+ */
+export function ReviewBadges({
+  badges,
+  onGold,
+}: {
+  badges: ReviewBadge[];
+  /** Sitting on a gold band — the tile goes solid ink for contrast. */
+  onGold?: boolean;
+}) {
+  return (
+    <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {badges.map((b, i) => (
+        <li
+          key={i}
+          className={`flex items-center gap-4 p-4 ${onGold ? "surface-on-gold" : "surface"}`}
+        >
+          <Image
+            src={b.icon.src}
+            alt={b.icon.alt}
+            width={b.icon.w ?? 128}
+            height={b.icon.h ?? 128}
+            className="h-[38px] w-[38px] shrink-0 object-contain"
+          />
+          <p className="font-[family-name:var(--font-sub)] text-[17px] text-white">
+            {b.label}
+          </p>
         </li>
       ))}
     </ul>

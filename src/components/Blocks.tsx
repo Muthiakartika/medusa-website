@@ -5,6 +5,7 @@ import {
   asFeatures,
   asInlineTicks,
   asLinkChips,
+  asReviewBadges,
   asTicks,
   CardRow,
   clean,
@@ -15,6 +16,7 @@ import {
   isSequence,
   LinkChips,
   PriceGrid,
+  ReviewBadges,
   Steps,
   unbullet,
 } from "@/components/blocks-groups";
@@ -1367,6 +1369,15 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
       );
 
     case "columns": {
+      /*
+        Cells that are a mark and a caption are the review sources, not a
+        layout: three logos over "5/5 Stars", which as columns stack into
+        three 140px blocks on a phone. They get the tiles the homepage
+        already gives the same three.
+      */
+      const badges = asReviewBadges(block);
+      if (badges) return <ReviewBadges badges={badges} onGold={ctx.onGold} />;
+
       // Cells that are all price + icon + name + copy are an add-on row, not
       // a free-form layout, so they render as cards instead of four stacks.
       const cards = asAddonCards(block);
