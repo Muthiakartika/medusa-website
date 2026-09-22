@@ -1,9 +1,5 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import Icon from "@/components/Icon";
 import Reveal from "@/components/Reveal";
 
 export type BlogCard = {
@@ -15,42 +11,26 @@ export type BlogCard = {
 };
 
 /**
- * The rest of the index, behind a Load More.
+ * The rest of the index — every post, in one grid.
  *
- * The source's index is paginated ten to a page, so ten is what this shows to
- * begin with — the lead story plus nine cards — and each press reveals another
- * ten. The posts beyond page one are this site's own articles; without the
- * button they would have no inbound link anywhere, because the source's page
- * two is not part of the mirror.
+ * It used to show nine and reveal ten more per press of a Load More, because
+ * the source's own index paginates at ten. Client, 2026-09-22: "On blog, load
+ * all blogs at once, remove (load more button)". So the button is gone and
+ * the grid is the whole list.
+ *
+ * That makes this a server component again — no state, no click handler, no
+ * `use client` — and every post is in the served HTML, where before the
+ * fortieth existed only after four presses. The posts beyond the source's
+ * page one are this site's own articles and had no inbound link anywhere
+ * else, so they gain one.
  */
-const PAGE = 10;
-
 export default function BlogGrid({ posts }: { posts: BlogCard[] }) {
-  const [shown, setShown] = useState(PAGE - 1);
-  const visible = posts.slice(0, shown);
-  const left = posts.length - visible.length;
-
   return (
-    <>
-      <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-        {visible.map((post, i) => (
-          <Card key={post.slug} post={post} delay={Math.min(i % 3, 5)} />
-        ))}
-      </ul>
-
-      {left > 0 && (
-        <div className="mt-10 flex justify-center">
-          <button
-            type="button"
-            onClick={() => setShown(shown + PAGE)}
-            className="btn btn-outline rounded-full"
-          >
-            Load More
-            <Icon name="plus" size={17} className="ml-2.5" />
-          </button>
-        </div>
-      )}
-    </>
+    <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+      {posts.map((post, i) => (
+        <Card key={post.slug} post={post} delay={Math.min(i % 3, 5)} />
+      ))}
+    </ul>
   );
 }
 

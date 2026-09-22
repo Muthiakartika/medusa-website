@@ -74,7 +74,12 @@ export const NAV: NavItem[] = [  { label: "Home", href: "/" },
         label: "Car Wash",
         href: "/mobile-car-wash",
         children: [
-          { label: "Bronze Wash", href: "/mobile-car-wash/bronze-wash" },
+          /* Bronze Wash came out of the menu on 2026-09-22 — "Remove bronze
+             wash from menu". It was already the retired tier that
+             `overrides.ts` drops from this page's price row (with Exterior
+             Wash), so the menu was the last place still selling it. The page
+             and its 301 stay, as they did when Car Wax Service moved column:
+             the client asked for the menu entry to go, not the URL. */
           { label: "Silver Wash", href: "/mobile-car-wash/silver-wash" },
           { label: "Gold Wash", href: "/mobile-car-wash/gold-wash" },
           { label: "Platinum Wash", href: "/mobile-car-wash/platinum-wash" },

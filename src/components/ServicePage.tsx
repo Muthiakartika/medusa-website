@@ -6,12 +6,14 @@ import { LocationIndexSection } from "@/components/LocationIndex";
 import PriceCard from "@/components/PriceCard";
 import Reveal from "@/components/Reveal";
 import SectionHead from "@/components/SectionHead";
+import { ServiceCardsSection } from "@/components/ServiceCards";
 import type { Page } from "@/lib/blocks";
 import {
   foldableAreas,
   hubLocations,
   withAreaLinks,
 } from "@/lib/location-frame";
+import { serviceCardsFor } from "@/lib/service-cards";
 import { parseServicePage, takeAreasFromBody } from "@/lib/service-frame";
 
 /**
@@ -57,6 +59,13 @@ export default function ServicePage({ page }: { page: Page }) {
       : null;
   const places = folded?.items ?? index?.items ?? [];
 
+  /*
+    The services this page's menu column carries and the page itself did
+    not link to — client, 2026-09-22, "the same way you did for repairs
+    page". Null on the other thirty-eight service pages.
+  */
+  const services = serviceCardsFor(page.slug);
+
   return (
     <main className="flex-1">
       <Hero page={page} model={model} />
@@ -80,6 +89,7 @@ export default function ServicePage({ page }: { page: Page }) {
           panel={model.priced}
         />
       )}
+
 
       {areas && !folded && (
         <section className="w-full border-t border-white/[0.07] py-16 lg:py-[104px]">
@@ -131,6 +141,21 @@ export default function ServicePage({ page }: { page: Page }) {
             </div>
           </div>
         </section>
+      )}
+
+      {/*
+        The services in this page's menu column that the page did not link to
+        — client, 2026-09-22, "the same way you did for repairs page".
+
+        Last of the page's own bands, immediately before the closing one.
+        A hub puts its card grid above its questions, and two of these three
+        pages cannot: their FAQ row is part of the source body, so "above the
+        questions" would mean cutting the body in two and restarting the
+        gold/ink alternation mid-page. One position that holds on all four
+        pages beats a rule that reads differently on each.
+      */}
+      {services && (
+        <ServiceCardsSection heading={services.heading} cards={services.cards} />
       )}
 
       {/*

@@ -178,6 +178,14 @@ at build rather than passing quietly.
 When the live site catches up, **delete** the rule instead of editing it; the
 next `npm run content` brings the same value in from the mirror.
 
+One of those two retired tiers lost its last foothold on 2026-09-22: "Remove
+bronze wash from menu". `/mobile-car-wash/bronze-wash` still renders and still
+answers its 301 — the client asked for the menu entry to go, not the URL, as
+they did when Car Wax Service changed column — but nothing on the site links
+to it now. Exterior Wash is the other retired tier and is **not** in the same
+position: it is still sold, and since 2026-09-22 it has a card of its own on
+`/mobile-car-wash` (§5).
+
 Prices also live in `lib/site.ts`, which the homepage sections read. A price
 change usually has to be made in both places.
 
@@ -426,6 +434,45 @@ Three tiers, cheapest first:
    interior pages carry twenty-one between three of the nine — and fall back to
    the group's own question-shaped headings where it does not, which is what
    `/repairs` uses.
+
+   **The card grid is no longer only a hub's.** Client, 2026-09-22, listing
+   URLs under four headings — "On /mobile-car-wash — add these 3 services:",
+   the same for `/car-detailing`, `/car-valeting` and `/commercial-valeting` —
+   and then, over a screenshot of `/repairs`: "And in, the same way you did for
+   repairs page". So `components/ServiceCards.tsx` is that grid, lifted out of
+   `HubPage` unchanged, and `lib/hub.ts`'s card builder is `cardsFrom()`, which
+   a hub and a service page now both call. A card copied into a second file is
+   a card that drifts from the first.
+
+   `lib/service-cards.ts` says which services each page shows. **Each list is
+   exactly what that page was missing**, checked against the rendered pages on
+   the day: `/mobile-car-wash` linked silver, gold, platinum and exterior-plus
+   and nothing else — bronze and exterior wash being the two tiers
+   `overrides.ts` retires from its price row — `/car-valeting` linked five of
+   its seven, `/car-detailing` five of its eight, and `/commercial-valeting`
+   none of its three. So a card never repeats a package the page already sells;
+   the band closes the gap between a menu column and the page under it.
+
+   Its `navItemFor()` searches the **whole** menu rather than one column,
+   because a service is not always in the column of the page that shows it:
+   Car Wax Service has sat in Car Valeting since 2026-09-08 and its page is
+   under `/mobile-car-wash/`, which is where the client wants its card. It
+   throws when a slug is not in the menu, so no card can carry a name this
+   repo invented.
+
+   **Where it sits: last of the page's own bands, above the closing one.** A
+   hub puts its grid above its questions and two of these three service pages
+   cannot — their FAQ row is part of the source body, so "above the questions"
+   would mean cutting the body in two and restarting the gold/ink alternation
+   mid-page. One position that holds on all four beats a rule that reads
+   differently on each. On `/commercial-valeting` that is after the fleet list
+   and before the enquiry form, so the page still closes on the way to ask.
+
+   The grid caps its track at 400px (`auto-fit`) instead of dividing the shell,
+   because a two-card row at `grid-cols-2` was 615px a card on a page whose
+   every other card row is 301–403px — the §6 inconsistency exactly. A short
+   row now ends early rather than stretching. The hubs pass their own column
+   count and are untouched.
 
    **A fifth kind: the 49 planned location pages.** The SEO plan's "Location
    build list" asks for 49 location pages the mirror has no page for — Luton,
@@ -895,8 +942,12 @@ rendered `<main>`. Known, pre-existing gaps: `asLinkChips` drops commas and
   mention leather in two of four bodies — the least specific of the nine.
   Written copy from the client replaces either in one line of `lib/hubs.ts`.
 - **`/blog` renders post titles its own source page does not list** — the
-  source paginates at 10, the grid loads 10 at a time from the full set. This
-  is the one intentional exception to rule 8.1. It also means WordPress's
+  source paginates at 10 and this index does not paginate at all. It used to
+  show nine cards under the lead and reveal ten more per press of a Load More;
+  the client asked for the button to go on 2026-09-22 — "On blog, load all
+  blogs at once, remove (load more button)" — so `components/BlogGrid.tsx` is
+  a server component again and every post is in the served HTML. This is the
+  one intentional exception to rule 8.1. It also means WordPress's
   `/blog/page/2…5` have no counterpart here, and neither does
   `/category/uncategorized`, the default category every post was filed under.
   All nine were indexed and all nine 404'd until the client's sheet surfaced

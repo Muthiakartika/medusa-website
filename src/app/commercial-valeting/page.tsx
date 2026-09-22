@@ -8,7 +8,9 @@ import Icon from "@/components/Icon";
 import JsonLd from "@/components/JsonLd";
 import Reveal from "@/components/Reveal";
 import SectionHead from "@/components/SectionHead";
+import { ServiceCardsSection } from "@/components/ServiceCards";
 import { getForms, getPage } from "@/lib/blocks";
+import { serviceCardsFor } from "@/lib/service-cards";
 import { pageSchema } from "@/lib/schema";
 
 /**
@@ -82,6 +84,7 @@ export default function CommercialPage() {
   if (!page) notFound();
 
   const form = getForms(SLUG)[0];
+  const services = serviceCardsFor(SLUG);
 
   return (
     <>
@@ -91,6 +94,13 @@ export default function CommercialPage() {
         <Hero page={page} />
         <Brief />
         <Contract />
+
+        {/* The three services in this page's menu group, which it did not
+            link to at all — client, 2026-09-22. Before the enquiry form,
+            so the page still closes on the way to ask for a price. */}
+        {services && (
+          <ServiceCardsSection heading={services.heading} cards={services.cards} />
+        )}
 
         <section
           id="fleet-enquiry"

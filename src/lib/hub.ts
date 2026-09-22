@@ -176,22 +176,35 @@ function menuGroup(spec: HubSpec): NavItem[] {
   return group.children;
 }
 
+const NOTHING_TAKEN: ReadonlySet<string> = new Set();
+
 /**
- * One card per service in the menu group, in the menu's order.
+ * One card per menu entry, in the order given.
  *
- * Throws rather than skipping: a child in the menu with no page behind it is
- * a link this hub would advertise and the site would 404 on, and that is worth
- * failing the build for.
+ * Throws rather than skipping: an entry with no page behind it is a link the
+ * page would advertise and the site would 404 on, and that is worth failing
+ * the build for.
+ *
+ * `owner` only names the caller in those errors. `taken` is what the page has
+ * already printed, so a card does not repeat it — a hub passes its borrowed
+ * introduction, and a service page has nothing to pass, because a child's
+ * opening paragraph is not on its parent.
+ *
+ * Shared with `lib/service-cards.ts` since 2026-09-22, so the cards the four
+ * service pages gained are built exactly the way a hub's are.
  */
-export function hubCards(spec: HubSpec): HubCard[] {
-  const taken = new Set(hubIntro(spec));
-  return menuGroup(spec).map((item) => {
+export function cardsFrom(
+  items: NavItem[],
+  opts: { owner: string; taken?: ReadonlySet<string>; images?: Record<string, string> },
+): HubCard[] {
+  const taken = opts.taken ?? NOTHING_TAKEN;
+  return items.map((item) => {
     const slug = (item.href ?? "").replace(/^\/+|\/+$/g, "");
     const page = slug ? getPage(slug) : undefined;
-    if (!page) throw new Error(`${spec.slug}: no page for "${item.label}" (${item.href})`);
+    if (!page) throw new Error(`${opts.owner}: no page for "${item.label}" (${item.href})`);
 
     const blurbHtml = blurbOf(page, taken);
-    if (!blurbHtml) throw new Error(`${spec.slug}: no opening paragraph on /${slug}`);
+    if (!blurbHtml) throw new Error(`${opts.owner}: no opening paragraph on /${slug}`);
 
     return {
       slug,
@@ -199,8 +212,17 @@ export function hubCards(spec: HubSpec): HubCard[] {
       href: item.href!,
       blurbHtml,
       priceFrom: priceOf(page),
-      image: spec.cardImages?.[slug] ?? heroImageFor(page),
+      image: opts.images?.[slug] ?? heroImageFor(page),
     };
+  });
+}
+
+/** Every service in the hub's own menu column, in the menu's order. */
+export function hubCards(spec: HubSpec): HubCard[] {
+  return cardsFrom(menuGroup(spec), {
+    owner: spec.slug,
+    taken: new Set(hubIntro(spec)),
+    images: spec.cardImages,
   });
 }
 
