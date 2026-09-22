@@ -65,6 +65,26 @@ const nextConfig: NextConfig = {
     file still reaches a returning visitor, it just does so on the next
     request rather than blocking this one.
   */
+  /*
+    The enquiry forms are server actions, and one of them — the caravan page's
+    — takes a photograph. Next caps a server action's request body at 1 MB by
+    default, which no phone photograph is under, so that field has never
+    worked: the whole submission failed before the action was reached, with
+    the name, the address and the message in it.
+
+    4 MB rather than more, because Vercel's own function request limit is
+    4.5 MB and a limit set above it would fail one layer further out, where
+    this file cannot say anything about it. The multipart encoding adds its
+    own 10-20 KB of boundaries on top of the file, hence the gap.
+
+    `lib/mail.ts` carries the matching attachment budget.
+  */
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "4mb",
+    },
+  },
+
   async headers() {
     return [
       {

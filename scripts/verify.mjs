@@ -91,6 +91,18 @@ const NO_H1_ON_SOURCE = /^\/(20\d\d\/|commercial-valeting\/aircraft-cleaning$)/;
 
 const badStatus = [];
 const noH1 = [];
+/** Characters of non-link prose inside <main> that a real page must clear. */
+const THIN = 500;
+
+/*
+  Three routes are short on purpose and always will be.
+
+  /blog is an index: 4,900 characters of text, effectively all of it inside the
+  post cards' own anchors. /contact-us is a form and an address. /gift-card is
+  the source's own page — four sentences over a purchase widget.
+*/
+const THIN_BY_DESIGN = /^\/(blog|contact-us|gift-card)$/;
+
 const thin = [];
 const badSchema = [];
 const deadLinks = new Map();   // href -> [pages]
@@ -129,13 +141,31 @@ async function check(route) {
 
   if (!/<h1[\s>]/i.test(html) && !NO_H1_ON_SOURCE.test(route)) noH1.push(route);
 
-  const bodyText = html
+  /*
+    Prose inside <main>, with link text removed.
+
+    This used to measure the whole document against 1200 characters, and the
+    whole document includes the navigation, the footer, the footer's location
+    strip and the A-Z index — several thousand characters of link text on every
+    page, which no page could fall below. It reported `thin pages: 0` while
+    /our-locations/city-of-westminster was going out with an h1 reading "Our
+    Locations" and three words under it (built properly on 2026-09-22, in
+    content/overrides.ts).
+
+    Anchors go because a list of place names is navigation, not copy; <main>
+    because the header and footer are identical on all 306 routes.
+  */
+  const main = (html.match(/<main[\s\S]*?<\/main>/i) || [''])[0];
+  const bodyText = main
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-  if (bodyText.length < 1200) thin.push(`${route} (${bodyText.length} chars)`);
+  if (bodyText.length < THIN && !THIN_BY_DESIGN.test(route)) {
+    thin.push(`${route} (${bodyText.length} chars)`);
+  }
 
   // structured data: must parse, and must name the page in a WebPage node
   const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];

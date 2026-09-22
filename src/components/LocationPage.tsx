@@ -172,11 +172,15 @@ function Hero({
   model: ReturnType<typeof parseLocationPage>;
 }) {
   const hasVideo = Boolean(model.video);
+  /* A photograph is framed like the video: filling the band under the same
+     dark wash, so the white type over it keeps its contrast. */
+  const photo = !hasVideo ? model.heroImage : undefined;
+  const painted = hasVideo || Boolean(photo);
 
   return (
     <section
       className={`cut-bottom relative flex w-full items-center overflow-hidden pt-[150px] pb-[calc(var(--cut)+3.5rem)] lg:min-h-[620px] lg:pt-[200px] ${
-        hasVideo ? "" : "bg-ink-panel"
+        painted ? "" : "bg-ink-panel"
       }`}
     >
       {model.video ? (
@@ -191,15 +195,24 @@ function Hero({
         >
           <source src={model.video.src} type="video/mp4" />
         </video>
+      ) : photo ? (
+        <Image
+          src={photo.src}
+          alt=""
+          fill
+          sizes="100vw"
+          priority
+          className="object-cover"
+        />
       ) : (
         <div aria-hidden className="livery absolute inset-0 opacity-70" />
       )}
 
       <div
         aria-hidden
-        className={`absolute inset-0 ${hasVideo ? "bg-black/[0.74]" : ""}`}
+        className={`absolute inset-0 ${painted ? "bg-black/[0.74]" : ""}`}
         style={
-          hasVideo
+          painted
             ? undefined
             : {
                 background:

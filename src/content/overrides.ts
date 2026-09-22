@@ -1,4 +1,5 @@
 import type { Block, Page, Section } from "@/lib/blocks";
+import { LOCAL_PLACES } from "@/lib/local-copy";
 
 /**
  * Corrections applied on top of `pages.json`.
@@ -745,6 +746,72 @@ const RULES: Record<string, (page: Page) => void> = {
   /* Item, 2026-09-22: the LEVEL 1–5 row the client called a duplicate. The
      three services that replace it on the page are a band the frame renders
      — see `lib/service-cards.ts` — not content, so they are not written here. */
+  /*
+    The one borough hub the mirror never wrote. Its page in `pages.json` is a
+    single block — an h1 reading "Our Locations" — so it went out as a 3-word
+    page that still answered 200 and still sat in the sitemap. `verify.mjs`
+    missed it because the A–Z index below it carries enough characters to
+    clear the thin-page threshold on its own.
+
+    Built here rather than in `lib/planned-locations.ts` because it is not one
+    of the plan's 49: it is a page that exists and is empty, not one that was
+    asked for. The words are in `lib/local-copy.ts` with the other written
+    ones.
+  */
+  "our-locations/city-of-westminster": (page) => {
+    const local = LOCAL_PLACES["city-of-westminster"];
+    if (!local) throw new Error("content override: no local copy for city-of-westminster");
+    if (page.sections.length !== 1 || page.sections[0].blocks.length !== 1) {
+      throw new Error("content override: city-of-westminster is no longer the empty stub this rule is for");
+    }
+
+    /* The family's own shape, in the capitals Barnet's is written in —
+       where the possessive is correct, rather than the "Brent’S" the mirror
+       left on five of its siblings. This one is written here, so it does not
+       have to carry their typo. */
+    page.h1 = "CITY OF WESTMINSTER’S FINEST MOBILE CAR DETAILING & VALETING";
+    page.sections = [
+      /* One paragraph in the header, as the mirror's own location pages
+         carry (34-73 words); the second goes below it. */
+      {
+        blocks: [
+          { type: "heading", level: 1, text: page.h1 },
+          { type: "paragraph", html: local.opening },
+        ],
+      },
+      /* A photograph beside it, for the same reason the built pages have one:
+         a lone paragraph on a full-width band is mostly empty band. This one
+         is the valeting hub's own picture. */
+      {
+        blocks: [
+          {
+            type: "columns",
+            spans: [7, 5],
+            cols: [
+              [{ type: "paragraph", html: local.why }],
+              [
+                {
+                  type: "image",
+                  src: "/assets/2020/10/1128998174-huge-scaled.webp",
+                  alt: "A car interior being valeted",
+                  w: 2560,
+                  h: 1707,
+                },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        blocks: [
+          { type: "heading", level: 2, text: "City of Westminster’s Neighborhoods" },
+          { type: "paragraph", html: local.areas.join(", ") },
+        ],
+      },
+      { blocks: [{ type: "heading", level: 4, text: "Our Other Locations" }] },
+    ];
+  },
+
   "car-detailing": (page) => {
     dropBareLevelRow(page);
   },

@@ -330,6 +330,16 @@ export type LocationModel = {
   /** The hero's own buttons — borough hubs carry four. */
   buttons: Extract<Block, { type: "button" }>[];
   video?: Extract<Block, { type: "video" }>;
+  /**
+   * A photograph behind the header.
+   *
+   * None of the 146 mirror location pages has one — 18 open on a video and
+   * 128 on the livery pattern alone. The 126 built ones do, from
+   * 2026-09-22: client, of `/car-detailing/watford`, "ini bannernya gk ada
+   * gambar". `lib/planned-locations.ts` sets it as the section's own
+   * background, so nothing here had to learn about the build list.
+   */
+  heroImage?: { src: string; w?: number; h?: number };
   /** "Service Areas" — the borough links, flattened out of their columns. */
   areas: { href: string; label: string }[];
   /**
@@ -482,6 +492,9 @@ export function parseLocationPage(page: Page): LocationModel {
 
   const sections = rows(page.sections);
   model.split = sections.length !== page.sections.length;
+
+  const bg = page.sections[0]?.bg;
+  if (bg?.image) model.heroImage = { src: bg.image, w: bg.w, h: bg.h };
 
   sections.forEach((section, i) => {
     const heading = headingOf(section);

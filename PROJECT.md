@@ -16,9 +16,9 @@ The clone is **content-identical by design**. Every word, price, phone number
 and photograph comes from the live site. What this project changes is the
 *layout*, not the *content*.
 
-- **306 routes.** 254 in `src/content/pages.json` — the homepage is one of
+- **383 routes.** 254 in `src/content/pages.json` — the homepage is one of
   them, keyed `""` — plus the three **menu-group hubs**, `/repairs`,
-  `/car-interior-cleaning` and `/vehicles`, and the **49 planned location
+  `/car-interior-cleaning` and `/vehicles`, and the **126 built location
   pages**, all of which have no source page and are built out of pages that do
   (§5).
 - **No trailing slashes**, since 2026-09-19. The client asked for it - "I think
@@ -563,8 +563,8 @@ Three tiers, cheapest first:
    row now ends early rather than stretching. The hubs pass their own column
    count and are untouched.
 
-   **A fifth kind: the 49 planned location pages.** The SEO plan's "Location
-   build list" asks for 49 location pages the mirror has no page for — Luton,
+   **A fifth kind: the 126 built location pages.** The SEO plan's "Location
+   build list" asked for 49 of them, for places the mirror has no page for — Luton,
    Reading, Surrey, Kent and 45 more. `lib/planned-locations.ts` builds each one
    out of its **service hub's** own content, the way a menu-group hub is built
    out of its children, and hands it to the ordinary location frame. They join
@@ -1015,6 +1015,26 @@ These come from the repo owner and have each been enforced after a mistake:
 1. **Do not add information that is not on the original site.** No invented
    ledes, CTAs, proof strips, taglines or FAQ standfirsts. If a section looks
    empty, restructure the source's own copy; do not write new copy to fill it.
+
+   **One exception, granted 2026-09-22: `src/lib/local-copy.ts`.** The client
+   asked for the last item on the SEO plan — "all service + location pages…
+   need to be more localized, in the copy, some location pages only mention the
+   location in the h1… Each service + location page needs to be somewhat
+   original" — and the repo owner lifted the rule for that one file: "aturan
+   8.1 bisa diabaikan, kendali penuh atas isi konten akan diberikan, website
+   ini adalah milikku".
+
+   It is one file so that every written sentence on the site is in one place to
+   review. What it may hold is **geography** — which county a town is in, which
+   road reaches it, which districts sit beside it — and **restatements of what
+   the business already says about itself** on every other page: that the
+   service is mobile and comes to a home, a workplace or a car park. What it
+   must never hold is a fact about the *business* that no page supports: no
+   response times, no customer counts, no years in a place, no prices, no
+   awards. Those are claims the client has to answer for.
+
+   The rule stands everywhere else. A section that looks empty is still
+   restructured, not filled.
 2. **Do not change content.** Layout only. Copy, casing and punctuation stay
    verbatim — including `London` in a heading that is otherwise uppercase.
 3. **A frame that claims a row must render all of it.** `location-frame.ts`
@@ -1112,17 +1132,157 @@ rendered `<main>`. Known, pre-existing gaps: `asLinkChips` drops commas and
   `/category/uncategorized`, the default category every post was filed under.
   All nine were indexed and all nine 404'd until the client's sheet surfaced
   them on 2026-09-19; they redirect to `/blog` now.
+- **A second round of 77 built pages, 2026-09-22.** From "Medusa ads keywords,
+  Ahrefs verified.xlsx", the "By area" sheet: 75 areas ranked by verified
+  search demand, three service columns, and a **pink cell** wherever an area
+  has no page for that service. 101 cells were pink; 24 of them this repo had
+  already built in round one, so 77 were real. They are in the sheet's own
+  demand order within each service, so the areas worth the most were built
+  first: 47 detailing, 17 wash, 13 valeting, across 61 areas.
+
+  `PLANNED_LOCATIONS` is 126 rows now and `lib/local-copy.ts` covers 73 places.
+  Nothing else changed — the same builder, the same frame, the same audit. The
+  build list and the copy are two files, and adding to either without the other
+  throws at build rather than shipping a page of hub copy under a place name.
+- **The built location pages are local at the top and shared below it.**
+  Before 2026-09-22 they shared **100%** of their eight-word sequences with a
+  sibling and **48 of the 49** never named their own place below the h1.
+  `lib/local-copy.ts` now gives every place two written paragraphs and a row of
+  real neighbouring districts, so **126 of 126** name their place, every meta
+  description differs, and each page opens on copy about its own town.
+
+  The header carries one of those paragraphs and no more: all three stacked was
+  165 words of header, a screen and a half on a phone, against the 34–73 words
+  the mirror's own location pages run to. The second paragraph and the hub's
+  service description are the band below it, **with a photograph beside them** —
+  client, 2026-09-22, of `/car-detailing/watford`: "coba tambahkan gambar di
+  bagian ini, agar tidak keliatan sepi". It was text in the left 45% of a gold
+  row and nothing in the rest.
+
+  `PHOTOS` in `lib/planned-locations.ts` holds six per service, **rotated by the
+  page's position in the build list**, so neighbouring places do not open on the
+  same picture. Every one is already on that service's own pages; nothing was
+  added to `public/assets` for it. The cell shape is what `Blocks.tsx` reads as
+  a media split — two cells, one of them nothing but a picture — so it centres
+  the pair and lets the photograph stick while the copy scrolls, and stacks on a
+  phone. `/our-locations/city-of-westminster` carries one for the same reason.
+
+  **The header carries one too**, from the same pool half a turn ahead, so no
+  page shows the same picture twice. Client, same day: "ini bannernya gk ada
+  gambar" — and none did: of the 146 mirror location pages, 18 open on a video
+  and **128 on the livery pattern alone**. `LocationPage`'s header now frames a
+  photograph the way it already frames that video, under the same
+  `bg-black/[0.74]` wash, so white type keeps its contrast. It reads the picture
+  off the section's own `bg`, so the 128 mirror pages are untouched — they have
+  no `bg.image` and still get the livery.
+
+  The shingle figure only moved to **96%**, and that is honest rather than
+  disappointing: what remains shared is the price ladder, the add-on catalogue
+  and the FAQ, which are the same service wherever it is sold. On
+  `/car-valeting/kent` the add-ons run alone is 706 words against 155 of local
+  copy. Two levers remain if the client wants the number lower — more written
+  copy per place, or carrying fewer of the hub's runs on these pages — and the
+  second removes content, so it is the client's call rather than ours.
+- **`/our-locations/city-of-westminster` was a three-word page** until
+  2026-09-22: its entry in `pages.json` is a single block, an h1 reading "Our
+  Locations", and the mirror has nothing else for it. `content/overrides.ts`
+  builds it from `lib/local-copy.ts` like the 49. The rule throws if the stub
+  ever gains content of its own, so a regeneration cannot leave both in place.
+
+  `scripts/verify.mjs` had reported `thin pages: 0` throughout, because it
+  measured the whole document against 1,200 characters and every document
+  carries a navigation, a footer, a location strip and an A–Z index. It now
+  measures non-link prose inside `<main>` against 500, which is what found this
+  one; `/blog`, `/contact-us` and `/gift-card` are short by design and named in
+  `THIN_BY_DESIGN`.
 - `src/content/pages.v2.json` is generated by the classifier and unused.
 
 ---
 
-## 11. Environment
+## 11. The enquiry forms
+
+Six Contact Form 7 forms survive the mirror, on five pages — `/contact-us`,
+`/commercial-valeting`, `/car-lovers-club`, `/vehicles/caravan-cleaning` and
+`/careers-franchising`, which carries the same one twice. All six render
+through `components/EnquiryForm.tsx` and post to the one server action in
+`app/actions.ts`, which re-reads the form's schema out of `pages.json` by its
+`__slug`/`__form` pair, so a tampered payload cannot bypass a required field.
+
+**Three gates, cheapest first.** The honeypot — one hidden input a person
+leaves empty and a bot fills. Then Turnstile. Then the form's own required
+and email rules. The order is deliberate: a bot costs at most a token check,
+and a person who mistypes an address has not spent their token on it. A
+failed gate hands back everything that was typed, because React empties an
+uncontrolled form the moment its action settles.
+
+**Delivery is email, through SendGrid** (`lib/mail.ts`) — one POST to the v3
+REST API rather than `@sendgrid/mail`, the way `lib/cloudflare.ts` talks to
+Cloudflare. It goes to `MAIL_TO`, defaulting to the address the site already
+publishes, with `MAIL_CC` copied in. The visitor is the `reply_to`, never the
+`from`: `MAIL_FROM` has to be a sender SendGrid has verified, and sending as
+somebody else's domain is what DMARC exists to stop.
+
+`CONTACT_WEBHOOK_URL` is still read, and is now a **second, independent sink**
+rather than the only one. Both run on every enquiry and either one succeeding
+counts as delivered; with neither configured the enquiry is logged, which is
+fine in development and an error shown to the visitor in production.
+
+**Turnstile** (`lib/turnstile.ts`, `components/Turnstile.tsx`) is on all six.
+Three things about it are load-bearing:
+
+- **It is rendered explicitly, not by `class="cf-turnstile"`.** Two widgets
+  share `/careers-franchising`, and `turnstile.reset()` with no argument
+  resets the last one rendered — the wrong one, half the time.
+- **The widget is reset after every submission.** A token is single-use, so a
+  visitor who trips validation, corrects the field and resubmits would post
+  the spent token and be told to try again forever. `EnquiryForm` passes the
+  action's own state object as the signal: `useActionState` gives it a new
+  identity once per settled submission and the stable `EMPTY_STATE` otherwise.
+- **The widget is taken out of flow, and scaled.** It is a fixed 300px box
+  that does not reflow. `.shell` is 88% of the viewport and the form card
+  adds 24px each side, so a 375px phone offers 282 and a 320px one offers
+  234 — *every* phone is short. Left in flow its 300px became the min-content
+  width of the grid column it sits in, whose `min-width: auto` then refused
+  to shrink, and the page overflowed by 47px while the wrapper measured
+  itself as having all the room it needed. Absolutely positioned, the wrapper
+  measures the column and a `transform: scale` fits the widget to it. Both
+  dimensions are measured rather than written down — Cloudflare documents the
+  widget as 300x65 and renders it at 73.
+
+  *Watch out when testing this in the browser pane:* `ResizeObserver` does
+  not deliver to a page that is not being rendered, so in a hidden tab the
+  scale never applies and the widget looks broken. Take a screenshot first —
+  that makes the tab render, the observer fires, and the measurement lands.
+
+**Both halves of each credential switch on together.** No site key, no
+widget; no secret, no check. Same contract `purgeCloudflare` has, and for the
+same reason: a fresh clone, a preview deployment and a local build all have
+to be able to submit a form without anybody's production credentials.
+Cloudflare's dummy key pairs exercise the real path — they are listed at the
+top of `lib/turnstile.ts` and one of them is in `.env.example`.
+
+**One fix came with this.** `/vehicles/caravan-cleaning` has a file field, and
+a server action's request body is capped at 1 MB by default — under every
+phone photograph — so that form failed outright before the action was even
+reached, taking the name, address and message with it. `next.config.ts` now
+sets 4 MB, which is under Vercel's own 4.5 MB function limit, and the
+photograph is attached to the email rather than only named in it.
+
+---
+
+## 12. Environment
 
 See `.env.example`. All optional in development.
 
 | Variable | Used by | Unset behaviour |
 | --- | --- | --- |
-| `CONTACT_WEBHOOK_URL` | `app/actions.ts` | Enquiries logged to the console; a hard error in production. |
+| `SENDGRID_API_KEY` | `lib/mail.ts` | No email is sent, and it says so. With no other sink either: logged in development, an error shown to the visitor in production. |
+| `MAIL_TO` | `lib/mail.ts` | `CONTACT.email` — info@medusaautodetailing.co.uk. |
+| `MAIL_CC` | `lib/mail.ts` | Nobody is copied. |
+| `MAIL_FROM` / `MAIL_FROM_NAME` | `lib/mail.ts` | `CONTACT.email` and the business name. Must be a **verified** SendGrid sender. |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | `components/Turnstile.tsx` | No widget renders. |
+| `TURNSTILE_SECRET_KEY` | `lib/turnstile.ts` | The challenge is skipped, and says so. |
+| `CONTACT_WEBHOOK_URL` | `app/actions.ts` | The second delivery sink is skipped. |
 | `REVALIDATE_SECRET` | `app/api/revalidate/route.ts` | Endpoint refuses every request (503). |
 | `CLOUDFLARE_ZONE_ID` | `lib/cloudflare.ts` | The Cloudflare half of a flush is skipped, and says so. |
 | `CLOUDFLARE_API_TOKEN` | `lib/cloudflare.ts` | Same. Needs one permission: Zone · Cache Purge · Purge. |

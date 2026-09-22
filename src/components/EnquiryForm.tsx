@@ -3,6 +3,7 @@
 import { useActionState, useId } from "react";
 import { useFormStatus } from "react-dom";
 import { submitEnquiry } from "@/app/actions";
+import Turnstile from "@/components/Turnstile";
 import type { FormField } from "@/lib/blocks";
 import { cleanLabel, EMPTY_STATE } from "@/lib/enquiry";
 
@@ -52,6 +53,14 @@ export default function EnquiryForm({
           />
         ))}
       </div>
+
+      {/* A Turnstile token is spent the moment the server checks it, so the
+          widget has to be reset after every submission — including a failed
+          one, where the visitor stays on the form and corrects a field.
+          `state` is the signal: `useActionState` hands back a fresh object
+          each time the action returns and the module-level EMPTY_STATE every
+          time it does not, so its identity changes once per submission. */}
+      <Turnstile resetOn={state} />
 
       <div className="mt-7 flex flex-wrap items-center gap-4">
         <Submit label={submitLabel} />
