@@ -1354,6 +1354,20 @@ rendered `<main>`. Known, pre-existing gaps: `asLinkChips` drops commas and
     both. The corrections are written one **sentence** at a time for that
     reason, and the check that matters is a replay of `applyMirrorEdits` in
     order against a copy.
+
+    **It happened a third time on 2026-09-22, and the lesson is narrower than
+    "replay it".** The round-two work added a whole-sentence rule for a spun
+    FAQ question to four pages that were *already* repairing the same sentence
+    through shorter fragments — "Exactly how do you", "scrapes and swirls on
+    the lorry". The new rule ran first, rewrote the sentence, and the existing
+    fragments then matched nothing. A replay of only the **new** entries passes
+    cleanly; it is the pages you are not editing that break. So the replay has
+    to cover the whole of `MIRROR_EDITS`, and the cheap standing check is
+    simpler still: within one page's `text` list, **no `from` may contain
+    another `from`**. Site-wide that number is 0, and it is 0 because two of
+    those four pages ended up with a small trailing fragment each
+    (`"the lorry's surface area?"`, `"surface area?"`) appended **last**, so it
+    runs on what the rules above it leave behind rather than racing them.
   - **No districts row**, where the 126 built pages and the 19 borough hubs all
     have one. All 75 get `<Place>’s Neighborhoods` out of `LOCAL_PLACES`, which
     is the shape `location-frame.ts` already renders as the chips under the
@@ -1372,9 +1386,45 @@ rendered `<main>`. Known, pre-existing gaps: `asLinkChips` drops commas and
   keep it and have it flagged rather than have `promoteSections` drop it, so
   `NOT_A_TITLE` turns it away and it renders exactly as the mirror has it.
 
-  **The 52 mirror location pages not on the client's list were not touched**,
-  because the list was the scope: "Only audit/update URLs included in this
-  list." They carry the same demoted headings and would take the same free fix.
+  **The 52 mirror location pages not on the client's list got the same
+  treatment later the same day**, once the client widened the ask to "all
+  location pages". `MIRROR_REST` is that set — kept separate from
+  `MIRROR_AUDIT` rather than merged into it, because the provenance differs:
+  one list is the client's and the other is ours. Both take the same three
+  passes, and the same rule 2 narrowing.
+
+  | | Before | After |
+  | --- | --- | --- |
+  | section titles still at `h3`/`h4` | 44 of 52 | **0** |
+  | pages with no districts row | 41 of 52 | **0** |
+  | `h2`s that name their own place | 160 of 378 (42%) | **222 of 404 (55%)** |
+  | machine-spun English, across all 146 mirror location pages | 12 pages | **0** |
+
+  138 heading renames and 78 text corrections, against the first pass's 188
+  and 194. The districts rows needed **11 new `LOCAL_PLACES` entries** —
+  Belgravia, Brent, Colindale, Earls Court, Eastcote, Friern Barnet, Hendon,
+  Hillingdon, Mill Hill, Stratford and West Brompton, none of which had one,
+  because that file was written for pages with no source at all.
+
+  `promoteSections` alone closed the first row of that table and **changed not
+  one word**; it only ever needed the 52 adding to the loop.
+
+  **Two things this second pass turned up in the first one.** Two spun FAQ
+  sentences its detector never looked for — "our team gets here completely
+  geared up", "The moment varies relying on the package" — sit byte-identical
+  on eleven pages, nine of them already audited; and a re-sweep of all 146
+  found five more pages still carrying "surface area", "lorry" or "radiates
+  without". Both are fixed, with the wording the first pass had already
+  settled on for the same sentences elsewhere.
+
+  **And one live hazard, checked and found not to bite.** `location-frame.ts`
+  claims whole rows by matching their heading — `STEPS_RE = /^how it works$/i`
+  and seven others — so renaming one silently hands the row to a different
+  renderer. Eight pages in the first pass renamed "How It Works". It cost
+  nothing: the frame also requires `stepPairs(section).length >= 2`, and all
+  ten pages carrying that heading write the row as four `paragraph+paragraph`
+  cells with no step pairs at all, so it was never claimed either way. The
+  check is worth keeping anyway — it is silent when it does bite.
 - **`/our-locations/city-of-westminster` was a three-word page** until
   2026-09-22: its entry in `pages.json` is a single block, an h1 reading "Our
   Locations", and the mirror has nothing else for it. `content/overrides.ts`

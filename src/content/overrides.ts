@@ -3,6 +3,7 @@ import { LOCAL_PLACES } from "@/lib/local-copy";
 import {
   MIRROR_AUDIT,
   MIRROR_FIXES,
+  MIRROR_REST,
   applyMirrorEdits,
   districtsRow,
   promoteSections,
@@ -852,6 +853,26 @@ const RULES: Record<string, (page: Page) => void> = {
     );
   },
 
+  /*
+    The one page on the site whose h1 names the wrong service. Turned up in the
+    audit of the last 52 mirror location pages, 2026-09-22: `/car-detailing/brent`
+    opens on "Mobile Car Valeting in Brent" while its `<title>`, its breadcrumb
+    and every one of its h2s say detailing, and the body sells detailing
+    packages. It is the mirror's own slip — a heading, so rule 2's narrowing
+    covers it, and nothing is being written that the page does not already say
+    about itself four other ways.
+
+    Both copies have to move: the header's heading block and the `h1` field the
+    metadata and the JSON-LD read.
+  */
+  "car-detailing/brent": (page) => {
+    const wrong = "Mobile Car Valeting in Brent";
+    const right = "Mobile Car Detailing in Brent";
+    if (page.h1 !== wrong) throw new Error(`content override: car-detailing/brent h1 is "${page.h1}"`);
+    page.h1 = right;
+    swap(page.sections.flatMap((s) => s.blocks), wrong, right);
+  },
+
   "car-valeting": (page) => {
     restoreTilePhotos(page, VALETING_TILES);
     markAsIcon(page, "/assets/2025/03/907dae74-cd56-491c-86f7-527943757154.webp");
@@ -976,7 +997,7 @@ export function applyOverrides(
     matters is the silent one.
   */
   let audited = 0;
-  for (const slug of MIRROR_AUDIT) {
+  for (const slug of [...MIRROR_AUDIT, ...MIRROR_REST]) {
     if (!out[slug]) throw new Error(`content override: no page "${slug}" to audit`);
     patch(slug, (p) => {
       const n = promoteSections(p) + applyMirrorEdits(p, slug) + (districtsRow(p, slug) ? 1 : 0);

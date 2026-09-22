@@ -219,6 +219,12 @@ export const LOCAL_PLACES: Record<string, LocalPlace> = {
       },
     },
   },
+  belgravia: {
+    opening:
+      "Belgravia lies in Westminster between Hyde Park Corner and Sloane Square, with Belgrave and Eaton Squares at the centre of it, Knightsbridge along the top, Victoria immediately east and the Pimlico Road closing it off to the south.",
+    why: "Cars here are parked a great deal more than they are driven, and a fortnight standing in the same bay leaves a flat grey film that has settled out of the air rather than come off a road. Cleaning that means going to the car, and the van needs nothing from the house — no tap, no socket, no drain.",
+    areas: ["Knightsbridge", "Sloane Square", "Victoria", "Pimlico", "Mayfair", "Chelsea", "Brompton"],
+  },
   berkshire: {
     opening:
       "Berkshire sits along the M4 west of London, taking in Reading, Slough, Bracknell, Maidenhead and Windsor, with the Thames winding through most of it.",
@@ -268,6 +274,12 @@ export const LOCAL_PLACES: Record<string, LocalPlace> = {
         },
       },
     },
+  },
+  brent: {
+    opening:
+      "Brent runs across north-west London from Kilburn and Queen’s Park up to Kingsbury and Wembley, with the A5 along its eastern side, the North Circular cutting through the middle of it and the Brent Reservoir behind Neasden.",
+    why: "Housing swings from Victorian terrace to interwar semi within a mile here, so some of these cars stand on a drive and the rest in a permit bay a street away from the front door. Either suits a service that arrives self-contained: nothing is drawn from the building, and the car is cleaned in whichever of the two it is in.",
+    areas: ["Wembley", "Willesden", "Kilburn", "Harlesden", "Neasden", "Kingsbury", "Queen’s Park", "Cricklewood"],
   },
   brentwood: {
     opening:
@@ -519,6 +531,12 @@ export const LOCAL_PLACES: Record<string, LocalPlace> = {
       },
     },
   },
+  colindale: {
+    opening:
+      "Colindale sits on the western edge of Barnet, between the A5 at the Hyde and the Silk Stream, with Hendon below it, Burnt Oak above and the M1 meeting the North Circular a couple of miles south at Staples Corner.",
+    why: "Much of the parking here is under the buildings rather than in front of them — resident decks and basement bays beneath the newer blocks, with permit spaces on the older streets off Colindeep Lane. A car in either tends to stand still all week while the Northern line does the commuting, and the van turns up with the water and the power it needs, wherever that is.",
+    areas: ["Burnt Oak", "Hendon", "West Hendon", "Edgware", "Mill Hill", "Kingsbury", "Queensbury", "The Hyde"],
+  },
   croydon: {
     opening:
       "Croydon is the largest borough in South London, running from the town centre and its trams out to Purley, Coulsdon and the Surrey boundary.",
@@ -540,6 +558,12 @@ export const LOCAL_PLACES: Record<string, LocalPlace> = {
         },
       },
     },
+  },
+  "earls-court": {
+    opening:
+      "Earls Court takes up the south-western corner of Kensington and Chelsea, Nevern Square and the Barkston and Philbeach gardens laid out behind the Cromwell Road, with South Kensington to the east, West Brompton below it and two Tube lines crossing underneath.",
+    why: "Nearly every terrace here has been divided into flats, which puts far more cars on the kerb than the street was drawn for, and most of them sit tight between two others for days at a time. The work can be done in that space rather than out of it, since everything it takes — water and power included — turns up with the van.",
+    areas: ["West Brompton", "West Kensington", "South Kensington", "Kensington", "Chelsea", "Fulham", "Barons Court"],
   },
   "east-london": {
     opening:
@@ -591,6 +615,12 @@ export const LOCAL_PLACES: Record<string, LocalPlace> = {
       },
     },
   },
+  eastcote: {
+    opening:
+      "Eastcote lies in the north of Hillingdon between Ruislip and Pinner, with the River Pinn running through it, the Metropolitan and Piccadilly lines sharing the station, and West End Road heading south towards Northolt and the A40.",
+    why: "This is thirties Metro-land, laid out around the station, and the drives were sized for one small car — the second one generally lives at the kerb outside. On a weekday most of them stand still while the line does the travelling, which is as good a time as any for a van that carries its own water and power to work beside them.",
+    areas: ["Ruislip", "Ruislip Manor", "South Ruislip", "Northwood Hills", "Pinner", "Rayners Lane", "Ickenham", "Northolt"],
+  },
   essex: {
     opening:
       "Essex runs north-east from the edge of London out to Chelmsford, Colchester and the coast, taking in Romford, Brentwood, Basildon and Harlow on the way.",
@@ -640,6 +670,12 @@ export const LOCAL_PLACES: Record<string, LocalPlace> = {
         },
       },
     },
+  },
+  "friern-barnet": {
+    opening:
+      "Friern Barnet sits on the eastern side of Barnet, gathered around Friary Park and Friern Barnet Lane, with Colney Hatch Lane dropping south towards the North Circular and Oakleigh Road running east past Brunswick Park.",
+    why: "Front gardens along these roads were paved into hardstandings a long while ago, and most take one car with the next at the kerb behind it. Whichever of the two a car ends up in, the work can be done there: it is not asked to move, and the van arrives carrying everything the job needs.",
+    areas: ["New Southgate", "North Finchley", "Whetstone", "Colney Hatch", "Brunswick Park", "Arnos Grove", "Woodside Park", "Oakleigh Park"],
   },
   gravesend: {
     opening:
@@ -841,6 +877,12 @@ export const LOCAL_PLACES: Record<string, LocalPlace> = {
       },
     },
   },
+  hendon: {
+    opening:
+      "Hendon occupies the middle of Barnet, spread between the Burroughs and Church End, with Sunny Hill Park on the high ground above it, the Welsh Harp reservoir down at West Hendon and the M1 beginning a couple of miles south.",
+    why: "The Welsh Harp keeps a standing population of gulls and geese, and what they leave on a roof is worth taking off before a warm afternoon sets it. The streets behind it run mostly to interwar semis with a short drive, a paved front garden or a garage built for a narrower car, so there is generally room to work beside it where it stands.",
+    areas: ["West Hendon", "Colindale", "Brent Cross", "Golders Green", "Childs Hill", "Cricklewood", "Mill Hill", "Finchley"],
+  },
   hertfordshire: {
     opening:
       "Hertfordshire sits immediately north of London, taking in Watford, St Albans, Hemel Hempstead and Hertford, with the M1, M25 and A1(M) all crossing it.",
@@ -912,6 +954,12 @@ export const LOCAL_PLACES: Record<string, LocalPlace> = {
         },
       },
     },
+  },
+  hillingdon: {
+    opening:
+      "Hillingdon is the westernmost of the London boroughs, running from Northwood and Harefield at the top down through Uxbridge and Cowley to West Drayton and Hayes, with the Grand Union Canal threading the length of it.",
+    why: "The borough is the better part of ten miles top to bottom and changes as it goes, from drives and garages at Northwood and Ickenham to terraced streets and flats around Uxbridge and Hayes. Which of those a car sits in matters less than it sounds, since the work goes to the address rather than the car coming to a site.",
+    areas: ["Uxbridge", "Ruislip", "Northwood", "Ickenham", "Hayes", "West Drayton", "Yiewsley", "Harefield"],
   },
   hornchurch: {
     opening:
@@ -1128,6 +1176,12 @@ export const LOCAL_PLACES: Record<string, LocalPlace> = {
         },
       },
     },
+  },
+  "mill-hill": {
+    opening:
+      "Mill Hill holds the high ground at the top of Barnet, the Ridgeway running along its crest, with Arrandene and the Moat Mount fields falling away to the north and the Broadway and its Thameslink station down the hill to the west.",
+    why: "The two halves of it park quite differently: flats and permit bays down around the Broadway, and long drives set back behind hedges up on the hill, where some of the lanes have no pavement and no lighting either. Both are simpler to deal with where the car already stands, since the van carries the water and the power with it.",
+    areas: ["Edgware", "Burnt Oak", "Colindale", "Hendon", "Totteridge", "Arkley", "Elstree"],
   },
   "milton-keynes": {
     opening:
@@ -1473,6 +1527,12 @@ export const LOCAL_PLACES: Record<string, LocalPlace> = {
       },
     },
   },
+  stratford: {
+    opening:
+      "Stratford sits at the western edge of Newham, across the Lea from Bow, with the A11 carrying the High Street through it, Maryland and Forest Gate off to the north-east and the Greenway running south towards West Ham.",
+    why: "Most of the housing here is flats, which means an allocated bay in a deck or under the block rather than a drive, and a car in one can stand for a fortnight while its owner takes the Central line. That is time the work can use, and it goes down to the bay the car is standing in rather than the other way round.",
+    areas: ["Maryland", "Bow", "Hackney Wick", "Leyton", "Forest Gate", "West Ham", "Plaistow", "Bromley-by-Bow"],
+  },
   surrey: {
     opening:
       "Surrey sits south-west of London, from the boroughs on the M25 out through Guildford, Woking and Epsom to the Sussex border, much of it wooded.",
@@ -1644,6 +1704,12 @@ export const LOCAL_PLACES: Record<string, LocalPlace> = {
       "Bayswater",
       "Paddington",
     ],
+  },
+  "west-brompton": {
+    opening:
+      "West Brompton runs down the western edge of Kensington and Chelsea either side of Brompton Cemetery, with Redcliffe Gardens to the east, the Fulham Road along the foot of it and the West London Line in a cutting to the west.",
+    why: "Brompton Cemetery takes up the middle of the district, a green rectangle of mature trees with the railway running beside it, and the cars kept along its walls show it — bird mess on the roof, seed and leaf packed into the shuts. None of that wants the car driven anywhere; it comes off where the car is parked, in a resident bay on one of the streets alongside.",
+    areas: ["Earls Court", "West Kensington", "Fulham", "Fulham Broadway", "Chelsea", "World’s End"],
   },
   "west-london": {
     opening:

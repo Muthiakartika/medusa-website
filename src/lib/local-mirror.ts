@@ -748,6 +748,14 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
     ],
     text: [
       {
+        from: "No, our team gets here completely geared up with whatever required to valet your car.",
+        to: "No, our team arrives fully equipped with everything needed to valet your car.",
+      },
+      {
+        from: "The moment varies relying on the package, but the majority of services are completed within 1-2 hours.",
+        to: "The time varies depending on the package, but most services are completed within 1-2 hours.",
+      },
+      {
         from: "provides exceptional service with unmatched convenience",
         to: "brings the wash to the address, with its own water and power",
       },
@@ -793,6 +801,14 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
       },
     ],
     text: [
+      {
+        from: "No, our team gets here completely geared up with whatever required to valet your car.",
+        to: "No, our team arrives fully equipped with everything needed to valet your car.",
+      },
+      {
+        from: "The moment varies relying on the package, but the majority of services are completed within 1-2 hours.",
+        to: "The time varies depending on the package, but most services are completed within 1-2 hours.",
+      },
       {
         from: "fully equipped and ready to transform your car’s appearance",
         to: "fully equipped, with our own water, power and products",
@@ -1100,16 +1116,24 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
     ],
     text: [
       {
+        from: "Exactly how do you manage scrapes and swirls on the lorry's surface area?",
+        to: "How do you deal with scratches and swirls on the car’s paintwork?",
+      },
+      {
+        from: "No, our team gets here completely geared up with whatever required to valet your car.",
+        to: "No, our team arrives fully equipped with everything needed to valet your car.",
+      },
+      {
+        from: "The moment varies relying on the package, but the majority of services are completed within 1-2 hours.",
+        to: "The time varies depending on the package, but most services are completed within 1-2 hours.",
+      },
+      {
         from: "Just how usually should I have my car valeted?",
         to: "How often should I have my car valeted?",
       },
       {
         from: "For best outcomes, we advise a complete valet every 4-6 weeks to keep your car in excellent problem.",
         to: "For the best results, we recommend a full valet every 4-6 weeks to keep your car in good condition.",
-      },
-      {
-        from: "Exactly how do you manage scrapes and swirls on the lorry's surface area?",
-        to: "How do you deal with scratches and swirls on the car’s paintwork?",
       },
       {
         from: "We use specialized products and strategies to lessen and remedy surface area flaws.",
@@ -1188,16 +1212,24 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
     ],
     text: [
       {
+        from: "Exactly how do you manage scrapes and swirls on the lorry's surface area?",
+        to: "How do you deal with scratches and swirls on the car’s paintwork?",
+      },
+      {
+        from: "No, our team gets here completely geared up with whatever required to valet your car.",
+        to: "No, our team arrives fully equipped with everything needed to valet your car.",
+      },
+      {
+        from: "The moment varies relying on the package, but the majority of services are completed within 1-2 hours.",
+        to: "The time varies depending on the package, but most services are completed within 1-2 hours.",
+      },
+      {
         from: "Just how usually should I have my car valeted?",
         to: "How often should I have my car valeted?",
       },
       {
         from: "For best outcomes, we advise a complete valet every 4-6 weeks to keep your car in excellent problem.",
         to: "For the best results, we recommend a full valet every 4-6 weeks to keep your car in good condition.",
-      },
-      {
-        from: "Exactly how do you manage scrapes and swirls on the lorry's surface area?",
-        to: "How do you deal with scratches and swirls on the car’s paintwork?",
       },
       {
         from: "We use specialized products and strategies to lessen and remedy surface area flaws.",
@@ -1225,6 +1257,18 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
       },
     ],
     text: [
+      {
+        from: "We use specialized products and strategies to lessen and remedy surface area flaws.",
+        to: "We use specialist products and techniques to reduce and correct flaws in the paintwork.",
+      },
+      {
+        from: "No, our team gets here completely geared up with whatever required to valet your car.",
+        to: "No, our team arrives fully equipped with everything needed to valet your car.",
+      },
+      {
+        from: "The moment varies relying on the package, but the majority of services are completed within 1-2 hours.",
+        to: "The time varies depending on the package, but most services are completed within 1-2 hours.",
+      },
       {
         from: "scrapes and swirls on the lorry's surface area",
         to: "scratches and swirls on the car’s surface",
@@ -1283,6 +1327,18 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
       },
     ],
     text: [
+      {
+        from: "We use specialized products and strategies to lessen and remedy surface area flaws.",
+        to: "We use specialist products and techniques to reduce and correct flaws in the paintwork.",
+      },
+      {
+        from: "No, our team gets here completely geared up with whatever required to valet your car.",
+        to: "No, our team arrives fully equipped with everything needed to valet your car.",
+      },
+      {
+        from: "The moment varies relying on the package, but the majority of services are completed within 1-2 hours.",
+        to: "The time varies depending on the package, but most services are completed within 1-2 hours.",
+      },
       {
         from: "scrapes and swirls on the lorry's surface area",
         to: "scratches and swirls on the car’s surface",
@@ -1468,6 +1524,10 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
     ],
     text: [
       {
+        from: "We make use of just environmentally safe items, guaranteeing your vehicle radiates without hazardous negative effects on the atmosphere.",
+        to: "We use only environmentally safe products, so your car is cleaned without harm to its surroundings.",
+      },
+      {
         from: "Whether you’re managing job, family members, or various other dedications, we make it simple to keep your vehicle tidy without taking time out of your active day. Our team pertains to you, so you can delight in the high-end of a spotless car without the wait. Experience the comfort and professionalism and trust that sets us apart as top mobile car wash solution.",
         to: "Whether you’re juggling work, family or other commitments, we make it simple to keep your car clean without taking time out of your day. Our team comes to you, so you can enjoy a spotless car without the wait. Experience the convenience, professionalism and trust that set us apart as a mobile car wash service.",
       },
@@ -1490,6 +1550,18 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
     ],
     text: [
       {
+        from: "We use specialized products and strategies to lessen and remedy surface area flaws.",
+        to: "We use specialist products and techniques to reduce and correct flaws in the paintwork.",
+      },
+      {
+        from: "No, our team gets here completely geared up with whatever required to valet your car.",
+        to: "No, our team arrives fully equipped with everything needed to valet your car.",
+      },
+      {
+        from: "The moment varies relying on the package, but the majority of services are completed within 1-2 hours.",
+        to: "The time varies depending on the package, but most services are completed within 1-2 hours.",
+      },
+      {
         from: "Exactly how do you",
         to: "How do you",
       },
@@ -1504,6 +1576,10 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
       {
         from: "For best outcomes, we advise a complete valet every 4-6 weeks to keep your car in excellent problem.",
         to: "For the best results, we recommend a full valet every 4-6 weeks to keep your car in good condition.",
+      },
+      {
+        from: "the lorry's surface area?",
+        to: "the car’s paintwork?",
       },
     ],
   },
@@ -1660,6 +1736,18 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
     ],
     text: [
       {
+        from: "We use specialized products and strategies to lessen and remedy surface area flaws.",
+        to: "We use specialist products and techniques to reduce and correct flaws in the paintwork.",
+      },
+      {
+        from: "No, our team gets here completely geared up with whatever required to valet your car.",
+        to: "No, our team arrives fully equipped with everything needed to valet your car.",
+      },
+      {
+        from: "The moment varies relying on the package, but the majority of services are completed within 1-2 hours.",
+        to: "The time varies depending on the package, but most services are completed within 1-2 hours.",
+      },
+      {
         from: "Exactly how do you",
         to: "How do you",
       },
@@ -1678,6 +1766,10 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
       {
         from: "For best outcomes, we advise a complete valet every 4-6 weeks to keep your car in excellent problem.",
         to: "For the best results, we recommend a full valet every 4-6 weeks to keep your car in good condition.",
+      },
+      {
+        from: "surface area?",
+        to: "paintwork?",
       },
     ],
   },
@@ -1870,16 +1962,24 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
     ],
     text: [
       {
+        from: "Exactly how do you manage scrapes and swirls on the lorry's surface area?",
+        to: "How do you deal with scratches and swirls on the car’s paintwork?",
+      },
+      {
+        from: "No, our team gets here completely geared up with whatever required to valet your car.",
+        to: "No, our team arrives fully equipped with everything needed to valet your car.",
+      },
+      {
+        from: "The moment varies relying on the package, but the majority of services are completed within 1-2 hours.",
+        to: "The time varies depending on the package, but most services are completed within 1-2 hours.",
+      },
+      {
         from: "Just how usually should I have my car valeted?",
         to: "How often should I have my car valeted?",
       },
       {
         from: "For best outcomes, we advise a complete valet every 4-6 weeks to keep your car in excellent problem.",
         to: "For the best results, we recommend a full valet every 4-6 weeks to keep your car in good condition.",
-      },
-      {
-        from: "Exactly how do you manage scrapes and swirls on the lorry's surface area?",
-        to: "How do you deal with scratches and swirls on the car’s paintwork?",
       },
       {
         from: "We use specialized products and strategies to lessen and remedy surface area flaws.",
@@ -1976,6 +2076,1115 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
     ],
   },
 
+
+  /*
+    ── The 52 the client’s list never covered ───────────────────────────
+
+    Same job, same narrowing: headings and broken English only, never a
+    rewritten paragraph. `MIRROR_REST` is the set; these are its rules.
+  */
+  "car-detailing/brent": {
+    headings: [
+      {
+        from: "Convenient Mobile Detailing for Busy Professionals",
+        to: "Detailing at Brent Cross, Park Royal and Neasden",
+      },
+      {
+        from: "Flexible Detailing Packages to Suit Every Need",
+        to: "From Faded Paint to a Show Car",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Traffic, Road Salt and Tree-Lined Streets",
+      },
+    ],
+  },
+  "car-detailing/colindale": {
+    headings: [
+      {
+        from: "Convenient Mobile Detailing for Busy Professionals",
+        to: "Detailing at Colindale Business Park and Beaufort Park",
+      },
+      {
+        from: "Flexible Detailing Packages to Suit Every Need",
+        to: "From a Light Polish to Full Correction",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Road Debris, Sunlight and Construction Dust",
+      },
+    ],
+    text: [
+      {
+        from: "Golders Green, an Harrow.",
+        to: "Golders Green, and Harrow.",
+      },
+    ],
+  },
+  "car-detailing/edgware": {
+    headings: [
+      {
+        from: "Convenient Mobile Detailing for Busy Professionals",
+        to: "Detailing Near Edgware Community Hospital and Premier House",
+      },
+      {
+        from: "Flexible Detailing Packages to Suit Every Need",
+        to: "Gloss Enhancement, Multi-Stage Correction and the Add-Ons",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Pollutants, Road Grime and Long-Term Paint Damage",
+      },
+    ],
+  },
+  "car-detailing/golders-green": {
+    headings: [
+      {
+        from: "Convenient Mobile Detailing for Busy Professionals",
+        to: "Detailing Near Golders Green Station and Temple Fortune",
+      },
+      {
+        from: "Flexible Detailing Packages to Suit Every Need",
+        to: "A Quick Gloss Boost or a Multi-Day Correction",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Greenery, Travel Routes and What They Leave Behind",
+      },
+    ],
+  },
+  "car-detailing/hendon": {
+    headings: [
+      {
+        from: "Convenient Mobile Detailing for Busy Professionals",
+        to: "Detailing at Hendon Business Centre and Hendon Central",
+      },
+      {
+        from: "Flexible Detailing Packages to Suit Every Need",
+        to: "Machine Polishing, Correction and Ceramic Protection",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Urban Traffic, Construction Dust and Sun Exposure",
+      },
+    ],
+  },
+  "car-detailing/mill-hill": {
+    headings: [
+      {
+        from: "Convenient Mobile Detailing for Busy Professionals",
+        to: "Detailing Brought Straight to the Workplace",
+      },
+      {
+        from: "Flexible Detailing Packages to Suit Every Need",
+        to: "Light Polishing Through to Ceramic Treatments",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Road Salt, UV Rays and Airborne Contaminants",
+      },
+    ],
+    text: [
+      {
+        from: "60+ hours of precision work delivering flawless, better-than-new finish.",
+        to: "60+ hours of precision work delivering a flawless, better-than-new finish.",
+      },
+    ],
+  },
+  "car-valeting/belgravia": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting Around Victoria, Sloane Square and Knightsbridge",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "A Refresh Before an Event or a Deep Clean",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "What City Life Does to a Car in Belgravia",
+      },
+    ],
+  },
+  "car-valeting/brent": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting in Brent’s Business Hubs and Showrooms",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Maintenance Washes and All-Out Interior Detailing",
+      },
+    ],
+  },
+  "car-valeting/chelsea": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting Around Sloane Square and Chelsea Harbour",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Interior Tidy-Ups, Deep Cleans and Odour Removal",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Traffic Grime, Acid Rain and Airborne Pollutants",
+      },
+    ],
+  },
+  "car-valeting/chingford": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting for Commuters From Chingford Station",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "A Quick Clean or a Valet Before Selling",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Bird Droppings and Road Salt on Chingford’s Streets",
+      },
+    ],
+  },
+  "car-valeting/colindale": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting at Colindale Business Park and the RAF Museum",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Weekly Upkeep or a Clean Before an Occasion",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Construction Dust, Road Grit and Tree Sap",
+      },
+    ],
+  },
+  "car-valeting/ealing": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting at Ealing Cross and Westgate House",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Mini Valets, Clay Bar Work and Paint Protection",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Tree Sap in Summer, Grit in Winter",
+      },
+    ],
+    text: [
+      {
+        from: "We pride ourselves on giving top-tier services that focus on supplying unmatched sanitation, defense, and aesthetic interest your lorry in Ealing",
+        to: "We pride ourselves on top-tier services focused on cleanliness, protection and appearance for your car in Ealing.",
+      },
+    ],
+  },
+  "car-valeting/earls-court": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting Near the Earls Court Exhibition Centre",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "A Freshen-Up After the Commute or Before an Event",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Road Grime and Tree Sap in Earls Court",
+      },
+    ],
+  },
+  "car-valeting/eastcote": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting Near Eastcote Station and Highgrove House",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "From a Maintenance Wash to a Full Valet",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Suburban Areas",
+        to: "Leafy Roads, Busy Junctions and Everyday Wear",
+      },
+    ],
+  },
+  "car-valeting/friern-barnet": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Cleaning Cars Around North Finchley Business Park",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Touch-Ups, Maintenance Washes and Full Valets",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Traffic Pollution and Changing Weather in Friern Barnet",
+      },
+    ],
+  },
+  "car-valeting/fulham": {
+    headings: [
+      {
+        from: "Reliable Detailing, Car Valeting in Fulham",
+        to: "Valeting for Fulham’s Riverside and High Streets",
+      },
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "On-Site Valeting for SW6 Offices and Showrooms",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "A Quick Refresh or a Thorough Clean",
+      },
+    ],
+  },
+  "car-valeting/golders-green": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting for Offices, Clinics and Retail Units",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Packages for a Compact Car or a Large SUV",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Tree Sap and Road Dust in Golders Green",
+      },
+    ],
+  },
+  "car-valeting/greater-london": {
+    headings: [
+      {
+        from: "Why Choose Medusa Mobile Valeting?",
+        to: "Valeting Across Greater London’s Urban and Residential Streets",
+      },
+      {
+        from: "Key Benefits of Our Service",
+        to: "Convenience, Expert Care and Flexible Scheduling",
+      },
+      {
+        from: "Flexible Valeting Packages for Every Need",
+        to: "Routine Washes and Detailing for Special Occasions",
+      },
+    ],
+  },
+  "car-valeting/hammersmith": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Cars Cleaned at The Ark and Hammersmith Grove",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Express Washes and Full Interior Deep Cleans",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "How City Driving Wears Paintwork and Trim",
+      },
+    ],
+    text: [
+      {
+        from: "Dirt from city driving, tree sap from parked streets, and everyday build-up make car maintenance a challenge.",
+        to: "Dirt from city driving, tree sap where cars are parked, and everyday build-up make car maintenance a challenge.",
+      },
+    ],
+  },
+  "car-valeting/hayes": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting at Stockley Park and Hayes Business Studios",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Packages for a Trip, an Occasion or Upkeep",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Daily Traffic, Weather and a Car’s Value",
+      },
+    ],
+  },
+  "car-valeting/hendon": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Cleaning Cars at Middlesex University and Local Offices",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Before the School Run or a Weekend Away",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Traffic Film and Bird Droppings in Hendon",
+      },
+    ],
+  },
+  "car-valeting/hillingdon": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting Near Brunel University and Uxbridge High Street",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Wax Protection, Shampooing and Weekly Refreshes",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Keeping Hillingdon Grime Off the Paintwork",
+      },
+    ],
+  },
+  "car-valeting/hounslow": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Workday Valeting Around Heathrow and Matrix Park",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Maintenance Washes, Interior Cleans and Pre-Sale Valets",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Dust and Traffic Grime on Hounslow Roads",
+      },
+    ],
+  },
+  "car-valeting/kingston": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting at Canbury Business Park and Norbiton",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Mini Valets, Interior Cleans and Wax Treatments",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Kingston’s Environment and the Wear It Causes",
+      },
+    ],
+  },
+  "car-valeting/knightsbridge": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting Around Brompton Road and Hans Crescent",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "A One-Off Treatment or a Regular Routine",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Air Pollution and Tree Sap in Knightsbridge",
+      },
+    ],
+    text: [
+      {
+        from: "Full valets can take 2.5–4 hours, depending on vehicle size and condition",
+        to: "Full valets can take 2.5–4 hours, depending on vehicle size and condition.",
+      },
+    ],
+  },
+  "car-valeting/mill-hill": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting at Stirling Way and Mill Hill Broadway",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "An Express Wash or a Pre-Sale Deep Clean",
+      },
+    ],
+  },
+  "car-valeting/north-west-london": {
+    headings: [
+      {
+        from: "Why Choose Medusa Mobile Valeting?",
+        to: "Valeting at Your Door in North West London",
+      },
+      {
+        from: "Key Benefits of Our Service",
+        to: "Convenience, Expertise and Eco-Friendly Products",
+      },
+      {
+        from: "Flexible Valeting Packages for Every Need",
+        to: "Touch-Ups, Detailing and Preparation for Special Occasions",
+      },
+    ],
+  },
+  "car-valeting/notting-hill": {
+    headings: [
+      {
+        from: "Comprehensive Services for Every Need",
+        to: "What the Valeters Clean, Inside and Out",
+      },
+      {
+        from: "Our Valeting Packages",
+        to: "A Maintenance Clean or a Full Detail",
+      },
+    ],
+  },
+  "car-valeting/richmond-upon-thames": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Cars Cleaned Around Richmond Riverside and Kew Road",
+      },
+      {
+        from: "Hassle-free Clean: Experience the Future of Car Treatment with Mobile Valeting",
+        to: "Touch-Ups and Deep Cleans at Your Richmond Address",
+      },
+    ],
+    text: [
+      {
+        from: "we transform car treatment by bringing our mobile valeting service straight to you in Richmond Upon Thames",
+        to: "we bring our mobile valeting service straight to you in Richmond Upon Thames",
+      },
+      {
+        from: "No more will you require to drive to a car wash or wait in line; we bring the clean to your home, office, or any type of place of your option.",
+        to: "There is no need to drive to a car wash or wait in line; we bring the clean to your home, office, or anywhere else you choose.",
+      },
+      {
+        from: "Our mobile devices are totally outfitted to take care of every aspect of valeting, from exterior cleans to complete indoor describing.",
+        to: "Our mobile units are fully equipped to take care of every aspect of valeting, from exterior cleans to full interior detailing.",
+      },
+      {
+        from: "Whether you require a quick touch-up or a deep tidy, our solution ensures your car looks its ideal without you needing to lift a finger.",
+        to: "Whether you need a quick touch-up or a deep clean, our service leaves your car looking its best without you needing to lift a finger.",
+      },
+      {
+        from: "Convenience and quality go to the heart of our service, making it less complicated than ever to maintain your car in excellent condition.",
+        to: "Convenience and quality are at the heart of our service, making it easier than ever to keep your car in excellent condition.",
+      },
+    ],
+  },
+  "car-valeting/stratford": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting Near International Quarter London and Westfield",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Express Washes, Deep Interior Cleans and Ceramic Coating",
+      },
+    ],
+  },
+  "car-valeting/streatham": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting for Workplaces Along Leigham Court Road",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Advanced Exterior Treatments and Express Interior Cleans",
+      },
+    ],
+  },
+  "car-valeting/sudbury": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting Near Watford Road and Sudbury Hill Station",
+      },
+      {
+        from: "Transform Your Car-Schedule Your Mobile Valeting Solution Today!",
+        to: "Book a Mobile Valet in Sudbury",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Tailored to the Car, the Place and the Day",
+      },
+    ],
+  },
+  "car-valeting/twickenham": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting at Regal House and Twickenham Trading Estate",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Before a Weekend Away, or After Bushy Park",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Protecting Paintwork and Upholstery Over Time",
+      },
+    ],
+  },
+  "car-valeting/walthamstow": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Valeting Around Central Parade and Blackhorse Lane",
+      },
+      {
+        from: "Change Your Car-Schedule Your Mobile Valeting Service Today!",
+        to: "Arrange a Valet at Your Walthamstow Address",
+      },
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "A Package to Suit the Car and the Budget",
+      },
+    ],
+  },
+  "car-valeting/wembley": {
+    headings: [
+      {
+        from: "Convenient Mobile Valeting for Busy Professionals",
+        to: "Cleaning Cars at Offices, Warehouses and Dealerships",
+      },
+      {
+        from: "Change Your Car-Arrange Your Mobile Valeting Solution Today!",
+        to: "Book a Mobile Valet in Wembley",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Protecting Paintwork, Alloys and Interiors in Wembley",
+      },
+    ],
+  },
+  "car-valeting/west-brompton": {
+    headings: [
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "A Basic Clean, or Advanced Paint Protection",
+      },
+      {
+        from: "How Our Services Work?",
+        to: "Booked in Under a Minute, Valeted on Site",
+      },
+    ],
+  },
+  "car-valeting/wimbledon": {
+    headings: [
+      {
+        from: "Flexible Valeting Packages to Suit Every Need",
+        to: "Mini Valets, Deep Interior Cleans and Paint Protection",
+      },
+      {
+        from: "Change Your Car-Arrange Your Mobile Valeting Service Today!",
+        to: "Arrange a Valet at Your Wimbledon Address",
+      },
+      {
+        from: "How Our Services Work?",
+        to: "Nothing to Set Up Before the Van Arrives",
+      },
+    ],
+    text: [
+      {
+        from: "Our skilled team delivers professional results using high-end, eco-friendly products",
+        to: "Our skilled team delivers professional results using high-end, eco-friendly products.",
+      },
+    ],
+  },
+  "mobile-car-wash/belgravia": {
+    headings: [
+      {
+        from: "How Our Services Work?",
+        to: "From the Booking to a Gleaming Car",
+      },
+    ],
+  },
+  "mobile-car-wash/brent": {
+    headings: [
+      {
+        from: "Experience Convenient Car Treatment in Brent: Reserve Our Mobile Car Wash Now!",
+        to: "Experience Convenient Car Care in Brent: Reserve Our Mobile Car Wash Now!",
+      },
+      {
+        from: "How Our Services Work?",
+        to: "How a Wash Is Arranged in Brent",
+      },
+    ],
+  },
+  "mobile-car-wash/colindale": {
+    headings: [
+      {
+        from: "How Our Services Work?",
+        to: "Booked Online, Washed Where You Park",
+      },
+      {
+        from: "Why Regular Car Washing Matters in Urban Areas",
+        to: "What City Air Does to Colindale Paintwork",
+      },
+    ],
+  },
+  "mobile-car-wash/earls-court": {
+    headings: [
+      {
+        from: "Convenient Mobile Car Wash for Professionals",
+        to: "A Wash While You Work in Earl’s Court",
+      },
+      {
+        from: "How Our Services Work?",
+        to: "Booked by Phone, Washed at the Kerb",
+      },
+      {
+        from: "Experience Convenient Car Treatment in Earls Court: Schedule Our Mobile Car Wash Now!",
+        to: "Experience Convenient Car Care in Earls Court: Schedule Our Mobile Car Wash Now!",
+      },
+    ],
+    text: [
+      {
+        from: "parked curbside",
+        to: "parked kerbside",
+      },
+    ],
+  },
+  "mobile-car-wash/eastcote": {
+    headings: [
+      {
+        from: "Mobile Car Wash for Professionals in Eastcote",
+        to: "Washed Without Giving Up a Lunch Break",
+      },
+      {
+        from: "Why Regular Mobile Car Cleaning Matters",
+        to: "Why Sap and Dust Wear Down Paintwork",
+      },
+    ],
+  },
+  "mobile-car-wash/friern-barnet": {
+    headings: [
+      {
+        from: "Convenient Mobile Car Wash for Busy Professionals",
+        to: "Washing Cars at Friern Barnet Retail Park",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Suburban Environments",
+        to: "Why Regular Washing Extends a Car’s Life",
+      },
+    ],
+    text: [
+      {
+        from: "Effortless 0nline Booking with Instant Confirmation",
+        to: "Effortless Online Booking with Instant Confirmation",
+      },
+    ],
+  },
+  "mobile-car-wash/greater-london": {
+    headings: [
+      {
+        from: "Why Choose Medusa Auto Detailing’s Mobile Car Wash?",
+        to: "Cleaned to the Same Standard, Inside and Out",
+      },
+    ],
+    text: [
+      {
+        from: "Exactly how do you manage scrapes and swirls on the lorry's surface area?",
+        to: "How do you deal with scratches and swirls on the car’s paintwork?",
+      },
+      {
+        from: "Do I need to offer anything for the service?",
+        to: "Do I need to provide anything for the service?",
+      },
+      {
+        from: "No, our team gets here completely geared up with whatever required to valet your car.",
+        to: "No, our team arrives fully equipped with everything needed to valet your car.",
+      },
+      {
+        from: "The moment varies relying on the package, but the majority of services are completed within 1-2 hours.",
+        to: "The time varies depending on the package, but most services are completed within 1-2 hours.",
+      },
+      {
+        from: "We use specialized products and strategies to lessen and remedy surface area flaws.",
+        to: "We use specialist products and techniques to reduce and correct flaws in the paintwork.",
+      },
+      {
+        from: "Just how usually should I have my car valeted?",
+        to: "How often should I have my car valeted?",
+      },
+      {
+        from: "For best outcomes, we advise a complete valet every 4-6 weeks to keep your car in excellent problem.",
+        to: "For the best results, we recommend a full valet every 4-6 weeks to keep your car in good condition.",
+      },
+      {
+        from: "What happens if I'm not satisfied with the solution provided?",
+        to: "What happens if I’m not satisfied with the service provided?",
+      },
+      {
+        from: "If you’re not pleased, let us understand promptly, and we’ll function to fix any issues without delay.",
+        to: "If you’re not happy, tell us straight away and we will put any issues right without delay.",
+      },
+    ],
+  },
+  "mobile-car-wash/hendon": {
+    headings: [
+      {
+        from: "Convenient Mobile car washing for Busy Professionals",
+        to: "Business Parks, Dealerships and Fleets in Hendon",
+      },
+      {
+        from: "Home car wash for Hendon’s Residential Areas",
+        to: "No Hose or Driveway Needed in Hendon",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "What Traffic Fumes and Brake Dust Leave Behind",
+      },
+    ],
+  },
+  "mobile-car-wash/hertfordshire": {
+    headings: [
+      {
+        from: "Why Medusa Auto Detailing is the Perfect Choice for Hertfordshire",
+        to: "A Professionally Cleaned Car Without Lifting a Finger",
+      },
+    ],
+    text: [
+      {
+        from: "Exactly how do you manage scrapes and swirls on the lorry's surface area?",
+        to: "How do you deal with scratches and swirls on the car’s paintwork?",
+      },
+      {
+        from: "Do I need to offer anything for the service?",
+        to: "Do I need to provide anything for the service?",
+      },
+      {
+        from: "No, our team gets here completely geared up with whatever required to valet your car.",
+        to: "No, our team arrives fully equipped with everything needed to valet your car.",
+      },
+      {
+        from: "The moment varies relying on the package, but the majority of services are completed within 1-2 hours.",
+        to: "The time varies depending on the package, but most services are completed within 1-2 hours.",
+      },
+      {
+        from: "We use specialized products and strategies to lessen and remedy surface area flaws.",
+        to: "We use specialist products and techniques to reduce and correct flaws in the paintwork.",
+      },
+      {
+        from: "Just how usually should I have my car valeted?",
+        to: "How often should I have my car valeted?",
+      },
+      {
+        from: "For best outcomes, we advise a complete valet every 4-6 weeks to keep your car in excellent problem.",
+        to: "For the best results, we recommend a full valet every 4-6 weeks to keep your car in good condition.",
+      },
+      {
+        from: "What happens if I'm not satisfied with the solution provided?",
+        to: "What happens if I’m not satisfied with the service provided?",
+      },
+      {
+        from: "If you’re not pleased, let us understand promptly, and we’ll function to fix any issues without delay.",
+        to: "If you’re not happy, tell us straight away and we will put any issues right without delay.",
+      },
+    ],
+  },
+  "mobile-car-wash/hillingdon": {
+    headings: [
+      {
+        from: "Convenient Mobile CAR Wash for Busy Professionals",
+        to: "Washing Cars at Stockley Park and Uxbridge",
+      },
+      {
+        from: "Home car wash for Hillingdon’s Residential Areas",
+        to: "A Wash Without a Driveway or a Tap",
+      },
+      {
+        from: "Enhancing Vehicle Longevity in Urban Areas",
+        to: "Sap, Grime and a Car’s Resale Value",
+      },
+    ],
+  },
+  "mobile-car-wash/mill-hill": {
+    headings: [
+      {
+        from: "Convenient Car Wash for Professionals in Mill Hill",
+        to: "Washes for Mill Hill Commuters and Showrooms",
+      },
+      {
+        from: "Why Regular Car Washes Matter in Mill Hill",
+        to: "Open Spaces, Busy Roads and Everyday Dirt",
+      },
+    ],
+  },
+  "mobile-car-wash/putney": {
+    headings: [
+      {
+        from: "How Our Services Work?",
+        to: "Booking, Arrival and a Clean Car in Putney",
+      },
+      {
+        from: "Why Medusa Auto Detailing?",
+        to: "Trained Valeters, Eco-Friendly Products and No Queue",
+      },
+      {
+        from: "Experience Convenient Car Treatment in Putney: Schedule Our Mobile Car Wash Now!",
+        to: "Experience Convenient Car Care in Putney: Schedule Our Mobile Car Wash Now!",
+      },
+    ],
+    text: [
+      {
+        from: "Our mobile car wash solution in Putney fits your active day, conserving you the problem of waiting at a standard car wash.",
+        to: "Our mobile car wash service in Putney fits your busy day, saving you the wait at a standard car wash.",
+      },
+      {
+        from: "We utilize only environmentally risk-free items, ensuring your vehicle shines without damaging side effects on the setting.",
+        to: "We use only environmentally safe products, so your car is cleaned without harm to its surroundings.",
+      },
+      {
+        from: "Our Putney -based group is fully educated, with years of experience providing top-quality car washing solutions right at your doorstep.",
+        to: "Our Putney-based team is fully trained, with years of experience providing top-quality car washing at your doorstep.",
+      },
+      {
+        from: "Whether you go to home, work, or anywhere in Putney, our group comes to you, making car care as easy and convenient as feasible.",
+        to: "Whether you are at home, at work, or anywhere in Putney, our team comes to you, making car care as easy and convenient as possible.",
+      },
+      {
+        from: "Life in Putney can be frantic, but that does not imply your car has to suffer.",
+        to: "Life in Putney can be frantic, but that does not mean your car has to suffer.",
+      },
+      {
+        from: "At Medusa Auto Detailing, we provide a mobile car wash solution that fits effortlessly into your routine.",
+        to: "At Medusa Auto Detailing, we provide a mobile car wash service that fits effortlessly into your routine.",
+      },
+      {
+        from: "Whether you’re managing work, family, or other commitments, we make it simple to maintain your car clean without taking time out of your hectic day.",
+        to: "Whether you’re juggling work, family or other commitments, we make it simple to keep your car clean without taking time out of your day.",
+      },
+      {
+        from: "Our team comes to you, so you can delight in the luxury of a clean car without the wait.",
+        to: "Our team comes to you, so you can enjoy a clean car without the wait.",
+      },
+      {
+        from: "Experience the benefit and professionalism and reliability that establishes us apart as leading mobile car wash service.",
+        to: "Experience the convenience, professionalism and reliability that set us apart as a mobile car wash service.",
+      },
+    ],
+  },
+  "mobile-car-wash/stratford": {
+    headings: [
+      {
+        from: "How Our Services Work?",
+        to: "Three Steps, No Trip to the Forecourt",
+      },
+      {
+        from: "Why Medusa Auto Detailing?",
+        to: "Why Drivers in Stratford Use a Mobile Wash",
+      },
+      {
+        from: "Say goodbye to Waiting: Mobile Car Wash That Fits Your Busy Way Of Life",
+        to: "Keeping the Car Clean Around a Busy Week",
+      },
+    ],
+    text: [
+      {
+        from: "Time-Saving Solution: We Function Around Your Set up",
+        to: "Time-Saving Solution: We Work Around Your Schedule",
+      },
+      {
+        from: "Our mobile car wash solution in Stratford fits your hectic day, conserving you the inconvenience of waiting at a conventional car wash.",
+        to: "Our mobile car wash service in Stratford fits your busy day, saving you the inconvenience of waiting at a conventional car wash.",
+      },
+      {
+        from: "Eco-Friendly Products: Shielding Your Car and the Atmosphere",
+        to: "Eco-Friendly Products: Protecting Your Car and the Environment",
+      },
+      {
+        from: "We utilize just environmentally safe products, ensuring your car radiates without harmful adverse effects on the environment.",
+        to: "We use only environmentally safe products, so your car is cleaned without harm to its surroundings.",
+      },
+      {
+        from: "Our Stratford -based group is completely educated, with years of experience giving high-quality car washing solutions right at your doorstep.",
+        to: "Our Stratford-based team is fully trained, with years of experience providing high-quality car washing at your doorstep.",
+      },
+      {
+        from: "Mobile Benefit: Car Wash",
+        to: "Mobile Convenience: Car Wash",
+      },
+      {
+        from: "Whether you're at home, job, or throughout Stratford, our group concerns you, making car treatment as very easy and hassle-free as feasible.",
+        to: "Whether you are at home, at work, or anywhere in Stratford, our team comes to you, making car care as easy and hassle-free as possible.",
+      },
+      {
+        from: "Life in Stratford can be chaotic, yet that does not indicate your car needs to experience.",
+        to: "Life in Stratford can be chaotic, but that does not mean your car has to suffer.",
+      },
+      {
+        from: "At Medusa Auto Detailing, we give a mobile car wash service that fits perfectly right into your schedule.",
+        to: "At Medusa Auto Detailing, we provide a mobile car wash service that fits into your schedule.",
+      },
+      {
+        from: "Whether you’re juggling work, family members, or other commitments, we make it easy to keep your car tidy without taking time out of your active day.",
+        to: "Whether you’re juggling work, family or other commitments, we make it easy to keep your car clean without taking time out of your day.",
+      },
+      {
+        from: "Our group comes to you, so you can appreciate the deluxe of a spick-and-span car without the delay.",
+        to: "Our team comes to you, so you can enjoy a spotless car without the delay.",
+      },
+      {
+        from: "Experience the benefit and expertise that sets us apart as leading mobile car wash service.",
+        to: "Experience the convenience and expertise that set us apart as a mobile car wash service.",
+      },
+      {
+        from: "Exactly how do you make certain the security of my car during the wash?",
+        to: "How do you make sure my car is safe during the wash?",
+      },
+      {
+        from: "We make use of mild, environmentally friendly products and techniques that are risk-free for your automobile’s paint and indoor surface areas.",
+        to: "We use gentle, environmentally friendly products and techniques that are safe for your car’s paint and interior surfaces.",
+      },
+    ],
+  },
+  "mobile-car-wash/west-brompton": {
+    headings: [
+      {
+        from: "Convenient Mobile Car Wash for Local Professionals",
+        to: "Cars Cleaned Around Lillie Square and Fulham Broadway",
+      },
+      {
+        from: "How Our Services Work?",
+        to: "Nothing to Supply but the Parking Space",
+      },
+      {
+        from: "Experience Convenient Car Treatment in West Brompton: Schedule Our Mobile Car Wash Now!",
+        to: "Experience Convenient Car Care in West Brompton: Schedule Our Mobile Car Wash Now!",
+      },
+    ],
+    text: [
+      {
+        from: "Time-Saving Solution: We Function Around Your Schedule",
+        to: "Time-Saving Solution: We Work Around Your Schedule",
+      },
+      {
+        from: "Our mobile car wash solution in West Brompton fits your active day, saving you the inconvenience of waiting at a traditional car wash.",
+        to: "Our mobile car wash service in West Brompton fits your busy day, saving you the inconvenience of waiting at a traditional car wash.",
+      },
+      {
+        from: "Eco-Friendly Products: Securing Your Car and the Setting",
+        to: "Eco-Friendly Products: Protecting Your Car and the Environment",
+      },
+      {
+        from: "We make use of only environmentally secure products, guaranteeing your automobile shines without unsafe negative effects on the environment.",
+        to: "We use only environmentally safe products, so your car is cleaned without harm to its surroundings.",
+      },
+      {
+        from: "Expert Know-how: Educated and Experienced Professionals",
+        to: "Expert Know-how: Trained and Experienced Professionals",
+      },
+      {
+        from: "Our West Brompton -based team is completely educated, with years of experience supplying excellent car washing solutions right at your front door.",
+        to: "Our West Brompton-based team is fully trained, with years of experience providing excellent car washing at your front door.",
+      },
+      {
+        from: "Mobile Comfort: Car Wash",
+        to: "Mobile Convenience: Car Wash",
+      },
+      {
+        from: "Whether you go to home, job, or throughout West Brompton, our group pertains to you, making car treatment as very easy and hassle-free as feasible.",
+        to: "Whether you are at home, at work, or anywhere in West Brompton, our team comes to you, making car care as easy and hassle-free as possible.",
+      },
+      {
+        from: "Life in West Brompton can be busy, however that doesn’t suggest your car needs to suffer.",
+        to: "Life in West Brompton can be busy, but that does not mean your car has to suffer.",
+      },
+      {
+        from: "At Medusa Auto Detailing, we give a mobile car wash service that fits seamlessly right into your schedule.",
+        to: "At Medusa Auto Detailing, we provide a mobile car wash service that fits seamlessly into your schedule.",
+      },
+      {
+        from: "Whether you’re handling work, family members, or other dedications, we make it very easy to keep your vehicle tidy without taking time out of your busy day.",
+        to: "Whether you’re juggling work, family or other commitments, we make it easy to keep your car clean without taking time out of your busy day.",
+      },
+      {
+        from: "Our group involves you, so you can take pleasure in the luxury of a pristine car without the wait.",
+        to: "Our team comes to you, so you can enjoy a spotless car without the wait.",
+      },
+      {
+        from: "Experience the benefit and professionalism and trust that establishes us apart as top mobile car wash solution.",
+        to: "Experience the convenience, professionalism and trust that set us apart as a mobile car wash service.",
+      },
+    ],
+  },
+  "mobile-car-wash/westminster": {
+    headings: [
+      {
+        from: "Convenient Mobile Car Wash for Westminster Professionals",
+        to: "Washes for Offices Around Whitehall and Victoria",
+      },
+      {
+        from: "Why Medusa Auto Detailing?",
+        to: "Why Book a Mobile Wash in Westminster",
+      },
+      {
+        from: "Say goodbye to Waiting: Mobile Car Wash That Fits Your Active Way Of Life",
+        to: "A Car Wash That Fits a Full Diary",
+      },
+    ],
+    text: [
+      {
+        from: "Time-Saving Service: We Work Around Your Set up",
+        to: "Time-Saving Service: We Work Around Your Schedule",
+      },
+      {
+        from: "Eco-Friendly Products: Securing Your Car and the Environment",
+        to: "Eco-Friendly Products: Protecting Your Car and the Environment",
+      },
+      {
+        from: "We utilize just environmentally secure items, ensuring your car radiates without dangerous negative effects on the environment.",
+        to: "We use only environmentally safe products, so your car is cleaned without harm to its surroundings.",
+      },
+      {
+        from: "Professional Experience: Educated and Experienced Professionals",
+        to: "Professional Experience: Trained and Experienced Professionals",
+      },
+      {
+        from: "Our Westminster -based group is fully trained, with years of experience providing high-quality car washing solutions right at your doorstep.",
+        to: "Our Westminster-based team is fully trained, with years of experience providing high-quality car washing at your doorstep.",
+      },
+      {
+        from: "Mobile Benefit: Car Wash",
+        to: "Mobile Convenience: Car Wash",
+      },
+      {
+        from: "Whether you go to home, work, or throughout Westminster, our group concerns you, making car care as very easy and hassle-free as feasible.",
+        to: "Whether you are at home, at work, or anywhere in Westminster, our team comes to you, making car care as easy and hassle-free as possible.",
+      },
+      {
+        from: "Life in Westminster can be chaotic, but that does not suggest your car has to suffer.",
+        to: "Life in Westminster can be chaotic, but that does not mean your car has to suffer.",
+      },
+      {
+        from: "Whether you’re managing work, household, or other dedications, we make it easy to maintain your automobile clean without taking time out of your busy day.",
+        to: "Whether you’re juggling work, home or other commitments, we make it easy to keep your car clean without taking time out of your busy day.",
+      },
+      {
+        from: "Our group involves you, so you can delight in the deluxe of a spotless car without the wait.",
+        to: "Our team comes to you, so you can enjoy a spotless car without the wait.",
+      },
+      {
+        from: "Experience the benefit and professionalism and reliability that sets us apart as premier mobile car wash service.",
+        to: "Experience the convenience, professionalism and reliability that set us apart as a mobile car wash service.",
+      },
+    ],
+  },
   /*
     ── The four borough hubs outside London ───────────────────────────────
 
@@ -2032,6 +3241,80 @@ export const MIRROR_EDITS: Record<string, MirrorEdit> = {
     ],
   },
 };
+
+/**
+ * The 52 mirror location pages the client's Ahrefs list never covered.
+ *
+ * The audit of 2026-09-22 was scoped by the client — "Only audit/update URLs
+ * included in this list" — and these are the service-in-a-place pages that
+ * were not on it. They were left carrying exactly the faults `MIRROR_AUDIT`'s
+ * 75 were fixed of; measured on the day, 44 of 52 still had their section
+ * titles at `h3`/`h4`, 41 had no districts row and 7 still read as the
+ * machine-spun English WordPress shipped.
+ *
+ * The repo owner lifted the scope later the same day, after the client asked
+ * for "all location pages". They take the **same three passes** as the 75 —
+ * `promoteSections`, `applyMirrorEdits`, `districtsRow` — and the same rule 2
+ * narrowing: headings and typos only, never a rewritten paragraph.
+ *
+ * Kept as a separate set rather than merged into `MIRROR_AUDIT` because the
+ * provenance differs and this repo keeps track of that: one list is the
+ * client's, the other is ours.
+ */
+export const MIRROR_REST: ReadonlySet<string> = new Set([
+  "car-detailing/brent",
+  "car-detailing/colindale",
+  "car-detailing/edgware",
+  "car-detailing/golders-green",
+  "car-detailing/hendon",
+  "car-detailing/mill-hill",
+  "car-valeting/belgravia",
+  "car-valeting/brent",
+  "car-valeting/chelsea",
+  "car-valeting/chingford",
+  "car-valeting/colindale",
+  "car-valeting/ealing",
+  "car-valeting/earls-court",
+  "car-valeting/eastcote",
+  "car-valeting/friern-barnet",
+  "car-valeting/fulham",
+  "car-valeting/golders-green",
+  "car-valeting/greater-london",
+  "car-valeting/hammersmith",
+  "car-valeting/hayes",
+  "car-valeting/hendon",
+  "car-valeting/hillingdon",
+  "car-valeting/hounslow",
+  "car-valeting/kingston",
+  "car-valeting/knightsbridge",
+  "car-valeting/mill-hill",
+  "car-valeting/north-west-london",
+  "car-valeting/notting-hill",
+  "car-valeting/richmond-upon-thames",
+  "car-valeting/stratford",
+  "car-valeting/streatham",
+  "car-valeting/sudbury",
+  "car-valeting/twickenham",
+  "car-valeting/walthamstow",
+  "car-valeting/wembley",
+  "car-valeting/west-brompton",
+  "car-valeting/wimbledon",
+  "mobile-car-wash/belgravia",
+  "mobile-car-wash/brent",
+  "mobile-car-wash/colindale",
+  "mobile-car-wash/earls-court",
+  "mobile-car-wash/eastcote",
+  "mobile-car-wash/friern-barnet",
+  "mobile-car-wash/greater-london",
+  "mobile-car-wash/hendon",
+  "mobile-car-wash/hertfordshire",
+  "mobile-car-wash/hillingdon",
+  "mobile-car-wash/mill-hill",
+  "mobile-car-wash/putney",
+  "mobile-car-wash/stratford",
+  "mobile-car-wash/west-brompton",
+  "mobile-car-wash/westminster",
+]);
 
 /**
  * Pages that take a text correction from `MIRROR_EDITS` and nothing else.
