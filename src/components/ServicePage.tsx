@@ -7,7 +7,7 @@ import PriceCard from "@/components/PriceCard";
 import Reveal from "@/components/Reveal";
 import SectionHead from "@/components/SectionHead";
 import { ServiceCardsSection } from "@/components/ServiceCards";
-import type { Page } from "@/lib/blocks";
+import type { Page, Section } from "@/lib/blocks";
 import {
   foldableAreas,
   hubLocations,
@@ -66,13 +66,62 @@ export default function ServicePage({ page }: { page: Page }) {
   */
   const services = serviceCardsFor(page.slug);
 
+  /*
+    `/car-detailing` wants its band in the middle — "place it here where its
+    black", client, 2026-09-22, pointing at the slot the duplicate LEVEL row
+    left when `overrides.ts` dropped it. So the body is rendered in two calls
+    with the band between them, and the second call is told where the
+    black-gold-black rhythm had got to.
+
+    Matched on the heading the client's section follows rather than on an
+    index, so a regeneration that adds a row above cannot move it. A heading
+    that is no longer there throws at build rather than quietly putting the
+    band back at the end.
+  */
+  const cut = services?.after ? splitAfter(body, services.after, page.slug) : null;
+
   return (
     <main className="flex-1">
       <Hero page={page} model={model} />
 
-      {body.length > 0 && (
+      {cut && (
+        <>
+          <Sections
+            sections={cut.before}
+            slug={page.slug}
+            pageH1={page.h1}
+            h1Taken
+            opensPage={false}
+            bands="alternate"
+            panel={model.priced}
+          />
+          {services && (
+            <ServiceCardsSection heading={services.heading} cards={services.cards} />
+          )}
+          {/*
+            The second half starts gold, which is what a fresh `alternate`
+            call does anyway. That is not luck: the band between the two
+            halves is an ink row, so whatever colour the first half ended on,
+            the row after the band wants the gold. A `startGold` prop was
+            written for this and then thrown away — it could only ever have
+            been passed `true`.
+          */}
+          <Sections
+            sections={cut.after}
+            slug={page.slug}
+            pageH1={page.h1}
+            h1Taken
+            opensPage={false}
+            bands="alternate"
+            panel={model.priced}
+          />
+        </>
+      )}
+
+      {!cut && body.length > 0 && (
         <Sections
           sections={body}
+        
           slug={page.slug}
           pageH1={page.h1}
           // The hero above has already set this page's one <h1>.
@@ -150,11 +199,13 @@ export default function ServicePage({ page }: { page: Page }) {
         Last of the page's own bands, immediately before the closing one.
         A hub puts its card grid above its questions, and two of these three
         pages cannot: their FAQ row is part of the source body, so "above the
-        questions" would mean cutting the body in two and restarting the
-        gold/ink alternation mid-page. One position that holds on all four
-        pages beats a rule that reads differently on each.
+        questions" would mean cutting the body in two.
+
+        `/car-detailing` asked for exactly that on 2026-09-22 and gets it,
+        through `after` in `lib/service-cards.ts` — which is why this is the
+        `!cut` half of the same choice rather than the only position.
       */}
-      {services && (
+      {services && !cut && (
         <ServiceCardsSection heading={services.heading} cards={services.cards} />
       )}
 
@@ -174,6 +225,67 @@ export default function ServicePage({ page }: { page: Page }) {
 
     </main>
   );
+}
+
+/**
+ * The body, cut in two after the run that `heading` opens.
+ *
+ * The cut falls immediately before the next top-level heading, which is a
+ * boundary `group()` would have cut on anyway, so the two halves regroup into
+ * the same bands the whole body did. Both are the source's own blocks in the
+ * source's own order; nothing moves across the cut.
+ *
+ * It has to work at block level, not section level, because a quarter of the
+ * site is one section per page: `/car-detailing` writes its eight rows as
+ * eight sections and `/mobile-car-wash` writes its ten as **one**, and the
+ * client asked for the band mid-page on both.
+ *
+ * A heading that is not there throws, because the alternative is a band that
+ * silently reappears at the foot of the page and nobody notices for a month.
+ */
+function splitAfter(
+  body: Section[],
+  heading: string,
+  slug: string,
+): { before: Section[]; after: Section[] } {
+  const want = heading.trim().toLowerCase();
+  /* Columns recursed into: `/car-detailing` writes "Why Choose Medusa Auto
+     Detailing?" inside the second cell of a two-column row, beside its
+     photograph, so a top-level scan does not see it. */
+  const carries = (blocks: Section["blocks"]): boolean =>
+    blocks.some((b) =>
+      b.type === "columns"
+        ? b.cols.some(carries)
+        : b.type === "heading" && b.text.trim().toLowerCase() === want,
+    );
+
+  const at = body.findIndex((s) => carries(s.blocks));
+  if (at === -1) {
+    throw new Error(`/${slug}: no body section headed "${heading}" to place the services band after`);
+  }
+
+  const section = body[at];
+  const found = section.blocks.findIndex((b) => carries([b]));
+  const next = section.blocks.findIndex(
+    (b, i) => i > found && b.type === "heading" && b.level <= 2,
+  );
+
+  // The run ends with its section: cut on the section boundary.
+  if (next === -1) {
+    return { before: body.slice(0, at + 1), after: body.slice(at + 1) };
+  }
+
+  // The run is one of several in this section: cut the section itself.
+  return {
+    before: [
+      ...body.slice(0, at),
+      { ...section, blocks: section.blocks.slice(0, next) },
+    ],
+    after: [
+      { ...section, blocks: section.blocks.slice(next) },
+      ...body.slice(at + 1),
+    ],
+  };
 }
 
 /* ── Hero ─────────────────────────────────────────────────────────────────

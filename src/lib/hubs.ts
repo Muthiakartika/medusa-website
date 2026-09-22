@@ -115,3 +115,72 @@ export const INTERIOR: HubSpec = {
   /* Nine cards: three across from `lg`, which is what `CardRow` uses. */
   cardCols: "sm:grid-cols-2 lg:grid-cols-3",
 };
+
+/**
+ * Client, 2026-09-22: "We need to create a page for Other Vehicles as well,
+ * which will include the children" — the third menu column to get a page, and
+ * the smallest: two services, neither of which quotes a price on the card.
+ *
+ * Both of this group's pages are unusual. The caravan page writes its reasons
+ * as one `<br>`-joined paragraph rather than a list, which is why `hubReasons`
+ * grew `runTogether`; and the motorcycle page is a hand-built route whose only
+ * photograph is a portrait poster, so it needs `cardImages` like the headlight
+ * page does.
+ */
+export const VEHICLES: HubSpec = {
+  slug: "vehicles",
+  title: "Other Vehicles",
+  menuLabel: "Other Vehicles",
+  /* Caravans on a campsite, the caravan page's own header photograph — the
+     only landscape file of header size the group has. */
+  heroImage:
+    "/assets/2024/05/various-rv-caravans-camping-on-campsites-at-the-ca-2023-11-27-04-52-08-utc-1.webp",
+  /* The photograph the caravan page already sets beside these same reasons. */
+  whyImage: "/assets/2024/11/caravan-2718561_1280-1280x770.webp",
+  /*
+    The group's only "Why Choose Medusa Auto Detailing?" row. Its four reasons
+    are the company's rather than one service's — local, punctual, trusted,
+    insured — but two of the four name caravans in their labels, because a
+    group of two pages has no less specific list to offer. That is the same
+    limit `/car-interior-cleaning` has with leather, and written copy from the
+    client replaces it in one line.
+  */
+  why: {
+    slug: "vehicles/caravan-cleaning",
+    heading: "Why Choose Medusa Auto Detailing?",
+    dropLead: 0,
+  },
+  /*
+    One paragraph from each page, which between them are the group: what a
+    caravan is to the people who own one, and what this company does to a
+    motorcycle. With two services there is no paragraph about "other vehicles"
+    in general to borrow, and rule 8.1 forbids writing one.
+  */
+  intro: [
+    ["vehicles/caravan-cleaning", "Caravans, motorhomes, and other recreational vehicles"],
+    ["vehicles/motorcycle-valeting-detailing", "At Medusa Auto Detailing"],
+  ],
+  cardImages: {
+    /* Both pages carry the same OG image, so neither card could be
+       photographed by rule without printing the same picture twice. */
+    "vehicles/caravan-cleaning":
+      "/assets/2024/05/house-on-wheels-standing-on-green-grass-in-pinetre-2023-11-27-05-36-39-utc-1.webp",
+    /*
+      The site's one motorcycle photograph is a 1024x1536 poster with its
+      title baked across the top third and a services list across the bottom.
+      A 3:2 card shows 683 of its 1536 rows, and centred that is rows 427-1110
+      — the bike, and "OUR MOTORCYCLE VALETING & DETAILING SER-" clipped
+      mid-word along the foot of the card. At 30% it is rows 256-939, which is
+      the bike and nothing else. The page's own hero frames it at 46%; a wider
+      crop wants less.
+    */
+    "vehicles/motorcycle-valeting-detailing": {
+      src: "/assets/2025/09/motorcycle-detailing-london-medusa-auto-detailing.jpg.webp",
+      position: "50% 30%",
+    },
+  },
+  /* "Our Other Vehicles Services" is two determiners deep. */
+  servicesHeading: "Our Services for Other Vehicles",
+  /* Two services: two across from `sm` and no wider split to make. */
+  cardCols: "sm:grid-cols-2",
+};

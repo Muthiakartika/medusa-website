@@ -75,8 +75,27 @@ export type HubSpec = {
    * group has real FAQs and ignores it.
    */
   questionHeadings?: ReadonlyArray<readonly [slug: string, heading: string]>;
-  /** A card photograph the page's own metadata does not give up. */
-  cardImages?: Readonly<Record<string, string>>;
+  /**
+   * The card row's heading, where the pattern does not survive the name.
+   * "Our " + title + " Services" gives "Our Other Vehicles Services", which
+   * is two determiners deep and reads like a typo; the other two hubs are
+   * left alone. One of the three strings a hub writes either way.
+   */
+  servicesHeading?: string;
+  /**
+   * A card photograph the page's own metadata does not give up, and where
+   * needed the point to crop it around.
+   *
+   * `/vehicles/motorcycle-valeting-detailing` needs the second: the site's
+   * one motorcycle picture is a 1024x1536 poster with its title baked across
+   * the top third and a services list across the bottom, and a 3:2 card
+   * centred on it shows the bike **and** the first line of that list, cut
+   * off mid-word. The page's own hero frames it at 46%; a wider crop wants
+   * less.
+   */
+  cardImages?: Readonly<
+    Record<string, string | { src: string; position: string }>
+  >;
   /** Grid classes for the card row — a group of four wants different ones
    *  from a group of nine. */
   cardCols: string;
@@ -93,6 +112,8 @@ export type HubCard = {
   /** Its entry price, where the page quotes one at all. */
   priceFrom?: string;
   image?: string;
+  /** `object-position` for that photograph, where the centre is wrong. */
+  imagePosition?: string;
 };
 
 /** Every block on a page, columns recursed into, in document order. */
@@ -176,6 +197,9 @@ function menuGroup(spec: HubSpec): NavItem[] {
   return group.children;
 }
 
+/** A line break, however the source spelled it. */
+const BREAK = /<br\s*\/?>/i;
+
 const NOTHING_TAKEN: ReadonlySet<string> = new Set();
 
 /**
@@ -195,7 +219,11 @@ const NOTHING_TAKEN: ReadonlySet<string> = new Set();
  */
 export function cardsFrom(
   items: NavItem[],
-  opts: { owner: string; taken?: ReadonlySet<string>; images?: Record<string, string> },
+  opts: {
+    owner: string;
+    taken?: ReadonlySet<string>;
+    images?: Record<string, string | { src: string; position: string }>;
+  },
 ): HubCard[] {
   const taken = opts.taken ?? NOTHING_TAKEN;
   return items.map((item) => {
@@ -206,13 +234,16 @@ export function cardsFrom(
     const blurbHtml = blurbOf(page, taken);
     if (!blurbHtml) throw new Error(`${opts.owner}: no opening paragraph on /${slug}`);
 
+    const named = opts.images?.[slug];
+
     return {
       slug,
       name: item.label,
       href: item.href!,
       blurbHtml,
       priceFrom: priceOf(page),
-      image: opts.images?.[slug] ?? heroImageFor(page),
+      image: typeof named === "string" ? named : (named?.src ?? heroImageFor(page)),
+      imagePosition: typeof named === "object" ? named.position : undefined,
     };
   });
 }
@@ -343,12 +374,42 @@ export function hubReasons(spec: HubSpec): { heading: string; items: Feature[] }
     throw new Error(`${spec.slug}: /${spec.why.slug} no longer has "${spec.why.heading}"`);
   }
 
-  const list = blocks.slice(at + 1, at + 5).find((b) => b.type === "list");
-  if (list?.type !== "list") throw new Error(`${spec.slug}: no reasons under "${spec.why.heading}"`);
+  const under = blocks.slice(at + 1, at + 5);
+  const list = under.find((b) => b.type === "list");
+  const parsed =
+    list?.type === "list" ? asFeatures(list) : runTogether(under);
+  if (!parsed) throw new Error(`${spec.slug}: no reasons under "${spec.why.heading}"`);
 
-  const items = asFeatures(list)?.slice(spec.why.dropLead);
-  if (!items?.length) throw new Error(`${spec.slug}: the reasons no longer parse as label + text`);
+  const items = parsed.slice(spec.why.dropLead);
+  if (!items.length) throw new Error(`${spec.slug}: the reasons no longer parse as label + text`);
   return { heading: spec.why.heading, items };
+}
+
+/**
+ * The same reasons, written as one `<br>`-joined paragraph instead of a list.
+ *
+ * `/vehicles/caravan-cleaning` is the group's only page with a "Why Choose
+ * Medusa Auto Detailing?" row and it writes its four as bold labels and
+ * sentences inside a single paragraph — the shape every other page's list
+ * items have, without the list. Splitting on the breaks and handing the
+ * fragments to the same parser reads them as they were written; it does not
+ * reword or recombine anything.
+ *
+ * Two or more, so an ordinary paragraph that happens to carry a line break
+ * cannot be mistaken for a list of reasons.
+ */
+function runTogether(blocks: Block[]): Feature[] | null {
+  for (const b of blocks) {
+    if (b.type !== "paragraph") continue;
+    const items = b.html
+      .split(BREAK)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (items.length < 2) continue;
+    const features = asFeatures({ type: "list", ordered: false, items });
+    if (features && features.length >= 2) return features;
+  }
+  return null;
 }
 
 /* ── Coverage ─────────────────────────────────────────────────────────── */

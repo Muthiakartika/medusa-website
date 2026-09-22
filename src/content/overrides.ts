@@ -535,7 +535,146 @@ const VALETING_TILES: Record<string, TilePhoto> = {
     w: 1024,
     h: 768,
   },
+  /* The two tiles added on 2026-09-22. Each page's own photograph: the mini
+     valet's is the image the site already uses to represent it elsewhere, and
+     the full valet's is its own lead picture — the two pages' OG images are
+     the same file, so one of them had to come from somewhere else. */
+  "/car-valeting/mini-valet": {
+    src: "/assets/2024/10/Untitled-design-2.webp",
+    w: 1650,
+    h: 1275,
+  },
+  "/car-valeting/premium-full-valet": {
+    src: "/assets/2024/10/Untitled-design-1-2-1650x770.webp",
+    w: 1650,
+    h: 770,
+  },
 };
+
+/**
+ * The two valeting services that join the row rather than standing under it.
+ *
+ * Client, 2026-09-22, against the gold "MORE VALETING PACKAGES" band: "for
+ * car valeting page, add the to the existing area here". The first pass gave
+ * them a band of their own below; this puts them where the client pointed, as
+ * two more tiles in the shape the row's seven already have — `h2`, `h5`, Read
+ * More, Book Now — which is exactly what lets `asCardRow` merge all nine into
+ * one grid at one card size.
+ *
+ * Neither tile is written here. `title` is the client's own menu label, set in
+ * the capitals every other title in this row is written in; the sentence under
+ * it is the page's own opening paragraph, the same one a hub card borrows; the
+ * Read More label is filled in later by `nameReadMoreLinks` from the page's own
+ * breadcrumb; and the photograph is the page's own, named in `VALETING_TILES`
+ * below so `restoreTilePhotos` places it with the other seven.
+ *
+ * The two pages share an OG image and a header background, so neither could be
+ * picked by rule without printing the same photograph twice.
+ */
+const VALETING_EXTRA_TILES: { href: string; title: string }[] = [
+  { href: "/car-valeting/mini-valet", title: "MINI VALET" },
+  { href: "/car-valeting/premium-full-valet", title: "PREMIUM FULL VALET" },
+];
+
+/**
+ * A page's opening paragraph — the first that is prose rather than a phone
+ * number. The same test `lib/hub.ts` applies when it borrows one for a card;
+ * it cannot be imported from there, because `blocks.ts` imports this file.
+ */
+function openingParagraph(page: Page): string | null {
+  for (const b of allBlocks(page)) {
+    if (b.type !== "paragraph") continue;
+    if (/href="tel:/i.test(b.html)) continue;
+    if (plain(b).length < 90) continue;
+    return b.html;
+  }
+  return null;
+}
+
+/**
+ * Append tiles to the package row, in the row's own cell shape.
+ *
+ * The row is found by a tile it already holds rather than by position, so a
+ * regeneration that moves it cannot put these two somewhere else. Throws when
+ * the row, a page or its opening paragraph has gone.
+ */
+function addPackageTiles(
+  page: Page,
+  pages: Record<string, Page>,
+  tiles: { href: string; title: string }[],
+  anchor: string,
+) {
+  let row: Extract<Block, { type: "columns" }> | null = null;
+  for (const section of page.sections) {
+    eachColumns(section.blocks, (block) => {
+      if (block.cols.some((col) => col.some((b) => isReadMore(b) && b.href === anchor))) {
+        row = block;
+      }
+    });
+  }
+  if (!row) throw new Error(`content override: no package row holding ${anchor}`);
+  const target: Extract<Block, { type: "columns" }> = row;
+
+  /* The booking link the row's own tiles carry, rather than a constant from
+     elsewhere: whatever the source books through, these two book through. */
+  const bookNow = target.cols
+    .flat()
+    .find((b): b is Extract<Block, { type: "button" }> =>
+      b.type === "button" && /^\s*book\s+now\s*$/i.test(b.label),
+    );
+  if (!bookNow) throw new Error("content override: no Book Now in the package row");
+
+  for (const tile of tiles) {
+    const child = pages[tile.href.split("/").filter(Boolean).join("/")];
+    if (!child) throw new Error(`content override: no page at ${tile.href}`);
+    const blurb = openingParagraph(child);
+    if (!blurb) throw new Error(`content override: no opening paragraph on ${tile.href}`);
+
+    target.cols.push([
+      { type: "heading", level: 2, text: tile.title },
+      { type: "heading", level: 5, text: plain({ type: "paragraph", html: blurb }) },
+      { type: "button", label: "READ MORE", href: tile.href },
+      { type: "button", label: bookNow.label, href: bookNow.href },
+    ]);
+    target.spans.push(target.spans[target.spans.length - 1] ?? 3);
+  }
+}
+
+/**
+ * Drop `/car-detailing`'s bare LEVEL 1–5 row.
+ *
+ * Client, 2026-09-22: "remove the level 1 2 3 4 5, its a duplicate". It is:
+ * five cells of nothing but `LEVEL n` and the package name, both linking to
+ * the same pages the price cards higher up the page already link to, and the
+ * descriptions between them say it a third time. It also carries a source
+ * error the other two rows do not — its LEVEL 2 is labelled ENHANCEMENT,
+ * which is LEVEL 3's name.
+ *
+ * Matched on shape, never on position: a cell of exactly an h3 reading
+ * "LEVEL n" and an h4, with nothing else in it. The priced row's cells carry
+ * an icon, four classes and two buttons besides, so they cannot match.
+ */
+function dropBareLevelRow(page: Page) {
+  let dropped = false;
+  for (const section of page.sections) {
+    section.blocks = section.blocks.filter((b) => {
+      if (b.type !== "columns" || b.cols.length < 2) return true;
+      const bare = b.cols.every((col) => {
+        const solid = col.filter((x) => !(x.type === "paragraph" && !plain(x)));
+        return (
+          solid.length === 2 &&
+          solid[0].type === "heading" &&
+          /^level \d$/i.test(solid[0].text.trim()) &&
+          solid[1].type === "heading"
+        );
+      });
+      if (bare) dropped = true;
+      return !bare;
+    });
+  }
+  if (!dropped) throw new Error("content override: no bare LEVEL row on /car-detailing");
+  page.sections = page.sections.filter((s) => s.blocks.length > 0);
+}
 
 const PASTE_WAX =
   "<strong>Paste Wax</strong>: Protect and extend your car’s paintwork with a wax sealant that shields against the elements while delivering a brilliant shine.";
@@ -603,6 +742,13 @@ const RULES: Record<string, (page: Page) => void> = {
   /* Item 9: Zeus gets the upholstery-shampoo line (see `addToZeus`).
      Item 10, in the package comparison table. The trailing rung tells Triton
      from Neptune, which is otherwise priced identically and is unchanged. */
+  /* Item, 2026-09-22: the LEVEL 1–5 row the client called a duplicate. The
+     three services that replace it on the page are a band the frame renders
+     — see `lib/service-cards.ts` — not content, so they are not written here. */
+  "car-detailing": (page) => {
+    dropBareLevelRow(page);
+  },
+
   "car-valeting": (page) => {
     restoreTilePhotos(page, VALETING_TILES);
     markAsIcon(page, "/assets/2025/03/907dae74-cd56-491c-86f7-527943757154.webp");
@@ -696,6 +842,21 @@ export function applyOverrides(
     fn(copy);
     out[slug] = copy;
   };
+
+  /*
+    Before the rules, not after: `restoreTilePhotos` inside the car-valeting
+    rule is what photographs these two, and it throws over a photograph with
+    no tile to hang it on. `pages` rather than `out`, because what is borrowed
+    is the child page's own opening paragraph and no rule touches it.
+  */
+  patch("car-valeting", (p) =>
+    addPackageTiles(
+      p,
+      pages,
+      VALETING_EXTRA_TILES,
+      "/car-valeting/convertible-roof-cleaning",
+    ),
+  );
 
   for (const [slug, fn] of Object.entries(RULES)) patch(slug, fn);
 

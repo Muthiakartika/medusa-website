@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getPage, PAGES } from "@/lib/blocks";
 import { hubCards, type HubSpec } from "@/lib/hub";
-import { INTERIOR, REPAIRS } from "@/lib/hubs";
+import { INTERIOR, REPAIRS, VEHICLES } from "@/lib/hubs";
 import { isLocationSlug } from "@/lib/location-frame";
 import { REDIRECTED_SLUGS } from "@/lib/redirects";
 import { SITE } from "@/lib/site";
@@ -17,7 +17,7 @@ import { SITE } from "@/lib/site";
  * site were all in the undated quarter.
  */
 /** The menu-group hubs, in menu order. */
-const HUBS = [REPAIRS, INTERIOR];
+const HUBS = [REPAIRS, INTERIOR, VEHICLES];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const slugs = [

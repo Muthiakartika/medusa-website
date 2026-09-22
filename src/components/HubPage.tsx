@@ -139,7 +139,10 @@ export default function HubPage({ spec }: { spec: HubSpec }) {
 
         <section className="w-full py-16 lg:py-[104px]">
           <div className="shell">
-            <SectionHead title={`Our ${TITLE} Services`} className="mb-12" />
+            <SectionHead
+              title={spec.servicesHeading ?? `Our ${TITLE} Services`}
+              className="mb-12"
+            />
             {/* The same grid the four service pages now carry — see
                 `components/ServiceCards`. A hub passes its own column count
                 because it shows a whole menu column, not the few a page was

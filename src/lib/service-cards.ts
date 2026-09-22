@@ -31,11 +31,24 @@ type ServiceGroup = {
   heading: string;
   /** The services to show, by slug, in the order the client listed them. */
   services: string[];
+  /**
+   * Put the band immediately after the body section with this heading,
+   * instead of last. Client, 2026-09-22, against `/car-detailing`: "place it
+   * here where its black" — the slot the duplicate LEVEL row left when
+   * `overrides.ts` dropped it, between the case for the company and the
+   * closing call to action.
+   */
+  after?: string;
 };
 
 export const SERVICE_GROUPS: Record<string, ServiceGroup> = {
   "mobile-car-wash": {
-    heading: "Our Car Wash Services",
+    /* "add in here, and change the title to 'other' instead of 'our'" —
+       client, 2026-09-22, arrow drawn on the seam above the gold "A Mobile
+       Car Wash Near You" band. That is the end of the "Why Choose" run, and
+       the whole page is one source section, so the cut falls inside it. */
+    heading: "Other Car Wash Services",
+    after: "Why Choose Medusa Auto Detailing?",
     services: [
       "mobile-car-wash/exterior-wash",
       "mobile-car-wash/alloy-wheel-cleaning",
@@ -46,17 +59,25 @@ export const SERVICE_GROUPS: Record<string, ServiceGroup> = {
     ],
   },
   "car-detailing": {
-    heading: "Our Car Detailing Services",
+    /* "Instead of 'Our', add in 'Other' on this /car-deatiling page" —
+       client, 2026-09-22. Only this page: it is the one whose band sits in
+       the middle of its own packages rather than after them, so "Other" is
+       what tells the reader these are not the five levels above. */
+    heading: "Other Car Detailing Services",
+    after: "Why Choose Medusa Auto Detailing?",
     services: [
       "car-detailing/ceramic-coating",
       "car-detailing/machine-polish",
       "car-detailing/windscreen-protection",
     ],
   },
-  "car-valeting": {
-    heading: "Our Car Valeting Services",
-    services: ["car-valeting/mini-valet", "car-valeting/premium-full-valet"],
-  },
+  /*
+    `/car-valeting` is deliberately absent. Its two services were a band here
+    until 2026-09-22, when the client asked for them inside the existing
+    "MORE VALETING PACKAGES" row instead — "add the to the existing area
+    here". They are two more tiles in that row now, added by
+    `content/overrides.ts`, so there is nothing for this file to render.
+  */
   "commercial-valeting": {
     heading: "Our Commercial & Fleet Services",
     services: [
@@ -95,11 +116,12 @@ function navItemFor(slug: string, owner: string): NavItem {
 /** The band of cards a page carries, or null for the 301 pages that carry none. */
 export function serviceCardsFor(
   slug: string,
-): { heading: string; cards: HubCard[] } | null {
+): { heading: string; after?: string; cards: HubCard[] } | null {
   const group = SERVICE_GROUPS[slug];
   if (!group) return null;
   return {
     heading: group.heading,
+    after: group.after,
     cards: cardsFrom(
       group.services.map((s) => navItemFor(s, slug)),
       { owner: slug },

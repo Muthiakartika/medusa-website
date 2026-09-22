@@ -45,8 +45,9 @@ export const BUSINESS = {
 
 /**
  * A menu entry. `href` is optional for a column head: "Services" is a label
- * that only opens the mega-menu and "Other Vehicles" heads a column with no
- * page of its own, so both render as plain text rather than as a link to a 404.
+ * that only opens the mega-menu, so it renders as plain text rather than as a
+ * link to a 404. Every column head is a link now — "Other Vehicles" was the
+ * last one that was not, and got its page on 2026-09-22.
  *
  * No *leaf* is href-less any more. Three were - Soft Top Redye & Restoration,
  * Motorhome Cleaning and Van Valeting - and the client had them removed on
@@ -168,7 +169,12 @@ export const NAV: NavItem[] = [  { label: "Home", href: "/" },
         ],
       },
       {
+        /* Client, 2026-09-22: "We need to create a page for Other Vehicles
+           as well, which will include the children". `app/vehicles` builds it
+           out of these two pages' own copy, so the head is a link now rather
+           than a heading — the third column to get one. */
         label: "Other Vehicles",
+        href: "/vehicles",
         children: [
           { label: "Caravan Cleaning", href: "/vehicles/caravan-cleaning" },
           { label: "Motorcycle Valeting & Detailing", href: "/vehicles/motorcycle-valeting-detailing" },

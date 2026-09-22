@@ -16,10 +16,11 @@ The clone is **content-identical by design**. Every word, price, phone number
 and photograph comes from the live site. What this project changes is the
 *layout*, not the *content*.
 
-- **305 routes.** 254 in `src/content/pages.json` — the homepage is one of
-  them, keyed `""` — plus the two **menu-group hubs**, `/repairs` and
-  `/car-interior-cleaning`, and the **49 planned location pages**, all of which
-  have no source page and are built out of pages that do (§5).
+- **306 routes.** 254 in `src/content/pages.json` — the homepage is one of
+  them, keyed `""` — plus the three **menu-group hubs**, `/repairs`,
+  `/car-interior-cleaning` and `/vehicles`, and the **49 planned location
+  pages**, all of which have no source page and are built out of pages that do
+  (§5).
 - **No trailing slashes**, since 2026-09-19. The client asked for it - "I think
   URLs without a trailing dash is better" - so `next.config.ts` leaves
   `trailingSlash` at its default and `/mobile-car-wash/bronze-wash/` 308s to
@@ -177,6 +178,17 @@ at build rather than passing quietly.
 
 When the live site catches up, **delete** the rule instead of editing it; the
 next `npm run content` brings the same value in from the mirror.
+
+The other kind of correction the client asks for is a cut. `/car-detailing`
+carried its LEVEL 1–5 packages three times over — as priced cards, as named
+descriptions, and as a bare row of five `LEVEL n` links with nothing else in
+them — and on 2026-09-22 the third of those went: "remove the level 1 2 3 4 5,
+its a duplicate". `dropBareLevelRow` matches that row on shape, a cell of
+exactly an h3 reading "LEVEL n" and an h4, so the priced row cannot match it;
+and the page loses **no text at all** by it, which the content-conservation
+check in §9 confirms — every word was already on the page twice. It also
+carried a source error the other two rows do not: its LEVEL 2 was labelled
+ENHANCEMENT, which is LEVEL 3's name.
 
 One of those two retired tiers lost its last foothold on 2026-09-22: "Remove
 bronze wash from menu". `/mobile-car-wash/bronze-wash` still renders and still
@@ -424,11 +436,45 @@ Three tiers, cheapest first:
    either — the client asked for the service pages' version of that section so
    a hub does not repeat the homepage.
 
-   `lib/hubs.ts` holds one `HubSpec` per hub and both routes are four lines
-   over `HubPage`. A third is that spec, an `href` on its NAV group, and the
-   slug in two more places: because a hub is not in `pages.json` it is **not**
-   in `CUSTOM_ROUTES` — there is no duplicate to exclude — and it has to be
-   named in `app/sitemap.ts` and in `scripts/verify.mjs`'s `EXTRA_ROUTES`.
+   `lib/hubs.ts` holds one `HubSpec` per hub and each route is four lines over
+   `HubPage`. A new one is that spec, an `href` on its NAV group, and the slug
+   in two more places: because a hub is not in `pages.json` it is **not** in
+   `CUSTOM_ROUTES` — there is no duplicate to exclude — and it has to be named
+   in `app/sitemap.ts` (in `HUBS`) and in `scripts/verify.mjs`'s
+   `EXTRA_ROUTES`.
+
+   **`/vehicles` is the third**, added 2026-09-22: "We need to create a page for
+   Other Vehicles as well, which will include the children". It is the smallest
+   group — a caravan page and a motorcycle page, neither quoting a price, so
+   both cards carry the quote button — and it needed two things the first two
+   did not:
+
+   - **`runTogether` in `hubReasons`.** The caravan page is the group's only
+     one with a "Why Choose Medusa Auto Detailing?" row and it writes its four
+     reasons as bold labels and sentences inside a **single `<br>`-joined
+     paragraph** rather than as a list. Splitting on the breaks and handing the
+     fragments to the same parser reads them as written. Two of the four name
+     caravans in their labels, which is this group's version of the leather
+     problem on `/car-interior-cleaning` (§10).
+   - **`servicesHeading`.** "Our " + "Other Vehicles" + " Services" is two
+     determiners deep and reads like a typo, so this hub says "Our Services for
+     Other Vehicles". The other two keep the pattern.
+
+   Its questions are all from the motorcycle page, the only one in the group
+   with a real `faq` block — so the accordion says nothing about caravans. Its
+   coverage chips come from the caravan page's "Mobile Caravan Valeting Near
+   You" paragraph, the only one the group points a region at. Both are the
+   ordinary limit of building a page out of two children, and both take one
+   line of `lib/hubs.ts` to replace when the client writes copy.
+
+   `cardImages` names both photographs, because the two pages share an OG image
+   and neither card could be photographed by rule without printing the same
+   picture twice. The motorcycle one also carries a crop point, which is why
+   `cardImages` takes `{ src, position }` as well as a bare string: the site's
+   one motorcycle picture is a 1024x1536 poster with its title baked across the
+   top third and a services list across the bottom, and a 3:2 card centred on
+   it shows the bike **and** "OUR MOTORCYCLE VALETING & DETAILING SER-" clipped
+   mid-word along its foot. At `50% 30%` the crop is the bike and nothing else.
 
    The questions come from real `faq` blocks where the group has them — the
    interior pages carry twenty-one between three of the nine — and fall back to
@@ -452,6 +498,8 @@ Three tiers, cheapest first:
    its seven, `/car-detailing` five of its eight, and `/commercial-valeting`
    none of its three. So a card never repeats a package the page already sells;
    the band closes the gap between a menu column and the page under it.
+   `/car-valeting` is no longer in that file — see below — so three pages have
+   a band and the fourth has two more tiles in a row it already had.
 
    Its `navItemFor()` searches the **whole** menu rather than one column,
    because a service is not always in the column of the page that shows it:
@@ -460,13 +508,54 @@ Three tiers, cheapest first:
    throws when a slug is not in the menu, so no card can carry a name this
    repo invented.
 
-   **Where it sits: last of the page's own bands, above the closing one.** A
-   hub puts its grid above its questions and two of these three service pages
-   cannot — their FAQ row is part of the source body, so "above the questions"
-   would mean cutting the body in two and restarting the gold/ink alternation
-   mid-page. One position that holds on all four beats a rule that reads
-   differently on each. On `/commercial-valeting` that is after the fleet list
-   and before the enquiry form, so the page still closes on the way to ask.
+   **Where it sits: last of the page's own bands, above the closing one** —
+   after the fleet list and before the enquiry form on `/commercial-valeting`,
+   so the page still closes on the way to ask a price. That is the default
+   because two of these pages carry their FAQ row inside the source body, and
+   "above the questions", which is where a hub puts its grid, would mean
+   cutting the body in two.
+
+   **Two of the four ask for exactly that cut**, so `ServiceGroup.after`
+   exists: name a heading and the frame renders the body in two `Sections`
+   calls with the band between them. `/car-detailing` first — "on cardetailing,
+   place it here where its black", the slot its duplicate LEVEL 1–5 row left
+   when the same message had it dropped (§4) — and then `/mobile-car-wash`,
+   "add in here", an arrow drawn on the seam above its gold "A Mobile Car Wash
+   Near You" band. Both cuts fall after the "Why Choose Medusa Auto Detailing?"
+   run, which is a coincidence of where the client pointed rather than a rule.
+
+   **`splitAfter` cuts blocks, not sections**, because those two pages are not
+   built the same way: `/car-detailing` writes its eight rows as eight sections
+   and `/mobile-car-wash` writes its ten as **one** (§5, "Rows into sections").
+   The cut falls immediately before the next top-level heading — a boundary
+   `group()` would have cut on anyway, so both halves regroup into the bands
+   the whole body did. The heading is matched, never an index, and a heading
+   that is no longer there throws rather than quietly putting the band back at
+   the foot of the page.
+   The second half simply starts gold, which is what a fresh `alternate` call
+   does anyway — the band between the halves is an ink row, so whatever colour
+   the first half ended on, the row after the band wants the gold. A
+   `startGold` prop was written for this and thrown away: it could only ever
+   have been passed `true`.
+
+   Both of those pages say **"Other**", not "Our" — "Instead of 'Our', add in
+   'Other' on this /car-deatiling page", then the same for the car wash band an
+   hour later. It is the two pages whose band sits among their own packages
+   rather than after them, and "Other" is what tells a reader these are not the
+   levels or tiers above. `/commercial-valeting` still says "Our", because
+   nothing on that page precedes it.
+
+   **`/car-valeting` has no band at all.** "for car valeting page, add the to
+   the existing area here", against the gold "MORE VALETING PACKAGES" row — so
+   its two services are two more tiles *in* that row, added by
+   `content/overrides.ts` in the shape its seven already have (`h2`, `h5`, Read
+   More, Book Now), which is what lets `asCardRow` merge all nine into one grid
+   at one card size. Nothing is written there either: the title is the client's
+   own menu label in the capitals the row is written in, the sentence is the
+   page's own opening paragraph, the Read More label is filled in by
+   `nameReadMoreLinks`, and the photograph is named in `VALETING_TILES` beside
+   the other seven. Both pages share an OG image and a header background, so
+   neither photograph could be picked by rule.
 
    The grid caps its track at 400px (`auto-fit`) instead of dividing the shell,
    because a two-card row at `grid-cols-2` was 615px a card on a page whose

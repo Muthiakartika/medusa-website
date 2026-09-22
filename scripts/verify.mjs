@@ -18,7 +18,7 @@ const pages = JSON.parse(fs.readFileSync(PAGES_JSON, 'utf8'));
 /* Routes the app serves that have no entry in pages.json, so the loop below
    cannot see them. Each menu-group hub is built out of the pages it links to
    — see lib/hubs.ts. */
-const EXTRA_ROUTES = ['/repairs', '/car-interior-cleaning'];
+const EXTRA_ROUTES = ['/repairs', '/car-interior-cleaning', '/vehicles'];
 
 /* The 49 location pages the SEO plan asks for that the mirror has no page for.
    Like the redirect table below, they are read out of the TypeScript rather
