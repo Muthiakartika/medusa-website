@@ -35,7 +35,7 @@
  */
 
 import type { Block, Page, Section } from "@/lib/blocks";
-import { localPlace } from "@/lib/local-copy";
+import { HUB_LINES, localPlace } from "@/lib/local-copy";
 
 type Family = "wash" | "valeting" | "detailing";
 
@@ -505,6 +505,98 @@ function dropTables(sections: Section[]) {
   return sections.map((s) => ({ ...s, blocks: walk(s.blocks) }));
 }
 
+/**
+ * The page's own question, added to the accordion it already carries.
+ *
+ * Appended rather than prepended: the hub's questions are about the service
+ * and this one is about the place, which is the note to end on. Throws when
+ * there is no accordion to add it to, for the same reason `pruneQuestions`
+ * throws — a question that quietly went nowhere is a page that quietly went
+ * out shorter than the one beside it.
+ */
+function addQuestion(sections: Section[], item: { q: string; a: string[] }, slug: string) {
+  let added = false;
+  const walk = (blocks: Block[]): Block[] =>
+    blocks.map((b) => {
+      if (b.type === "columns") return { ...b, cols: b.cols.map(walk) };
+      if (b.type !== "faq" || added) return b;
+      added = true;
+      return { ...b, items: [...b.items, { q: item.q, a: [...item.a] }] };
+    });
+  const out = sections.map((s) => ({ ...s, blocks: walk(s.blocks) }));
+  if (!added) throw new Error(`planned-locations: ${slug} has no faq block to add a question to`);
+  return out;
+}
+
+/**
+ * The page's second band of its own copy, put in above the questions.
+ *
+ * The run order is the hub's, and the hub closes on its accordion, so "before
+ * the section holding the `faq` block" is the foot of the service copy — the
+ * page reads local, then the service it is selling, then local again, then the
+ * questions. Matched on the block rather than on an index, the way every rule
+ * in `content/overrides.ts` is.
+ */
+function insertBeforeFaq(sections: Section[], band: Section, slug: string) {
+  const has = (blocks: Block[]): boolean =>
+    blocks.some((b) => (b.type === "columns" ? b.cols.some(has) : b.type === "faq"));
+  const at = sections.findIndex((s) => has(s.blocks));
+  if (at === -1) throw new Error(`planned-locations: ${slug} has no faq row to sit above`);
+  return [...sections.slice(0, at), band, ...sections.slice(at)];
+}
+
+/**
+ * The hub's sentences about London, rewritten to name this page's own place.
+ *
+ * Client, 2026-09-22, on `/car-detailing/watford`: *"the write up here needs to
+ * be customized to suit the area, im on the watford page, and its mentioning
+ * london and hertfordshire"*. The rewrites themselves are in `HUB_LINES` in
+ * `lib/local-copy.ts`, which is where every written word on this site lives;
+ * this is only the pass that applies them.
+ *
+ * **Every rule must fire.** A hub is mirrored content and `npm run content`
+ * rewrites it wholesale, so a rule whose sentence has moved or been reworded
+ * would otherwise go quiet and put "London" back on 118 pages. It throws
+ * instead, naming the rule — the same contract `pruneQuestions` and every rule
+ * in `content/overrides.ts` keep.
+ */
+function localiseHubLines(sections: Section[], family: Family, place: string, slug: string) {
+  const fired = new Set<string>();
+  const swap = (s: string) => {
+    let out = s;
+    for (const line of HUB_LINES[family]) {
+      if (!out.includes(line.find)) continue;
+      fired.add(line.find);
+      out = out.split(line.find).join(line.write(place));
+    }
+    return out;
+  };
+
+  const walk = (blocks: Block[]): Block[] =>
+    blocks.map((b) => {
+      switch (b.type) {
+        case "columns":
+          return { ...b, cols: b.cols.map(walk) };
+        case "paragraph":
+          return { ...b, html: swap(b.html) };
+        case "heading":
+          return { ...b, text: swap(b.text) };
+        case "list":
+          return { ...b, items: b.items.map(swap) };
+        case "faq":
+          return { ...b, items: b.items.map((i) => ({ q: swap(i.q), a: i.a.map(swap) })) };
+        default:
+          return b;
+      }
+    });
+
+  const out = sections.map((s) => ({ ...s, blocks: walk(s.blocks) }));
+  for (const line of HUB_LINES[family])
+    if (!fired.has(line.find))
+      throw new Error(`planned-locations: ${slug} carries no hub line "${line.find.slice(0, 60)}…"`);
+  return out;
+}
+
 /** The same sections with `drop`'s questions gone from every `faq` block. */
 function pruneQuestions(sections: Section[], drop: string[], hub: string) {
   if (drop.length === 0) return sections;
@@ -577,6 +669,14 @@ export function buildPlannedLocations(pages: Record<string, Page>): Record<strin
     const local = localPlace(slug);
     if (!local) throw new Error(`planned-locations: no local copy for ${slug} — add it to lib/local-copy.ts`);
 
+    /*
+      The per-service half, where it has been written (2026-09-22). Optional:
+      126 pages build from this list and only the 49 of round one were on the
+      client's Ahrefs-verified list, so a page without an entry builds as it
+      did before rather than throwing.
+    */
+    const svc = local.services?.[family];
+
     /* Rotated by position within the family, so two neighbouring places do
        not open on the same picture. */
     const pool = PHOTOS[family];
@@ -639,6 +739,13 @@ export function buildPlannedLocations(pages: Record<string, Page>): Record<strin
         */
         {
           blocks: [
+            /*
+              An H2 over it, from 2026-09-22. This band had none at all — the
+              page went straight from the district chips to a rule and two
+              paragraphs, so its own copy was the only run on the page that no
+              heading introduced.
+            */
+            ...(svc ? [{ type: "heading", level: 2, text: svc.heading } as Block] : []),
             {
               type: "columns",
               spans: [7, 5],
@@ -657,15 +764,33 @@ export function buildPlannedLocations(pages: Record<string, Page>): Record<strin
             },
           ],
         },
-        ...foldHeadings(
-          dropTables(
-            pruneQuestions(
-              plan.keep.flatMap((name) => cut.get(norm(name))!),
-              plan.dropQuestions,
-              plan.hub,
+        ...(() => {
+          const runs = foldHeadings(
+            dropTables(
+              pruneQuestions(
+                localiseHubLines(
+                  plan.keep.flatMap((name) => cut.get(norm(name))!),
+                  family,
+                  place,
+                  slug,
+                ),
+                plan.dropQuestions,
+                plan.hub,
+              ),
             ),
-          ),
-        ),
+          );
+          if (!svc) return runs;
+          return insertBeforeFaq(
+            addQuestion(runs, svc.faq, slug),
+            {
+              blocks: [
+                { type: "heading", level: 2, text: svc.detail.heading },
+                ...svc.detail.body.map((html) => ({ type: "paragraph", html }) as Block),
+              ],
+            },
+            slug,
+          );
+        })(),
         /*
           The districts around this one, as the heading `location-frame.ts`
           already recognises — it renders them as chips, the way it does the

@@ -32,7 +32,7 @@
  * global endpoint below answers 401; that is the one line to change.
  */
 
-import { BUSINESS, CONTACT, SITE } from "@/lib/site";
+import { BUSINESS, CONTACT, FOOTER, SITE } from "@/lib/site";
 
 const ENDPOINT = "https://api.sendgrid.com/v3/mail/send";
 
@@ -191,33 +191,141 @@ function textBody(enquiry: Enquiry): string {
   return lines.join("\n");
 }
 
+/* ── The HTML half ────────────────────────────────────────────────────── */
+
 /**
- * The HTML half, kept to table layout and inline styles because that is what
- * survives a mail client. No colour from the design system: this is read in
- * Gmail and Outlook, not on the site.
+ * The site's own palette, since this is the business reading its own post.
+ * Same values as `globals.css`, written out because an email cannot reach a
+ * stylesheet — every rule here has to be inline on the element it styles.
+ */
+const INK = "#0d0d0d";
+const GOLD = "#c19231";
+const GOLD_BRIGHT = "#edb326";
+const PAGE = "#f4f4f5";
+const TEXT = "#141414";
+const MUTED = "#6f6f6f";
+const HAIRLINE = "#e6e6e6";
+
+/** Arial and Helvetica, because a mail client will not load a web font. */
+const FONT = "Helvetica,Arial,sans-serif";
+
+/**
+ * The logo is `FOOTER.logo`, not the header's — the header's is a `.webp`,
+ * which Outlook renders as a broken image, and this one is the same mark as a
+ * PNG. It is white and gold on transparency, so it is only legible on the ink
+ * band it sits in; with images blocked, the `alt` text stands in as a gold
+ * wordmark rather than as a grey box.
+ */
+const LOGO = `${SITE}${FOOTER.logo}`;
+
+/**
+ * Table layout and inline styles throughout, which is what survives Gmail,
+ * Outlook and Apple Mail. Two structural choices worth knowing:
+ *
+ * - **Each field stacks its label over its value** rather than sitting in a
+ *   label column. A two-column table needs `white-space:nowrap` on the label
+ *   to stay readable, and "Please upload photos of your vehicle (optional)"
+ *   then forces the value column down to nothing on a phone.
+ * - **The preheader** is the grey line Gmail prints beside the subject in the
+ *   inbox list. Left alone it takes whatever text comes first — here, the
+ *   logo's `alt`. Given one, the list row says who wrote and from where.
  */
 function htmlBody(enquiry: Enquiry): string {
-  const rows = Object.entries(enquiry.fields)
+  const who = enquiry.from?.name?.trim() || enquiry.from?.email || "Website visitor";
+  const url = SITE + enquiry.page;
+
+  const fields = Object.entries(enquiry.fields)
     .map(
-      ([label, value]) => `<tr>
-    <td style="padding:10px 16px 10px 0;vertical-align:top;color:#666;font-size:13px;white-space:nowrap">${esc(label)}</td>
-    <td style="padding:10px 0;vertical-align:top;color:#111;font-size:15px">${esc(value).replace(/\n/g, "<br>")}</td>
-  </tr>`,
+      ([label, value], i) => `
+              <tr><td style="padding:${i ? "18px" : "0"} 0 0;">
+                <div style="font:600 11px/1.4 ${FONT};letter-spacing:.14em;text-transform:uppercase;color:${GOLD};">${esc(label)}</div>
+                <div style="margin-top:6px;font:400 16px/1.55 ${FONT};color:${TEXT};">${esc(value).replace(/\n/g, "<br>")}</div>
+              </td></tr>
+              <tr><td style="padding-top:18px;"><div style="height:1px;background:${HAIRLINE};line-height:1px;font-size:0;">&nbsp;</div></td></tr>`,
     )
-    .join("\n");
+    .join("");
+
+  /* A real button, so answering is one tap from the phone the enquiry is read
+     on. Only when the form actually carried an email field. */
+  const reply = enquiry.from
+    ? `
+              <tr><td style="padding-top:28px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+                  <td style="background:${GOLD};border-radius:999px;">
+                    <a href="mailto:${esc(enquiry.from.email)}" style="display:inline-block;padding:14px 30px;font:700 14px/1 ${FONT};letter-spacing:.06em;text-transform:uppercase;color:${INK};text-decoration:none;">Reply to ${esc(who)}</a>
+                  </td>
+                </tr></table>
+              </td></tr>`
+    : "";
 
   return `<!doctype html>
-<html lang="en"><body style="margin:0;padding:24px;background:#f5f5f5;font-family:Helvetica,Arial,sans-serif">
-<table role="presentation" cellpadding="0" cellspacing="0" style="max-width:640px;margin:0 auto;background:#fff;border-radius:10px;padding:28px">
-  <tr><td>
-    <p style="margin:0 0 4px;font-size:18px;font-weight:600;color:#111">${esc(subjectFor(enquiry))}</p>
-    <p style="margin:0 0 20px;font-size:13px;color:#666">
-      ${esc(enquiry.form)} &middot; ${esc(stamp(enquiry.submittedAt))}<br>
-      <a href="${esc(SITE + enquiry.page)}" style="color:#9a7222">${esc(SITE + enquiry.page)}</a>
-    </p>
-    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-top:1px solid #e6e6e6">
-${rows}
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light only">
+<title>${esc(subjectFor(enquiry))}</title>
+</head>
+<body style="margin:0;padding:0;background:${PAGE};">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${esc(who)} &middot; ${esc(enquiry.page)} &middot; ${esc(stamp(enquiry.submittedAt))}</div>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${PAGE};">
+  <tr><td align="center" style="padding:28px 16px;">
+
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:100%;max-width:600px;border-radius:14px;overflow:hidden;background:#ffffff;">
+
+      <!--
+        Ink band: the mark, on the only background it reads on. Nothing is set
+        beside it — the badge already carries the wordmark and the
+        "Enhance · Protect · Maintain" line inside the artwork, so a caption
+        under it would print the same words twice. 124px is the size at which
+        that inner line is legible; below about 100 it silts up.
+      -->
+      <tr><td align="center" style="background:${INK};padding:36px 24px 34px;">
+        <img src="${LOGO}" width="124" height="124" alt="Medusa Auto Detailing" style="display:block;border:0;width:124px;height:124px;color:${GOLD};font:700 17px/124px ${FONT};letter-spacing:.12em;text-align:center;">
+      </td></tr>
+
+      <!-- Gold rule, the site's own seam between an ink band and what follows. -->
+      <tr><td style="background:${GOLD};height:4px;line-height:4px;font-size:0;">&nbsp;</td></tr>
+
+      <!-- Who, and where from. -->
+      <tr><td style="padding:34px 32px 0;">
+        <div style="font:700 11px/1.4 ${FONT};letter-spacing:.2em;text-transform:uppercase;color:${GOLD};">New website enquiry</div>
+        <div style="margin-top:10px;font:700 26px/1.25 ${FONT};color:${TEXT};">${esc(who)}</div>
+        <div style="margin-top:10px;font:400 13px/1.6 ${FONT};color:${MUTED};">
+          ${esc(stamp(enquiry.submittedAt))}<br>
+          <a href="${esc(url)}" style="color:${MUTED};text-decoration:underline;">${esc(url)}</a>
+        </div>
+      </td></tr>
+
+      <tr><td style="padding:26px 32px 0;">
+        <div style="height:1px;background:${HAIRLINE};line-height:1px;font-size:0;">&nbsp;</div>
+      </td></tr>
+
+      <!-- What they wrote. -->
+      <tr><td style="padding:26px 32px 34px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${fields}${reply}
+        </table>
+      </td></tr>
+
+      <!-- Ink foot: how to reach them the other way. -->
+      <tr><td style="background:${INK};padding:26px 32px;" align="center">
+        <div style="font:400 13px/1.7 ${FONT};color:#b4b4b4;">
+          <a href="tel:${esc(CONTACT.phone)}" style="color:${GOLD_BRIGHT};text-decoration:none;font-weight:700;">${esc(CONTACT.phone)}</a>
+          &nbsp;&middot;&nbsp;
+          <a href="mailto:${esc(CONTACT.email)}" style="color:${GOLD_BRIGHT};text-decoration:none;">${esc(CONTACT.email)}</a>
+        </div>
+        <div style="margin-top:10px;font:400 11px/1.6 ${FONT};color:#6a6a6a;">
+          ${esc(FOOTER.legalName)} &middot; ${esc(FOOTER.registration)}
+        </div>
+      </td></tr>
+
     </table>
+
+    <div style="margin-top:18px;font:400 11px/1.5 ${FONT};color:#9a9a9a;">
+      Sent by the enquiry form on ${esc(SITE.replace(/^https?:\/\//, ""))}
+    </div>
+
   </td></tr>
 </table>
 </body></html>`;

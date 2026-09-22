@@ -1,5 +1,12 @@
 import type { Block, Page, Section } from "@/lib/blocks";
 import { LOCAL_PLACES } from "@/lib/local-copy";
+import {
+  MIRROR_AUDIT,
+  MIRROR_FIXES,
+  applyMirrorEdits,
+  districtsRow,
+  promoteSections,
+} from "@/lib/local-mirror";
 
 /**
  * Corrections applied on top of `pages.json`.
@@ -689,6 +696,21 @@ const RULES: Record<string, (page: Page) => void> = {
     for (const name of RETIRED_WASHES) {
       dropColumns(page, headed(name));
     }
+    /*
+      A word the source doubled — "we bring that experience and experience to
+      every job" — live on the client's WordPress site and in `.cache/html`, so
+      it is theirs rather than an extraction artefact. Repo owner asked for it
+      corrected, 2026-09-22. Dropping the repeat is the whole fix: the likely
+      intended word was "expertise", but that is a guess and this is not.
+
+      `HUB_LINES.wash` in `lib/local-copy.ts` matches this sentence *after* the
+      correction — overrides run first — so the two have to move together.
+    */
+    swap(
+      page.sections.flatMap((s) => s.blocks),
+      "that experience and experience to every job",
+      "that experience to every job",
+    );
     swap(page.sections.flatMap((s) => s.blocks), "£48-£60", "£59-£73");
     swap(page.sections.flatMap((s) => s.blocks), "£90-£120", "£115-£145");
     swap(page.sections.flatMap((s) => s.blocks), "£41-£52", "£49-£65");
@@ -814,6 +836,20 @@ const RULES: Record<string, (page: Page) => void> = {
 
   "car-detailing": (page) => {
     dropBareLevelRow(page);
+    /*
+      The hub counts its own packages wrong, and has since Mini Car Detail was
+      added as LEVEL 2: the row prices five — New Car / Protection, Mini Car
+      Detail, Enhancement, Correction, Perfection — and the sentence over it
+      still says four. The page's own FAQ names the original four, which is
+      where the number came from. Repo owner asked for it corrected,
+      2026-09-22; it reaches the 72 built detailing location pages too, which
+      all carry the same five cards.
+    */
+    swap(
+      page.sections.flatMap((s) => s.blocks),
+      "four distinct detailing packages",
+      "five distinct detailing packages",
+    );
   },
 
   "car-valeting": (page) => {
@@ -926,6 +962,41 @@ export function applyOverrides(
   );
 
   for (const [slug, fn] of Object.entries(RULES)) patch(slug, fn);
+
+  /*
+    The location-page copy audit, 2026-09-22 (`lib/local-mirror.ts`).
+
+    Three passes over each of the 75 mirror pages on the client's
+    Ahrefs-verified list: the section titles the source wrote below `h2` go
+    back to `h2`, the renames and typo corrections are applied, and the page
+    gains the districts row every built location page already carries.
+
+    Counted, and it throws on nothing having happened: these rules match on
+    text that `npm run content` rewrites wholesale, and the failure that
+    matters is the silent one.
+  */
+  let audited = 0;
+  for (const slug of MIRROR_AUDIT) {
+    if (!out[slug]) throw new Error(`content override: no page "${slug}" to audit`);
+    patch(slug, (p) => {
+      const n = promoteSections(p) + applyMirrorEdits(p, slug) + (districtsRow(p, slug) ? 1 : 0);
+      if (n) audited++;
+    });
+  }
+  if (!audited) throw new Error("content override: the location audit changed nothing");
+
+  /*
+    The four borough hubs outside London, 2026-09-22. Text correction only —
+    they keep their own heading ranks and their own areas row, so none of the
+    audit's other two passes applies. `applyMirrorEdits` throws on a rule that
+    matched nothing, which is the whole guard here.
+  */
+  for (const slug of MIRROR_FIXES) {
+    if (!out[slug]) throw new Error(`content override: no page "${slug}" to correct`);
+    patch(slug, (p) => {
+      if (!applyMirrorEdits(p, slug)) throw new Error(`content override: ${slug} took no correction`);
+    });
+  }
 
   for (const slug of Object.keys(out)) {
     const carriesTriton = allBlocks(out[slug]).some(

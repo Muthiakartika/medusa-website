@@ -198,6 +198,38 @@ to it now. Exterior Wash is the other retired tier and is **not** in the same
 position: it is still sold, and since 2026-09-22 it has a card of its own on
 `/mobile-car-wash` (§5).
 
+**A third kind arrived 2026-09-22: three plain errors the mirror ships**, which
+the repo owner asked for corrected after the location audit turned them up.
+None is a client request and none invents anything; each is matched on exact
+source text and throws on a miss, like every other rule here.
+
+| Where | The mirror says | Now | Reaches |
+| --- | --- | --- | --- |
+| `/car-detailing` | "**four** distinct detailing packages" | "five" | the hub + 72 built detailing pages |
+| `/mobile-car-wash` | "we bring that **experience and experience** to every job" | "that experience" | the hub + 27 built wash pages |
+| 4 borough hubs | "All areas we cover **in London** are highlighted on the map, if **you're** location isn't covered" | the page's own place, and "your" | `/our-locations/{watford,slough,buckinghamshire,hertfordshire}` |
+
+The package count was right until Mini Car Detail was added as LEVEL 2 and the
+sentence over the row was not updated; the hub's own FAQ still names the
+original four, which is where the number came from. The doubled word is in
+`.cache/html` as well as live, so it is the client's rather than the
+extractor's — and the fix is to drop the repeat rather than to guess at
+"expertise".
+
+The caption is on all nineteen `/our-locations/*` hubs and the homepage, and is
+**correct on the other fifteen**: the map on a Camden page is of London. Only
+the four outside it were touched, and only the sentence — the heading above it
+says "IN LONDON & SURROUNDING AREAS", which is true everywhere. The other
+fifteen keep the `you're` typo, which is a separate call.
+
+They live where the shape of each one belongs: the two hub errors in `RULES` in
+this file, the four captions in `MIRROR_EDITS` in `lib/local-mirror.ts` under
+`MIRROR_FIXES`, a set that takes `applyMirrorEdits` and none of the audit's
+other passes — a borough hub already has its own heading ranks and its own
+areas row. **One coupling worth knowing:** `HUB_LINES.wash` matches the wash
+sentence *after* this correction, because overrides run before
+`buildPlannedLocations`. Move one and the other throws.
+
 Prices also live in `lib/site.ts`, which the homepage sections read. A price
 change usually has to be made in both places.
 
@@ -577,10 +609,43 @@ Three tiers, cheapest first:
    the named runs are carried. Two things are left behind on purpose: each hub's
    closing row, which lists the London boroughs the company covers, and the one
    FAQ question per hub that prices the service "in London" — on a Kent page
-   both would be a claim about the wrong place. **What remains is the same
-   service copy on all 49, differing only in the place name.** That is the limit
-   of building a page with nothing written about the place; per-place copy from
-   the client replaces it one hub at a time.
+   both would be a claim about the wrong place. **What those runs are is the
+   same service copy on all 49, differing only in the place name** — the price
+   ladder, the add-ons and the questions, which are the same service wherever it
+   is sold.
+
+   Around them the page is its own. `lib/local-copy.ts` supplies the header
+   paragraph, an H2 and a band beside the hub's service description, a second
+   band above the questions, a coverage question inside them, and the districts
+   row that closes the copy — per *(place × service)* since 2026-09-22, so a
+   place that carries all three services gets three different pages rather than
+   one page three times (§10). Written copy from the client replaces any of it
+   one entry at a time.
+
+   **And the hub's own sentences about London are rewritten to name the page's
+   place.** Client, 2026-09-22, on `/car-detailing/watford`: "the write up here
+   needs to be customized to suit the area, im on the watford page, and its
+   mentioning london and hertfordshire". They were reading the hub's opener to
+   its price ladder — "four distinct detailing packages to our customers in
+   London and Hertfordshire" — which every page of that family carried
+   verbatim. **Eight sentences across the three hubs put a London claim on 118
+   of the 126 pages**; `HUB_LINES` in `lib/local-copy.ts` is the rewrite of each
+   one and `localiseHubLines()` in `planned-locations.ts` applies them.
+
+   A rewrite moves the geography and nothing else: every claim the source makes
+   — the twenty years, the 100% satisfaction rating, the standing, the four
+   packages — survives with its scope intact. Where a sentence dates the
+   business *by* London ("across London for more than 20 years") the duration is
+   kept unqualified and the place named as somewhere the work is done, because
+   re-scoping it would claim twenty years in Watford, which is a fact about the
+   business no page supports (§8, rule 1). The wash rule's needle is the
+   sentence **as `overrides.ts` leaves it** — that file corrects a word the
+   mirror doubled, and it runs first (§4).
+
+   **Every rule must fire on every page of its family**, or the build throws. A
+   hub is regenerated wholesale by `npm run content`, so a sentence that has
+   moved or been reworded would otherwise go quiet and put "London" back on 118
+   pages. Audited across all 126: **0 pages naming a place they are not about.**
 
 Prefer tier 1, then 2. Tier 3 is a maintenance cost — each one is a second
 place the content lives.
@@ -1033,10 +1098,38 @@ These come from the repo owner and have each been enforced after a mistake:
    response times, no customer counts, no years in a place, no prices, no
    awards. Those are claims the client has to answer for.
 
+   **A second file joined it later the same day: `src/lib/local-mirror.ts`**,
+   for the 75 mirror location pages on the client's Ahrefs-verified list. Its
+   scope is narrower again — see rule 2 — and the same guardrail applies to
+   every word in it. The two files together are the whole of the written word
+   on this site; nothing else anywhere may grow a sentence.
+
+   **`HUB_LINES`, at the foot of `local-copy.ts`, is the third thing that file
+   holds** and the only one that rewrites the mirror's own words rather than
+   adding to them: eight sentences a service hub writes about London, in the
+   version that names the page's own place (§5). The repo owner chose that on
+   2026-09-22 over dropping the sentences, after the client read one of them on
+   `/car-detailing/watford`. A rewrite moves the geography and nothing else —
+   every claim the source makes keeps the scope the source gave it, which is
+   what keeps this inside the guardrail above rather than a way around it.
+
    The rule stands everywhere else. A section that looks empty is still
    restructured, not filled.
 2. **Do not change content.** Layout only. Copy, casing and punctuation stay
    verbatim — including `London` in a heading that is otherwise uppercase.
+
+   **Narrowed once, 2026-09-22, for the location audit**: on the 75 mirror
+   location pages named in `MIRROR_AUDIT`, a **heading** may be rewritten and a
+   **typo may be corrected**, and nothing else. Asked how far to go, the repo
+   owner chose "Headings + typos only" over rewriting generic paragraphs. So
+   the 188 renames in `lib/local-mirror.ts` are headings, the 169 text rules
+   are repairs to machine-spun English the mirror shipped with ("scrapes and
+   swirls on the lorry's surface area"), and **not one source paragraph was
+   rewritten** — 2,973 of 3,285 text fragments are byte-identical and the other
+   312 are exactly the ones those tables name.
+
+   Heading *levels* are a separate matter and are layout: `promoteSections`
+   moves 136 section titles from `h3`/`h4` to `h2` and changes no words at all.
 3. **A frame that claims a row must render all of it.** `location-frame.ts`
    has a `covers()` guard for exactly this: silently dropping half a row is
    content loss, and it happened.
@@ -1140,16 +1233,54 @@ rendered `<main>`. Known, pre-existing gaps: `asLinkChips` drops commas and
   demand order within each service, so the areas worth the most were built
   first: 47 detailing, 17 wash, 13 valeting, across 61 areas.
 
-  `PLANNED_LOCATIONS` is 126 rows now and `lib/local-copy.ts` covers 73 places.
-  Nothing else changed — the same builder, the same frame, the same audit. The
-  build list and the copy are two files, and adding to either without the other
-  throws at build rather than shipping a page of hub copy under a place name.
+  `PLANNED_LOCATIONS` is 126 rows now and `lib/local-copy.ts` covers 76 places
+  — every one of them, and since later the same day every *(place × service)*
+  pair too. Nothing else changed — the same builder, the same frame, the same
+  audit. The build list and the copy are two files, and adding to either
+  without the other throws at build rather than shipping a page of hub copy
+  under a place name.
 - **The built location pages are local at the top and shared below it.**
   Before 2026-09-22 they shared **100%** of their eight-word sequences with a
   sibling and **48 of the 49** never named their own place below the h1.
   `lib/local-copy.ts` now gives every place two written paragraphs and a row of
   real neighbouring districts, so **126 of 126** name their place, every meta
   description differs, and each page opens on copy about its own town.
+
+  **`services` is the second pass**, later the same day, against the 124 URLs
+  on the client's Ahrefs-verified list. The first pass was per *place*, which
+  left Brentwood's three pages — a wash, a valet and a detail — carrying the
+  same 75 written words as each other; `LocalService` is per *(place ×
+  service)*.
+
+  It adds three things to a page: an **H2 over the opening band**, which until
+  then was the only run on the page that no heading introduced; a **second band
+  of its own copy** above the questions, so the page reads local, then the
+  service, then local again; and the **coverage question** the hub's accordion
+  cannot answer, since the hub's own is the one `dropQuestions` removes for
+  being about London. `addQuestion` and `insertBeforeFaq` both match the `faq`
+  block rather than an index, and both throw when it is not there.
+
+  **It covers all 126 since later the same day.** It went out optional, so the
+  77 round-two pages not on the client's list built as they had — and that is
+  what the client was looking at when they said "its good, just need some h2
+  here" of `/car-detailing/watford`, a round-two page. Its opening band had no
+  heading because that place had no `services` entry. All 126 have one now:
+  **126 entries across 72 places, 252 written headings, all distinct.**
+
+  The measured effect on round two: the median page's overlap with its closest
+  sibling falls from **93% to 75%** — below round one's own 78%, since these
+  were written against a QA pass that round one predates. What remains shared
+  is the price ladder, the add-on catalogue and the FAQ, which are the same
+  service wherever it is sold; the worst pages left are the valeting ones,
+  where the add-ons run alone is 706 words. Going lower means more written copy
+  per place or carrying fewer of the hub's runs, and the second removes
+  content, so it stays the client's call.
+
+  `services` is no longer optional in practice but is still typed that way, so
+  a place added to `PLANNED_LOCATIONS` without one does not throw. The check
+  that catches it is the audit, not the build: every built page's second `<h2>`
+  should be its own, never `Our Mobile Car Detailing Packages`, `A Quick Clean,
+  Inside and Out` or `OUR PACKAGES`.
 
   The header carries one of those paragraphs and no more: all three stacked was
   165 words of header, a screen and a half on a phone, against the 34–73 words
@@ -1183,6 +1314,67 @@ rendered `<main>`. Known, pre-existing gaps: `asLinkChips` drops commas and
   copy. Two levers remain if the client wants the number lower — more written
   copy per place, or carrying fewer of the hub's runs on these pages — and the
   second removes content, so it is the client's call rather than ours.
+- **The mirror location pages were structurally wrong, not thin.** The other 75
+  pages on the client's list come off the mirror, and an audit on 2026-09-22
+  found their prose in much better shape than expected: every one of them names
+  its place below the h1, a median of thirteen times, and the median overlap
+  with a sibling is **35%**. Watford's body names Cassiobury, Croxley Park,
+  Clarendon Road and Nascot Wood. There was nothing to rewrite.
+
+  What was wrong was the markup and a decade-old spinner:
+
+  - **136 section titles on 47 pages were written as `h3` or `h4`** — "How Our
+    Services Work?" on 41 of them, "Why Medusa Auto Detailing?" on nine,
+    "Enhancing Vehicle Longevity in …" on fourteen — so a row's title sat at
+    the same rank as the items inside it and below the rank of the row above
+    it. `promoteSections` puts them back at `h2` and moves the 159 headings
+    under them down by the same amount, floored at 3, because promoting a title
+    without its items only trades an `h2→h3→h3` for an `h2→h4`. **No words
+    change.**
+  - **150 of 339 source H2s never named their page's place.** 188 of them are
+    renamed, at most three per page and only where that row's own body already
+    talks about the town — a page whose every heading names it reads like spam.
+  - **Machine-spun English**, live on the client's site since WordPress: "how
+    do you manage scrapes and swirls on the lorry's surface area" on nine
+    pages, "Just how usually should I have my car valeted" on nine, "Say
+    goodbye to Waiting … Your Hectic Way Of Life" on seven, "Mobile Car Wash
+    **sERVICES**" on one. 169 corrections, each matched on the exact source
+    string. `pattern()` tolerates the `&nbsp;` the extractor keeps mid-sentence
+    on four of these pages, because a literal `includes()` misses it and a
+    missed patch throws.
+
+    **Two rules can shadow each other, and the throw is the only warning.**
+    Headings are applied before text and text rules in order, all against the
+    same mutating page — so a rule whose target an earlier rule has already
+    rewritten matches nothing and takes the build down. It happened twice:
+    once where a text rule aimed at a heading that was also being renamed, and
+    once on `/mobile-car-wash/wimbledon`, where one rule covered sentences 2-3
+    of a paragraph and a later one sentences 1-2, overlapping without either
+    containing the other. Checking each rule against the *pristine* page misses
+    both. The corrections are written one **sentence** at a time for that
+    reason, and the check that matters is a replay of `applyMirrorEdits` in
+    order against a copy.
+  - **No districts row**, where the 126 built pages and the 19 borough hubs all
+    have one. All 75 get `<Place>’s Neighborhoods` out of `LOCAL_PLACES`, which
+    is the shape `location-frame.ts` already renders as the chips under the
+    header. Edgware, Golders Green and Harrow had no entry in `local-copy.ts`
+    and were written for this.
+
+    The guard is keyed to **the page's own place name**, not to the word: ten
+    of these pages head a row of ordinary prose "At-Home Car Cleaning in
+    Kingston’s Neighbourhoods", and a length-bounded pattern let some through
+    and turned others away — which is how Barnet, Kingston and Wembley each
+    went a round without the row they were supposed to get.
+
+  **Left alone, and worth a decision: 21 of these pages end a section on a bare
+  `Portfolio` heading with nothing under it** — a dead WordPress row, like the
+  `[page-generator-pro-related-links]` shortcode. Asked, the repo owner chose to
+  keep it and have it flagged rather than have `promoteSections` drop it, so
+  `NOT_A_TITLE` turns it away and it renders exactly as the mirror has it.
+
+  **The 52 mirror location pages not on the client's list were not touched**,
+  because the list was the scope: "Only audit/update URLs included in this
+  list." They carry the same demoted headings and would take the same free fix.
 - **`/our-locations/city-of-westminster` was a three-word page** until
   2026-09-22: its entry in `pages.json` is a single block, an h1 reading "Our
   Locations", and the mirror has nothing else for it. `content/overrides.ts`
