@@ -144,14 +144,36 @@ const plain = (html: string) =>
  * around a `tel:` link, and not one the header has already used.
  */
 function blurbOf(page: Page, taken: ReadonlySet<string>): string | undefined {
-  for (const b of flatten(page.sections.flatMap((s) => s.blocks))) {
-    if (b.type !== "paragraph") continue;
-    if (/href="tel:/i.test(b.html)) continue;
-    if (plain(b.html).length < 90) continue;
-    if (taken.has(b.html)) continue;
-    return b.html;
-  }
-  return undefined;
+  const blocks = flatten(page.sections.flatMap((s) => s.blocks));
+
+  /*
+    A page's introduction is what it says before it starts listing sections,
+    so the opening run is searched first and on a shorter floor.
+
+    `/mobile-car-wash/exterior-wash` is why. Its opener — "Bring your car's
+    exterior back to life with a fast and effective quick exterior clean" — is
+    85 characters, five short of the old floor, so the search ran past it and
+    took the first long paragraph it found instead: the 138-character note
+    under "Congestion Zone Surcharge". The card then told the reader what the
+    congestion charge costs under a heading that says Exterior Wash.
+
+    Below the first section heading the floor stays at 90, because down there a
+    short paragraph is as likely to be a caption or a price note as prose.
+  */
+  const firstSection = blocks.findIndex((b) => b.type === "heading" && b.level <= 2 && b !== blocks[0]);
+  const opening = firstSection === -1 ? blocks : blocks.slice(0, firstSection);
+
+  const usable = (b: Block, floor: number) =>
+    b.type === "paragraph" &&
+    !/href="tel:/i.test(b.html) &&
+    plain(b.html).length >= floor &&
+    !taken.has(b.html);
+
+  const opener = opening.find((b) => usable(b, 60));
+  if (opener?.type === "paragraph") return opener.html;
+
+  const anywhere = blocks.find((b) => usable(b, 90));
+  return anywhere?.type === "paragraph" ? anywhere.html : undefined;
 }
 
 /**

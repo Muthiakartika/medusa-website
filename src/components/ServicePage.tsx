@@ -1,5 +1,5 @@
 import { asLinkChips, LinkChips } from "@/components/blocks-groups";
-import { Sections } from "@/components/Blocks";
+import { bandAfter, Sections } from "@/components/Blocks";
 import FaqAccordion from "@/components/FaqAccordion";
 import Image from "next/image";
 import { LocationIndexSection } from "@/components/LocationIndex";
@@ -80,6 +80,15 @@ export default function ServicePage({ page }: { page: Page }) {
   */
   const cut = services?.after ? splitAfter(body, services.after, page.slug) : null;
 
+  /*
+    The band takes its turn in the rhythm rather than choosing a colour —
+    client, 2026-09-22, "pastikan warna bg tetap selang seling". On
+    `/car-detailing` the first half ends gold so the band is ink, which is
+    also where the client pointed; on `/mobile-car-wash` it ends ink, so the
+    band is gold and the half below it starts ink.
+  */
+  const bandGold = cut ? bandAfter(cut.before) : false;
+
   return (
     <main className="flex-1">
       <Hero page={page} model={model} />
@@ -96,16 +105,14 @@ export default function ServicePage({ page }: { page: Page }) {
             panel={model.priced}
           />
           {services && (
-            <ServiceCardsSection heading={services.heading} cards={services.cards} />
+            <ServiceCardsSection
+              heading={services.heading}
+              cards={services.cards}
+              onGold={bandGold}
+            />
           )}
-          {/*
-            The second half starts gold, which is what a fresh `alternate`
-            call does anyway. That is not luck: the band between the two
-            halves is an ink row, so whatever colour the first half ended on,
-            the row after the band wants the gold. A `startGold` prop was
-            written for this and then thrown away — it could only ever have
-            been passed `true`.
-          */}
+          {/* The band took one turn of the rhythm; the half below it takes
+              the other. */}
           <Sections
             sections={cut.after}
             slug={page.slug}
@@ -113,6 +120,7 @@ export default function ServicePage({ page }: { page: Page }) {
             h1Taken
             opensPage={false}
             bands="alternate"
+            startGold={!bandGold}
             panel={model.priced}
           />
         </>

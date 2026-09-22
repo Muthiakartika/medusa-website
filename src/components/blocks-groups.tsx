@@ -430,6 +430,59 @@ export function asReviewBadges(
 const contentful = (b: Block) =>
   !((b.type === "paragraph" && !textOnly(b.html)) || (b.type === "heading" && !b.text.trim()));
 
+/** "LEVEL 3: ENHANCEMENT" — a word, its rank, and what that rank is called. */
+const RUNG = /^\s*([A-Za-z]+)\s+(\d{1,2})\s*[:.–-]\s*(\S.*)$/;
+
+/**
+ * A numbered ladder written as a row of columns.
+ *
+ * `/car-detailing` explains its five detailing levels in five cells of bare
+ * `LEVEL n: NAME` and a paragraph, which the ordinary columns renderer sets as
+ * five stacks of prose on a flat band — 435 characters under the first and 279
+ * under the third, so the row ends ragged and the ranks read as five unrelated
+ * blocks rather than as a progression. Client, 2026-09-22, over a screenshot of
+ * that row: "bagian ini bisa di redesign ulang gk?".
+ *
+ * The rank is the design, so the row becomes `FeatureCards numbered`: the same
+ * ghosted `01…05` numeral, card and gold underline the site already uses for a
+ * set that reads as a progression. The "LEVEL n:" prefix moves into that
+ * numeral and the card is titled with what follows it, which is the split
+ * `asFeatures` makes on every "Label: text" list item on the site — nothing is
+ * reworded and the paragraph is untouched.
+ *
+ * **Claimed only when the numbers are 1…n in order**, because `FeatureCards`
+ * numbers by position: a row whose labels ran 2, 4, 5 would be numbered 01, 02,
+ * 03 and the card would lie about its own rank. One word for all of them, too —
+ * five cells that each name a different thing are a set, not a ladder.
+ */
+export function asRungCards(
+  block: Extract<Block, { type: "columns" }>,
+): Feature[] | null {
+  const cells = block.cols.filter((col) => col.some(contentful));
+  if (cells.length < 3) return null;
+
+  let word = "";
+  const items: Feature[] = [];
+
+  for (const [i, col] of cells.entries()) {
+    const [head, body, ...rest] = col.filter(contentful);
+    if (rest.length) return null;
+    if (head?.type !== "heading" || body?.type !== "paragraph") return null;
+
+    const rung = RUNG.exec(head.text);
+    if (!rung) return null;
+
+    const [, label, rank, name] = rung;
+    if (i === 0) word = label.toLowerCase();
+    else if (label.toLowerCase() !== word) return null;
+    if (Number(rank) !== i + 1) return null;
+
+    items.push({ title: textOnly(name), body: body.html });
+  }
+
+  return items;
+}
+
 /**
  * Where a column's vehicle-class ladder begins — the first `icon → h3 →
  * (note) → £heading` run long enough for `group` to collapse into a table.

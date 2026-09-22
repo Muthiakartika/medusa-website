@@ -646,6 +646,37 @@ rather than the homepage's empty one, because the ordinary image renderer
 keeps it. `/our-locations/` and the homepage carry the same three badges
 through their own routes and are untouched.
 
+**A numbered ladder is a ladder, not a layout.** Client, 2026-09-22, over a
+screenshot of `/car-detailing`'s LEVEL 1–5 explanations: "bagian ini bisa di
+redesign ulang gk?". The source writes them as five columns of bare
+`LEVEL n: NAME` and a paragraph, and the ordinary columns renderer set them as
+five stacks of prose on a flat band — 435 characters under the first and 279
+under the third, so the row ended ragged and the ranks read as five unrelated
+blocks rather than as a progression.
+
+`asRungCards` claims that shape and hands it to `FeatureCards numbered`, which
+the site already uses for a set that reads as a progression: the ghosted
+`01…05` numeral in the display face, a `surface` card, equal heights, and the
+gold underline that draws in on hover. Five cards of 406px on desktop, which
+is the width every other card row on that page runs at, and one column on a
+phone.
+
+Three things keep it honest. The **rank moves into the numeral** and the card
+is titled with what follows the colon — the same split `asFeatures` makes on
+every "Label: text" list item on the site, so nothing is reworded and the
+paragraph is untouched. It is claimed **only when the numbers run 1…n in
+order**, because `FeatureCards` numbers by position: a row labelled 2, 4, 5
+would be numbered 01, 02, 03 and each card would lie about its own rank. And
+**one word for all of them** — five cells that each name a different thing are
+a set, not a ladder. Site-wide the shape matches two pages, one of which
+(`/detailing-2`) has 301'd away since 2026-09-15, so it renders on one.
+
+The conservation check (§9) reports one fragment for this: the joined string
+"LEVEL 1: NEW CAR/PROTECTION". Both halves are still on the page — the card is
+titled "NEW CAR/PROTECTION" under an `01`, and the priced row above still
+writes "LEVEL 1" — so no word is lost, only the label-and-colon form, which is
+the gap §9 already records against `asFeatures`.
+
 **Tables render twice.** `/valeting` is the only page carrying `table` blocks,
 and its package matrix is 7 columns by 58 rows — 1062px wide and 18,633px tall
 on a phone. So `lib/table-model.ts` reads the shape out of the block (header
@@ -712,6 +743,46 @@ fallback. Every section, whoever renders it, now follows this:
 **Vertical rhythm** — the agreed spec: **100–110 px** between sections on
 desktop/laptop, **50–75 px** on small screens. In practice that is
 `py-16 lg:py-[104px]` (64 / 104). Match it; do not invent new spacing.
+
+**No two bands of the same colour touch.** Client, 2026-09-22: "pastikan warna
+bg tetap selang seling". `alternating` has always done this for the rows a
+page's *body* renders, but a frame that adds a band of its own used to
+hard-code its colour, and three did:
+
+| Where | Was | Now |
+| --- | --- | --- |
+| `LocationPage`'s "How It works" | always gold — and on **14 of the 19** borough hubs the body row above it was gold too | asks `bandAfter(model.body)` |
+| The services band (§5) | always ink — which landed under an ink row on `/mobile-car-wash` | asks `bandAfter(cut.before)` |
+| `/our-locations` | five gold bands in a row: two service rows, the explainer, the portfolio, the reviews | its explainer and `Testimonials` take ink; Portfolio keeps the gold the client gave it |
+
+`bandAfter(sections, startGold?)` in `components/Blocks.tsx` is what they ask.
+It regroups the sections the way `Sections` will and reports the colour the
+next row wants — the regrouping has to happen there, because `Sections` is
+what merges rows, so a frame counting its own sections would count the wrong
+ones. The half of a split body that follows such a band is told where to pick
+up, with `startGold`.
+
+Each of those components grew an `onGold` prop rather than a second copy, so
+one band is one component in two tones. `Testimonials` is the homepage's and
+**stays gold there** — the homepage already alternates, and it is only
+`/our-locations` that runs it against another gold band.
+
+Audited across all 256 rendered pages: **0 adjacent gold bands**. Two things
+the audit deliberately does not count. A *continuing surface* — one band
+written as two rows, `py-9 lg:py-12` at the seam — is one band, and
+`/our-locations` has the site's only one. And a run of **ink** at the foot of
+a page is by design: the questions, the map and the A–Z index are the frame's
+own closing bands and have been ink on all ~300 pages since they were built.
+
+**The card blurb reads from the opening run.** Fixing the bands turned up a
+card that described the wrong thing: `/mobile-car-wash`'s Exterior Wash card
+quoted the congestion-zone surcharge. `blurbOf` took the first paragraph of 90
+characters or more anywhere on the page, and that page's own opener — "Bring
+your car's exterior back to life…" — is **85**, five short, so the search ran
+past it into the add-ons. It now searches the run above the first section
+heading on a floor of 60 and only falls back to the whole page on a floor of
+90. Two of the site's 24 cards changed, both to their page's real opening
+sentence.
 
 **Gotcha, already paid for once:** `html { overflow-x: clip }` — *not*
 `hidden`. `hidden` makes `<html>` a scroll container and silently kills

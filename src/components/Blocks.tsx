@@ -6,6 +6,7 @@ import {
   asInlineTicks,
   asLinkChips,
   asReviewBadges,
+  asRungCards,
   asTicks,
   CardRow,
   clean,
@@ -473,19 +474,42 @@ function goldBands(sections: Section[]): boolean[] {
  * move the rhythm on. And the page's own header is left as the source painted
  * it — it is the one row on the page that is already a designed surface.
  */
-function alternating(sections: Section[], opensPage: boolean): boolean[] {
-  let wantGold = true;
-  return sections.map((s, i) => {
+function alternating(
+  sections: Section[],
+  opensPage: boolean,
+  startGold = true,
+): { gold: boolean[]; next: boolean } {
+  let wantGold = startGold;
+  const gold = sections.map((s, i) => {
     if (opensPage && i === 0) {
       // A light header hands the dark half of the first pair to the row below.
       if (isLightBackground(s.bg)) wantGold = false;
       return false;
     }
     if (s.bg?.image) return false;
-    const gold = wantGold;
+    const band = wantGold;
     wantGold = !wantGold;
-    return gold;
+    return band;
   });
+  return { gold, next: wantGold };
+}
+
+/**
+ * The colour the next band wants, for a frame that puts a band of its own
+ * after — or in the middle of — a body it renders with `bands="alternate"`.
+ *
+ * Client, 2026-09-22: "pastikan warna bg tetap selang seling". A frame that
+ * hard-codes its own band's colour cannot keep that promise: on the fourteen
+ * borough hubs whose body ends gold, `LocationPage`'s gold "How It works" row
+ * made a slab of two, and the services band on `/mobile-car-wash` landed ink
+ * under an ink one. Both now ask.
+ *
+ * The regrouping has to happen here, because `Sections` is what merges rows —
+ * a frame counting its own sections would count the wrong ones.
+ */
+export function bandAfter(sections: Section[], startGold = true): boolean {
+  const rows = regroup(sections, true).map((g) => g.section);
+  return alternating(rows, false, startGold).next;
 }
 
 /** The rows whose background the alternation paints, dark ones included. */
@@ -518,6 +542,7 @@ export function Sections({
   pageH1,
   h1Taken = false,
   opensPage = true,
+  startGold = true,
   panel,
 }: {
   sections: Section[];
@@ -541,6 +566,12 @@ export function Sections({
    * not take the 190px header padding or the opening light source.
    */
   opensPage?: boolean;
+  /**
+   * Where the black-gold-black rhythm picks up. A frame rendering one body in
+   * two calls with a band of its own between them passes the opposite of that
+   * band's colour — see `bandAfter`.
+   */
+  startGold?: boolean;
   /**
    * Sections to set inside a panel rather than flat on the page — used for
    * the merged price-and-extras row, which has to be findable at a glance.
@@ -623,7 +654,7 @@ export function Sections({
     bands === "none"
       ? rows.map(() => false)
       : bands === "alternate"
-        ? alternating(rows, opensPage)
+        ? alternating(rows, opensPage, startGold).gold
         : goldBands(rows);
   const painted = paintedRows(rows, bands, opensPage);
   // A gold band is its own surface, so the seam either side keeps full padding.
@@ -1377,6 +1408,14 @@ function BlockView({ block, ctx }: { block: Block; ctx: Ctx }) {
       */
       const badges = asReviewBadges(block);
       if (badges) return <ReviewBadges badges={badges} onGold={ctx.onGold} />;
+
+      /*
+        Cells labelled LEVEL 1 to LEVEL 5 are a ladder, not a layout: the rank
+        is what the row is saying, so it goes to the numbered cards the site
+        already gives a progression. See `asRungCards`.
+      */
+      const rungs = asRungCards(block);
+      if (rungs) return <FeatureCards items={rungs} numbered onGold={ctx.onGold} />;
 
       // Cells that are all price + icon + name + copy are an add-on row, not
       // a free-form layout, so they render as cards instead of four stacks.

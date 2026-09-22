@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Sections } from "@/components/Blocks";
+import { bandAfter, Sections } from "@/components/Blocks";
 import FaqAccordion from "@/components/FaqAccordion";
 import Icon from "@/components/Icon";
 import { LocationIndexSection } from "@/components/LocationIndex";
@@ -56,6 +56,15 @@ export default function LocationPage({ page }: { page: Page }) {
   const places = folded?.items ?? others?.items ?? [];
   const map = mapFor(page.slug, model.map);
 
+  /*
+    "How It works" is a gold band, and on fourteen of the nineteen borough
+    hubs the body row above it is gold too — two gold bands together, which is
+    the slab the alternation exists to prevent. Client, 2026-09-22: "pastikan
+    warna bg tetap selang seling". So it asks the body where the rhythm got to
+    instead of assuming.
+  */
+  const stepsGold = model.body.length > 0 ? bandAfter(model.body) : true;
+
   return (
     <main className="flex-1">
       <Hero page={page} model={model} />
@@ -89,7 +98,7 @@ export default function LocationPage({ page }: { page: Page }) {
         />
       )}
 
-      {model.steps && <Steps section={model.steps} />}
+      {model.steps && <Steps section={model.steps} onGold={stepsGold} />}
       {model.club && <Club section={model.club} />}
       {/* Source order on every one of these pages: questions, then the map. */}
       {model.faqSection && <Faq section={model.faqSection} />}
@@ -384,7 +393,19 @@ function Sights({
 /* ── How it works ─────────────────────────────────────────────────────────
    Four "Step n" headings and their instructions, on a rail. */
 
-export function Steps({ section }: { section: Section }) {
+export function Steps({
+  section,
+  onGold = true,
+}: {
+  section: Section;
+  /**
+   * Gold unless the row above it already is. Client, 2026-09-22: "pastikan
+   * warna bg tetap selang seling" — on fourteen of the nineteen borough hubs
+   * this row followed a gold body row, and two gold bands together are the
+   * slab the alternation exists to prevent.
+   */
+  onGold?: boolean;
+}) {
   const cols = section.blocks.find((b) => b.type === "columns");
   const cells = cols?.type === "columns" ? cols.cols : [section.blocks];
   const copy = cells[0] ?? [];
@@ -398,21 +419,29 @@ export function Steps({ section }: { section: Section }) {
   if (!steps.length) return null;
 
   return (
-    <section className="bg-gold-wash w-full py-16 lg:py-[104px]">
+    <section
+      className={`w-full py-16 lg:py-[104px] ${
+        onGold ? "bg-gold-wash" : "border-t border-white/[0.07]"
+      }`}
+    >
       <div className="shell grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-7">
           {heading?.type === "heading" && (
             <SectionHead
               title={heading.text}
               lede={lede?.type === "heading" ? lede.text : undefined}
-              tone="gold"
+              tone={onGold ? "gold" : undefined}
             />
           )}
 
           <ol className="relative mt-11">
             <span
               aria-hidden
-              className="absolute top-2 bottom-10 left-[23px] w-px bg-[linear-gradient(to_bottom,rgba(0,0,0,0.45),rgba(0,0,0,0.08))]"
+              className={`absolute top-2 bottom-10 left-[23px] w-px ${
+                onGold
+                  ? "bg-[linear-gradient(to_bottom,rgba(0,0,0,0.45),rgba(0,0,0,0.08))]"
+                  : "bg-[linear-gradient(to_bottom,rgba(193,146,49,0.55),rgba(255,255,255,0.06))]"
+              }`}
             />
             {steps.map((step, i) => (
               <Reveal
@@ -421,14 +450,26 @@ export function Steps({ section }: { section: Section }) {
                 delay={i}
                 className="relative flex gap-5 pb-8 last:pb-0 sm:gap-6"
               >
-                <span className="relative z-10 flex h-[47px] w-[47px] shrink-0 items-center justify-center rounded-full bg-ink font-[family-name:var(--font-sub)] text-[16px] text-gold">
+                <span
+                  className={`relative z-10 flex h-[47px] w-[47px] shrink-0 items-center justify-center rounded-full font-[family-name:var(--font-sub)] text-[16px] text-gold ${
+                    onGold ? "bg-ink" : "bg-ink-panel ring-1 ring-gold/40"
+                  }`}
+                >
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div className="pt-2">
-                  <p className="font-[family-name:var(--font-sub)] text-[15px] tracking-[0.06em] text-ink/60 uppercase">
+                  <p
+                    className={`font-[family-name:var(--font-sub)] text-[15px] tracking-[0.06em] uppercase ${
+                      onGold ? "text-ink/60" : "text-white/55"
+                    }`}
+                  >
                     {step.label}
                   </p>
-                  <p className="mt-1 max-w-[46ch] text-[16.5px] leading-[26px] font-semibold text-ink">
+                  <p
+                    className={`mt-1 max-w-[46ch] text-[16.5px] leading-[26px] font-semibold ${
+                      onGold ? "text-ink" : "text-white"
+                    }`}
+                  >
                     {step.body}
                   </p>
                 </div>
@@ -438,7 +479,12 @@ export function Steps({ section }: { section: Section }) {
 
           {cta?.type === "button" && (
             <Reveal delay={4}>
-              <a href={cta.href} className="btn btn-dark mt-9 rounded-full text-[15px]">
+              <a
+                href={cta.href}
+                className={`btn mt-9 rounded-full text-[15px] ${
+                  onGold ? "btn-dark" : "btn-gold"
+                }`}
+              >
                 {cta.label}
                 <Icon name="arrow" size={18} className="ml-2.5" />
               </a>

@@ -16,7 +16,16 @@ import { REVIEW_BADGES, TESTIMONIALS } from "@/lib/site";
  * longest one into the controls below or left a stretch of empty gold under the
  * short ones.
  */
-export default function Testimonials() {
+export default function Testimonials({
+  onGold = true,
+}: {
+  /**
+   * Gold on the homepage, where an ink row sits either side of it. Ink on
+   * `/our-locations`, which runs it straight after the gold Portfolio —
+   * client, 2026-09-22, "pastikan warna bg tetap selang seling".
+   */
+  onGold?: boolean;
+} = {}) {
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
   const stack = useRef<HTMLDivElement>(null);
@@ -45,7 +54,9 @@ export default function Testimonials() {
 
   return (
     <section
-      className="bg-gold-wash w-full py-16 lg:py-[104px]"
+      className={`w-full py-16 lg:py-[104px] ${
+        onGold ? "bg-gold-wash" : "border-t border-white/[0.07]"
+      }`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -54,7 +65,7 @@ export default function Testimonials() {
       <div className="shell">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-7">
-            <SectionHead title="What Our Clients Say" tone="gold" />
+            <SectionHead title="What Our Clients Say" tone={onGold ? "gold" : undefined} />
 
             <div
               ref={stack}
@@ -74,7 +85,11 @@ export default function Testimonials() {
                       : "pointer-events-none translate-y-3 opacity-0"
                   }`}
                 >
-                  <p className="font-[family-name:var(--font-heading)] text-[17px] leading-[28px] font-medium text-ink sm:text-[19px] sm:leading-[31px] lg:text-[22px] lg:leading-[35px]">
+                  <p
+                    className={`font-[family-name:var(--font-heading)] text-[17px] leading-[28px] font-medium sm:text-[19px] sm:leading-[31px] lg:text-[22px] lg:leading-[35px] ${
+                      onGold ? "text-ink" : "text-white"
+                    }`}
+                  >
                     “{t}”
                   </p>
                 </blockquote>
@@ -93,7 +108,13 @@ export default function Testimonials() {
                 >
                   <span
                     className={`block h-[5px] rounded-full transition-all duration-300 ${
-                      idx === i ? "w-11 bg-ink" : "w-6 bg-ink/30 group-hover:bg-ink/60"
+                      idx === i
+                        ? `w-11 ${onGold ? "bg-ink" : "bg-gold"}`
+                        : `w-6 ${
+                            onGold
+                              ? "bg-ink/30 group-hover:bg-ink/60"
+                              : "bg-white/25 group-hover:bg-white/50"
+                          }`
                     }`}
                   />
                 </button>
@@ -107,7 +128,9 @@ export default function Testimonials() {
                 key={idx}
                 as="li"
                 delay={idx}
-                className="surface-on-gold flex items-center gap-4 p-4"
+                className={`flex items-center gap-4 p-4 ${
+                  onGold ? "surface-on-gold" : "surface"
+                }`}
               >
                 <Image
                   src={b.icon}

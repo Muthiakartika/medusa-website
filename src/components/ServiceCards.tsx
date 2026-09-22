@@ -33,7 +33,16 @@ import { BOOK_URL } from "@/lib/site";
 const FIT =
   "sm:grid-cols-2 lg:[grid-template-columns:repeat(auto-fit,minmax(280px,400px))]";
 
-export function ServiceCards({ cards, cols }: { cards: HubCard[]; cols?: string }) {
+export function ServiceCards({
+  cards,
+  cols,
+  onGold,
+}: {
+  cards: HubCard[];
+  cols?: string;
+  /** Sitting on a gold band — the tile goes solid ink, as every card does. */
+  onGold?: boolean;
+}) {
   /*
     Four across only from `xl`. At `lg` the shell is 834px wide, so four
     columns are 193px each — narrower than the add-on cards' 220px floor, and
@@ -47,7 +56,9 @@ export function ServiceCards({ cards, cols }: { cards: HubCard[]; cols?: string 
           as="li"
           key={card.slug}
           delay={i}
-          className="surface flex flex-col overflow-hidden"
+          className={`flex flex-col overflow-hidden ${
+            onGold ? "surface-on-gold" : "surface"
+          }`}
         >
           {card.image && (
             <div className="relative aspect-3/2 w-full">
@@ -124,16 +135,31 @@ export function ServiceCards({ cards, cols }: { cards: HubCard[]; cols?: string 
 export function ServiceCardsSection({
   heading,
   cards,
+  onGold,
 }: {
   heading: string;
   cards: HubCard[];
+  /**
+   * Take the gold half of the rhythm. The frame asks `bandAfter` rather than
+   * deciding: client, 2026-09-22, "pastikan warna bg tetap selang seling".
+   * On `/car-detailing` the answer is ink, which is also where the client
+   * pointed ("place it here where its black"); on `/mobile-car-wash` the row
+   * above is ink, so this one is gold.
+   */
+  onGold?: boolean;
 }) {
   if (!cards.length) return null;
   return (
-    <section className="w-full border-t border-white/[0.07] py-16 lg:py-[104px]">
+    <section
+      className={`w-full py-16 lg:py-[104px] ${
+        /* A gold band is its own surface and needs no rule; an ink one takes
+           the hairline that tells it from the ink row above. */
+        onGold ? "bg-gold-wash" : "border-t border-white/[0.07]"
+      }`}
+    >
       <div className="shell">
-        <SectionHead title={heading} className="mb-12" />
-        <ServiceCards cards={cards} />
+        <SectionHead title={heading} className="mb-12" tone={onGold ? "gold" : undefined} />
+        <ServiceCards cards={cards} onGold={onGold} />
       </div>
     </section>
   );

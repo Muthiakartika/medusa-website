@@ -282,9 +282,17 @@ export default function LocationsPage() {
           />
         )}
 
-        {steps && <Steps section={steps} />}
+        {/*
+          Five gold bands ran together here until 2026-09-22 — the two
+          continuing-surface service rows, then the booking explainer, the
+          portfolio and the reviews. Client: "pastikan warna bg tetap selang
+          seling". Portfolio keeps the gold it was given on the homepage, and
+          the two either side of it take the ink, so nothing touches its own
+          colour. Both are the same components; only this page asks for ink.
+        */}
+        {steps && <Steps section={steps} onGold={false} />}
         <Portfolio />
-        <Testimonials />
+        <Testimonials onGold={false} />
         {club && <Club section={club} />}
 
         {/*
@@ -364,7 +372,14 @@ function Directory({ zones }: { zones: Zone[] }) {
    gold slab beside an animated phone. Same words, on a rail, with the phone
    kept alongside. */
 
-function Steps({ section }: { section: Section }) {
+function Steps({
+  section,
+  onGold = true,
+}: {
+  section: Section;
+  /** Ink where the band above is already gold — see the call site. */
+  onGold?: boolean;
+}) {
   const cols = section.blocks.find((b) => b.type === "columns");
   const cells = cols?.type === "columns" ? cols.cols : [section.blocks];
   const copy = cells[0] ?? [];
@@ -384,32 +399,52 @@ function Steps({ section }: { section: Section }) {
   });
 
   return (
-    <section className="bg-gold-wash w-full py-16 lg:py-[104px]">
+    <section
+      className={`w-full py-16 lg:py-[104px] ${
+        onGold ? "bg-gold-wash" : "border-t border-white/[0.07]"
+      }`}
+    >
       <div className="shell grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-7">
           {heading?.type === "heading" && (
             <SectionHead
               title={heading.text}
               lede={lede?.type === "heading" ? lede.text : undefined}
-              tone="gold"
+              tone={onGold ? "gold" : undefined}
             />
           )}
 
           <ol className="relative mt-11">
             <span
               aria-hidden
-              className="absolute top-2 bottom-10 left-[23px] w-px bg-[linear-gradient(to_bottom,rgba(0,0,0,0.45),rgba(0,0,0,0.08))]"
+              className={`absolute top-2 bottom-10 left-[23px] w-px ${
+                onGold
+                  ? "bg-[linear-gradient(to_bottom,rgba(0,0,0,0.45),rgba(0,0,0,0.08))]"
+                  : "bg-[linear-gradient(to_bottom,rgba(193,146,49,0.55),rgba(255,255,255,0.06))]"
+              }`}
             />
             {steps.map((step, i) => (
               <Reveal as="li" key={step.label} delay={i} className="relative flex gap-5 pb-8 last:pb-0 sm:gap-6">
-                <span className="relative z-10 flex h-[47px] w-[47px] shrink-0 items-center justify-center rounded-full bg-ink font-[family-name:var(--font-sub)] text-[16px] text-gold">
+                <span
+                  className={`relative z-10 flex h-[47px] w-[47px] shrink-0 items-center justify-center rounded-full font-[family-name:var(--font-sub)] text-[16px] text-gold ${
+                    onGold ? "bg-ink" : "bg-ink-panel ring-1 ring-gold/40"
+                  }`}
+                >
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div className="pt-2">
-                  <p className="font-[family-name:var(--font-sub)] text-[15px] tracking-[0.06em] text-ink/60 uppercase">
+                  <p
+                    className={`font-[family-name:var(--font-sub)] text-[15px] tracking-[0.06em] uppercase ${
+                      onGold ? "text-ink/60" : "text-white/55"
+                    }`}
+                  >
                     {step.label}
                   </p>
-                  <p className="mt-1 max-w-[46ch] text-[16.5px] leading-[26px] font-semibold text-ink">
+                  <p
+                    className={`mt-1 max-w-[46ch] text-[16.5px] leading-[26px] font-semibold ${
+                      onGold ? "text-ink" : "text-white"
+                    }`}
+                  >
                     {step.body}
                   </p>
                 </div>
@@ -419,7 +454,12 @@ function Steps({ section }: { section: Section }) {
 
           {cta?.type === "button" && (
             <Reveal delay={4}>
-              <a href={cta.href} className="btn btn-dark mt-9 rounded-full text-[15px]">
+              <a
+                href={cta.href}
+                className={`btn mt-9 rounded-full text-[15px] ${
+                  onGold ? "btn-dark" : "btn-gold"
+                }`}
+              >
                 {cta.label}
                 <Icon name="arrow" size={18} className="ml-2.5" />
               </a>
