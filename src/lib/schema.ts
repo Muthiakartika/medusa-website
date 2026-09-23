@@ -5,6 +5,7 @@
  * block that only the homepage carries.
  */
 import type { Page } from "@/lib/blocks";
+import { breadcrumbTrail } from "@/lib/breadcrumbs";
 import { BUSINESS, CONTACT, SITE } from "@/lib/site";
 
 const ORG_ID = `${SITE}/#organization`;
@@ -71,17 +72,20 @@ export const localBusinessSchema = {
   },
 };
 
+/**
+ * Home > … > the page, from `lib/breadcrumbs.ts`. Every rung carries its
+ * absolute URL, the page's own included — Google allows the last `item` to be
+ * left off, but naming it costs nothing and cannot be misread.
+ */
 function breadcrumbList(page: Page) {
-  const crumbs = page.breadcrumb ?? [{ name: "Home" }];
   return {
     "@type": "BreadcrumbList",
     "@id": `${url(page.slug)}#breadcrumb`,
-    itemListElement: crumbs.map((c, i) => ({
+    itemListElement: breadcrumbTrail(page).map((c, i) => ({
       "@type": "ListItem",
       position: i + 1,
       name: c.name,
-      // The trailing crumb is the current page, so it carries no item link.
-      ...(c.href ? { item: `${SITE}${c.href}` } : {}),
+      item: c.url,
     })),
   };
 }
@@ -121,7 +125,9 @@ export function pageSchema(page: Page) {
     isPartOf: { "@id": SITE_ID },
     ...(page.slug ? {} : { about: { "@id": ORG_ID } }),
     description: page.description,
-    breadcrumb: { "@id": `${id}#breadcrumb` },
+    /* The homepage is the root of every trail, so a list of its own would be
+       one item long and say nothing. Yoast emits one; Google ignores it. */
+    ...(page.slug ? { breadcrumb: { "@id": `${id}#breadcrumb` } } : {}),
     ...(page.published ? { datePublished: page.published } : {}),
     ...(page.modified ? { dateModified: page.modified } : {}),
     inLanguage: "en-GB",
@@ -133,7 +139,7 @@ export function pageSchema(page: Page) {
     "@graph": [
       webPage,
       ...(page.article ? [article(page)] : []),
-      breadcrumbList(page),
+      ...(page.slug ? [breadcrumbList(page)] : []),
       website,
       organization,
     ],

@@ -4,7 +4,8 @@
  *   - page has an <h1> and non-trivial body text
  *   - every internal link points at a route that actually exists
  *   - every referenced /assets image exists on disk
- *   - each page carries a parseable JSON-LD graph
+ *   - each page carries a parseable JSON-LD graph and one well-formed
+ *     BreadcrumbList (none on the homepage)
  * Then checks the site-level SEO surfaces: sitemap, robots, and the 404.
  */
 import fs from 'node:fs';
@@ -124,6 +125,43 @@ const add = (map, key, page) => {
   if (arr.length < 4) arr.push(page);
 };
 
+/*
+  The BreadcrumbList — see src/lib/breadcrumbs.ts. One per page and none on the
+  homepage; positions 1…n; Home first and the page itself last; every item an
+  absolute URL on this site that is a route here; each rung the one above's
+  child, except a blog post, whose parent is /blog; and no name still carrying
+  a WordPress entity, which JSON-LD does not decode.
+*/
+const SITE = 'https://medusaautodetailing.co.uk';
+function breadcrumbIssues(route, graphs) {
+  const lists = graphs.filter((n) => n['@type'] === 'BreadcrumbList');
+  if (route === '/') return lists.length ? ['breadcrumb on the homepage'] : [];
+  if (lists.length !== 1) return [`${lists.length} BreadcrumbLists`];
+  const items = lists[0].itemListElement ?? [];
+  const out = [];
+  if (items.length < 2) out.push('breadcrumb shorter than 2');
+  items.forEach((it, i) => {
+    if (it.position !== i + 1) out.push(`breadcrumb position ${it.position} at ${i + 1}`);
+    if (!it.name?.trim() || /&#?\w+;/.test(it.name)) out.push(`breadcrumb name "${it.name}"`);
+    if (typeof it.item !== 'string' || !it.item.startsWith(SITE + '/')) {
+      out.push(`breadcrumb item "${it.item}"`);
+      return;
+    }
+    const path = it.item.slice(SITE.length);
+    if (!routes.has(path) || REDIRECTED.has(path)) out.push(`breadcrumb item ${path} is not a live route`);
+    if (i > 0) {
+      const parent = items[i - 1].item.slice(SITE.length);
+      const blogPost = parent === '/blog' && /^\/\d{4}\/\d{2}\/\d{2}\//.test(path);
+      if (!blogPost && !(parent === '/' || path.startsWith(parent + '/'))) {
+        out.push(`breadcrumb ${path} is not a child of ${parent}`);
+      }
+    }
+  });
+  if (items[0]?.item !== SITE + '/') out.push('breadcrumb does not start at Home');
+  if (items.at(-1)?.item !== SITE + route) out.push('breadcrumb does not end on the page');
+  return out;
+}
+
 const all = [...routes];
 const CONC = 8;
 let done = 0;
@@ -179,6 +217,10 @@ async function check(route) {
       });
       if (!graphs.some((n) => n['@type'] === 'WebPage')) {
         badSchema.push(`${route} :: no WebPage node`);
+      }
+      // A 301'd source lands on another page's trail; that page is checked in its own right.
+      if (!res.redirected) {
+        for (const issue of breadcrumbIssues(route, graphs)) badSchema.push(`${route} :: ${issue}`);
       }
     } catch (e) {
       badSchema.push(`${route} :: unparseable (${e.message})`);

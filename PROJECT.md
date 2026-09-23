@@ -156,6 +156,13 @@ Useful exports:
   therefore excluded from the catch-all's `generateStaticParams`. **Add a slug
   here whenever you give a page its own route file**, or the build prerenders
   an unreachable duplicate.
+- `page.breadcrumb` is the **mirror's** trail, flat and in pre-rename
+  WordPress names ("Wheeluv", "Autoglym", `&#038;`), and is kept only because
+  `nameReadMoreLinks` reads its tail for button labels. The `BreadcrumbList`
+  in every page's JSON-LD comes from `lib/breadcrumbs.ts` instead: parent off
+  the URL (a blog post's is `/blog`), name off `NAV` where the menu has one,
+  every rung an absolute URL, none on the homepage. The site shows no visible
+  breadcrumb. `npm run verify` checks all of it.
 - `getFaq(slug)` — the FAQ pairs a page carries. Hand-built pages read this
   rather than keeping their own transcribed copy.
 - `heroImageFor(page)` — picks the wider of the opening row's background and

@@ -65,7 +65,7 @@ const isPrice = (b: Block | undefined): b is Extract<Block, { type: "heading" }>
  * them — "Mould Sanitisation &#038; Sterilisation Service" — and a button
  * label is rendered as text, not as HTML, so an undecoded one ships literally.
  */
-const decodeEntities = (s: string): string =>
+export const decodeEntities = (s: string): string =>
   s
     .replace(/&nbsp;/gi, " ")
     .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
