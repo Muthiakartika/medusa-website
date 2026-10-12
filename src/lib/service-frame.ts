@@ -140,6 +140,27 @@ const priceOf = (b: Block) => {
   return m ? Number(m[1].replace(/,/g, "")) : null;
 };
 
+/**
+ * A price the page states as prose rather than as a ladder: a paragraph whose
+ * whole text is "£35" or "£35-£42". The low end is the entry price.
+ *
+ * Anchored at both ends on purpose. "Prices start from £35 depending on size"
+ * would match a loose search and is a sentence, not a price; the two pages
+ * this exists for write the figure alone in its own paragraph.
+ */
+const PROSE_PRICE = /^£\s?([\d,]+(?:\.\d{2})?)(?:\s*[-–—]\s*£?\s?[\d,]+(?:\.\d{2})?)?$/;
+
+function prosePrice(section: Section | undefined): string | undefined {
+  for (const b of section?.blocks ?? []) {
+    if (isHeading(b) && ADDON_RE.test(b.text)) return undefined;
+    if (b.type !== "paragraph") continue;
+    const text = b.html.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim();
+    const m = PROSE_PRICE.exec(text);
+    if (m) return `£${m[1]}`;
+  }
+  return undefined;
+}
+
 const sameText = (a: string, b: string) =>
   a.replace(/\s+/g, " ").trim().toLowerCase() === b.replace(/\s+/g, " ").trim().toLowerCase();
 
@@ -155,6 +176,14 @@ const sameText = (a: string, b: string) =>
  *
  * The scan stops at the add-ons heading — those cards price themselves, and on
  * the wash pages they are the only prices on the page at all.
+ *
+ * Two pages write their price as prose instead of a ladder — `bronze-wash`
+ * ("£37-£48") and `exterior-wash` ("£35-£42") put the range in a paragraph of
+ * its own in the opening run, so the heading scan found nothing and the pages
+ * rendered no price card at all. `prosePrice` is the fallback, and it is
+ * deliberately narrow: a paragraph that is *only* a price or a price range,
+ * never a sentence that happens to contain one. Four other pages render no
+ * card and state no price anywhere; they still render none.
  */
 export function entryPrice(sections: Section[]): string | undefined {
   let single: string | undefined;
@@ -187,7 +216,9 @@ export function entryPrice(sections: Section[]): string | undefined {
     if (stop) break;
   }
 
-  return single;
+  /* Only when the ladder scan found nothing at all: a page that quotes its
+     range in prose rather than in headings. */
+  return single ?? prosePrice(sections[0]);
 }
 
 /**
