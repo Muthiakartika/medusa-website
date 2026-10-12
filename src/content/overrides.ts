@@ -1166,6 +1166,18 @@ const RULES: Record<string, (page: Page) => void> = {
     blurb.html = TRITON_EXTRA.body;
 
     relinkOdourAddOn(page);
+
+    /* Item 10, the half that was missed. The brief's "Change price to 135,
+       145, 155, 165" reached the homepage comparison table — `PACKAGES` in
+       `lib/site.ts` has carried those four since — and not this page's own
+       "OUR PRICING" ladder, which was still quoting 115/125/135/145. Client,
+       2026-10-12, pointing back at it: "Point number 10 on first tab".
+
+       Matched on the heading, never an index, and `repriceLadder` throws if
+       the ladder is no longer under it. The same four numbers sit on
+       `/mobile-car-wash/premium-interior-wash` for a different package, which
+       is why this is keyed to the page rather than swapped site-wide. */
+    repriceLadder(page, /^our pricing$/i, [135, 145, 155, 165]);
   },
 
   /*
