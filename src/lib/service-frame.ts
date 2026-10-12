@@ -22,6 +22,7 @@
  * they lack is a frame.
  */
 
+import { unbullet } from "@/components/blocks-groups";
 import { type Block, heroImageFor, type Page, type Section } from "@/lib/blocks";
 
 /**
@@ -84,6 +85,17 @@ export type ServiceModel = {
   introHtml: string[];
   /** Entry price off the page's first price ladder — "£55". */
   priceFrom?: string;
+  /**
+   * The package's own "what's included" ticks, where the source puts a short
+   * one straight after the opening copy.
+   *
+   * Three pages write it that way — `bronze-wash`, `exterior-wash` and
+   * `exterior-plus-wash` — and left to the ordinary renderer it became a band
+   * of its own: five or seven two-word items alone in a full-height gold
+   * section. They are what the price buys, so they belong in the card beside
+   * the price. Nothing is dropped; the row moves.
+   */
+  includes?: string[];
   /** Everything the ordinary renderer still owns, in document order. */
   body: Section[];
   /**
@@ -189,7 +201,7 @@ export function entryPrice(sections: Section[]): string | undefined {
  * rest of the page. Taking the run and handing the remainder back means the
  * header gets its copy without the body losing anything.
  */
-function takeOpening(section: Section | undefined, h1: string) {
+function takeOpening(section: Section | undefined, h1: string, hasPriceCard: boolean) {
   if (!section) return null;
 
   const ledes: string[] = [];
@@ -236,13 +248,46 @@ function takeOpening(section: Section | undefined, h1: string) {
 
   if (!titleSeen) return null;
 
+  /*
+    A short list of two-word ticks right after the opening copy is the
+    package's inclusions, not a section. Claimed here so it can sit in the
+    price card; anything longer or wordier is left alone, which is what keeps
+    this to the three pages written that way.
+  */
+  const next = section.blocks[i];
+  const includes =
+    hasPriceCard &&
+    next?.type === "list" &&
+    next.items.length <= 8 &&
+    next.items.every((item) => plainText(item).length > 0 && plainText(item).length < 30)
+      ? next.items.map(plainText)
+      : undefined;
+  if (includes) i++;
+
   return {
     lede: ledes[0],
     // Any further standfirsts are copy too, and read as opening paragraphs.
     introHtml: [...ledes.slice(1), ...intro],
+    includes,
     rest: section.blocks.slice(i),
   };
 }
+
+/**
+ * A list item's words, without the markup the source wraps them in and
+ * without the bullet the author typed.
+ *
+ * These pages write their contents as "✔ Wash", "✔ Buff & Dry", and the card
+ * draws its own tick — `unbullet` is the same helper the ordinary list
+ * renderer uses, for the same reason, so the two cannot disagree about what
+ * counts as a bullet.
+ */
+const plainText = (html: string) =>
+  unbullet(html)
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
+    .trim();
 
 /** A section that is nothing but an FAQ heading, its lede and its accordion. */
 function faqOnly(section: Section) {
@@ -300,7 +345,15 @@ export function parseServicePage(page: Page): ServiceModel {
   let faqHeading: string | undefined;
   let areas: ServiceModel["areas"];
 
-  const opening = takeOpening(sections[0], page.h1);
+  /*
+    The ticks are only claimed when there is a card to put them in. Without
+    this, `bronze-wash` and `exterior-wash` — which quote a price range in
+    prose and so render no `PriceCard` — lost the list outright: claimed by
+    the frame, rendered by nobody. Rule: a frame that claims a row must render
+    all of it.
+  */
+  const priceFrom = entryPrice(sections);
+  const opening = takeOpening(sections[0], page.h1, Boolean(priceFrom));
 
   sections.forEach((section, i) => {
     if (i === 0 && opening) {
@@ -384,7 +437,8 @@ export function parseServicePage(page: Page): ServiceModel {
     heroImage: heroImageFor(page),
     lede: opening?.lede,
     introHtml: opening?.introHtml ?? [],
-    priceFrom: entryPrice(sections),
+    includes: opening?.includes,
+    priceFrom,
     body,
     priced,
     areas,

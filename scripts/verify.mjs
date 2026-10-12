@@ -52,6 +52,13 @@ const REDIRECT_PAIRS = [
 if (REDIRECT_PAIRS.length < 150) throw new Error('verify: redirect table parsed short');
 const REDIRECTED = new Set(REDIRECT_PAIRS.map(([from]) => from));
 
+/* Pages held out of the index while a decision is pending (`lib/noindex.ts`).
+   They still answer 200 and are still crawlable — that is how a crawler reads
+   the `noindex` — but they leave the sitemap, so the count below has to know. */
+const NOINDEX = new Set(
+  [...fs.readFileSync(lib('noindex.ts'), 'utf8').matchAll(/^ {4}"([^"]+)",$/gm)].map((m) => m[1]),
+);
+
 const routes = new Set([
   '/',
   ...Object.keys(pages).filter(Boolean).map((s) => '/' + s),
@@ -268,7 +275,7 @@ async function checkSeo() {
     const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
     // every route the site serves, minus the ones that only 301
     const want =
-      Object.keys(pages).filter((s) => !REDIRECTED.has(`/${s}`)).length +
+      Object.keys(pages).filter((s) => !REDIRECTED.has(`/${s}`) && !NOINDEX.has(s)).length +
       EXTRA_ROUTES.length +
       PLANNED.length;
     if (locs.length !== want) seo.push(`/sitemap.xml :: ${locs.length} urls, expected ${want}`);

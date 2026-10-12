@@ -376,7 +376,7 @@ function Hero({ page, model }: { page: Page; model: ReturnType<typeof parseServi
 
           {model.priceFrom && (
             <Reveal delay={5} className="lg:col-span-5 lg:justify-self-end">
-              <PriceCard label={short(page.h1)} from={model.priceFrom} />
+              <PriceCard label={short(page.h1)} from={model.priceFrom} includes={model.includes} />
             </Reveal>
           )}
         </div>

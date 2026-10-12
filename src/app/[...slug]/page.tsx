@@ -10,6 +10,7 @@ import ServicePage from "@/components/ServicePage";
 import { ALL_SLUGS, getPage } from "@/lib/blocks";
 import { pageSchema } from "@/lib/schema";
 import { isLocationSlug } from "@/lib/location-frame";
+import { isNoindex } from "@/lib/noindex";
 import { SERVICE_SLUGS } from "@/lib/service-frame";
 
 export const dynamicParams = false;
@@ -28,6 +29,10 @@ export async function generateMetadata({
     title: page.title,
     description: page.description,
     alternates: { canonical: "/" + slug.join("/") },
+    /* A page held out of the index while the client decides its future —
+       `lib/noindex.ts` says which and why. `follow` stays on: the page still
+       links out, and nothing is gained by stranding what it points at. */
+    ...(isNoindex(page.slug) ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title: page.title,
       description: page.description,

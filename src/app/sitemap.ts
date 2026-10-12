@@ -3,6 +3,7 @@ import { getPage, PAGES } from "@/lib/blocks";
 import { hubCards, type HubSpec } from "@/lib/hub";
 import { INTERIOR, REPAIRS, VEHICLES } from "@/lib/hubs";
 import { isLocationSlug } from "@/lib/location-frame";
+import { isNoindex } from "@/lib/noindex";
 import { REDIRECTED_SLUGS } from "@/lib/redirects";
 import { SITE } from "@/lib/site";
 
@@ -25,6 +26,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       /* A sitemap that lists a URL which only 301s is asking a crawler to
          spend its budget learning the page moved. */
       .filter((page) => !REDIRECTED_SLUGS.has(page.slug))
+      /* A noindexed page has no business in the sitemap: the sitemap asks a
+         crawler to index what it lists, and the page's own header refuses. */
+      .filter((page) => !isNoindex(page.slug))
       .map((page) => ({ slug: page.slug, modified: modifiedFor(page) })),
     /* The menu-group hubs have no page in `pages.json` — each is built out of
        the pages it links to, so nothing in the mirror represents them and the

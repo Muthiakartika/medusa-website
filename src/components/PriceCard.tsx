@@ -9,7 +9,16 @@ import { BOOK_URL } from "@/lib/site";
  * title reads as a lesser page than the forty-one service pages it sits above.
  * Same markup, same measurements — the two must not drift.
  */
-export default function PriceCard({ label, from }: { label: string; from: string }) {
+export default function PriceCard({
+  label,
+  from,
+  includes,
+}: {
+  label: string;
+  from: string;
+  /** What the price buys, where the page lists it — see `ServiceModel.includes`. */
+  includes?: string[];
+}) {
   return (
     <div className="surface w-full max-w-[420px] p-7 backdrop-blur-sm lg:p-8">
       <p className="font-[family-name:var(--font-ui)] text-[11px] tracking-[0.18em] text-white/55 uppercase">
@@ -22,6 +31,19 @@ export default function PriceCard({ label, from }: { label: string; from: string
         </span>
       </p>
       <span aria-hidden className="my-6 block h-px w-full bg-white/10" />
+
+      {/* The page's own ticks, where it writes a short list of them. They were
+          a full-height band carrying five two-word items and nothing else. */}
+      {includes && includes.length > 0 && (
+        <ul className="mb-6 grid gap-2.5">
+          {includes.map((item) => (
+            <li key={item} className="flex items-start gap-2.5 text-[14px] leading-snug text-white/75">
+              <Icon name="check" size={16} className="mt-0.5 shrink-0 text-gold" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      )}
 
       {/* "Book Now" is the button these pages already carry under their price
           table; nothing else is added to the card. */}
