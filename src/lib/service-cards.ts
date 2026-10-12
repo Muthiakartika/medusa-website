@@ -23,6 +23,7 @@
  * approved on `/repairs`: "Our <the menu's name for the group> Services".
  */
 
+import { PAGES } from "@/lib/blocks";
 import { cardsFrom, type HubCard } from "@/lib/hub";
 import { NAV, type NavItem } from "@/lib/site";
 
@@ -113,11 +114,25 @@ function everyNavItem(items: NavItem[], into: NavItem[] = []): NavItem[] {
  * which is the page the client wants its card on. Throwing keeps every name
  * the client's own — a card must not carry a label this file invented.
  */
+/**
+ * The menu entry a card is named after — or, for a page the menu no longer
+ * lists, that page's own breadcrumb tail.
+ *
+ * The throw exists so no card can carry a name this repo invented, and it
+ * still does: the fallback is the page's own name, the same source
+ * `nameReadMoreLinks` uses to label a Read More, so nothing is written here.
+ * What it allows is the case the client created on 2026-10-12 by striking
+ * Exterior Wash out of the Car Wash column while leaving the page selling:
+ * off the menu, still on the page. A slug that is in neither still throws.
+ */
 function navItemFor(slug: string, owner: string): NavItem {
   const href = "/" + slug;
   const found = everyNavItem(NAV).find((i) => i.href === href);
-  if (!found) throw new Error(`${owner}: ${href} is not in the navigation`);
-  return found;
+  if (found) return found;
+
+  const tail = PAGES[slug]?.breadcrumb?.at(-1)?.name?.trim();
+  if (!tail) throw new Error(`${owner}: ${href} is not in the navigation and has no page to name it`);
+  return { label: tail, href };
 }
 
 /**

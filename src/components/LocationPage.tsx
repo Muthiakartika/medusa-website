@@ -9,6 +9,7 @@ import SectionHead from "@/components/SectionHead";
 import type { Page, Section } from "@/lib/blocks";
 import {
   foldableAreas,
+  areaServicesFor,
   mapFor,
   parseLocationPage,
   placeName,
@@ -37,6 +38,7 @@ export default function LocationPage({ page }: { page: Page }) {
   const model = parseLocationPage(page);
   const place = placeName(page.slug);
   const others = siblingIndex(page.slug);
+  const services = areaServicesFor(page.slug);
 
   /*
     "ini double, pake yg browser A-Z aja tapi judulnya pake yg areas we
@@ -79,6 +81,15 @@ export default function LocationPage({ page }: { page: Page }) {
       {model.neighbourhoods && (
         <Chips title={model.neighbourhoods.heading} items={model.neighbourhoods.items} />
       )}
+
+      {/*
+        C6: a borough hub reached none of its own service pages — 0 of 35 across
+        the site. This is the row that does, and it sits here rather than at the
+        foot because the client has twice fixed what closes these pages
+        (questions, map, index, sights) and this is not part of that run.
+        Twelve hubs have services; the other seven render nothing.
+      */}
+      {services.length > 0 && <Chips title={`Our Services in ${place}`} items={services} />}
 
       {model.body.length > 0 && (
         <Sections

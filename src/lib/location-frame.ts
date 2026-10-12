@@ -24,6 +24,8 @@
  * "Portfolio" heading stays empty, because that is what the source has.
  */
 
+import areaServices from "@schema/data/area-services.json";
+
 import type { Block, Page, Section } from "@/lib/blocks";
 import { PAGES } from "@/lib/blocks";
 import { MOVED_LOCATIONS } from "@/lib/location-moves";
@@ -104,6 +106,33 @@ export function placeName(slug: string) {
     .split("-")
     .map((w) => (w === "upon" || w === "and" || w === "of" ? w : w.charAt(0).toUpperCase() + w.slice(1)))
     .join(" ");
+}
+
+/**
+ * The service pages this borough hub has a counterpart for.
+ *
+ * C6 on the handover's work list: not one of the 19 hubs links a service page
+ * for its own area, so `/our-locations/barnet` never reached
+ * `/mobile-car-wash/barnet` — measured as 0 of 35 across all 353 pages.
+ * **Twelve of the nineteen get a row**; the other seven have no service page
+ * in their area at all and get nothing rather than an empty heading.
+ *
+ * The label is the target page's own H1, taken from the handover's measurement
+ * of the live site. Not from `pages.json`, whose `h1` is the mirror's and is
+ * corrected at render time — it heads `/car-detailing/brent` "Mobile Car
+ * Valeting in Brent", which is the wrong service. Nothing here writes a name.
+ *
+ * A row is dropped unless this build actually renders the page, so the row can
+ * never point at a 404 even if the measurement runs ahead of the repo.
+ */
+export function areaServicesFor(slug: string) {
+  const prefix = "our-locations/";
+  if (!slug.startsWith(prefix)) return [];
+  const place = slug.slice(prefix.length);
+  if (!place || place.includes("/")) return [];
+  return areaServices
+    .filter((a) => a.area === place && PAGES[a.path.slice(1)])
+    .map((a) => ({ href: a.path, label: a.name }));
 }
 
 /**

@@ -88,7 +88,11 @@ export const NAV: NavItem[] = [  { label: "Home", href: "/" },
           { label: "Silver Wash", href: "/mobile-car-wash/silver-wash" },
           { label: "Gold Wash", href: "/mobile-car-wash/gold-wash" },
           { label: "Platinum Wash", href: "/mobile-car-wash/platinum-wash" },
-          { label: "Exterior Wash", href: "/mobile-car-wash/exterior-wash" },
+          /* "just need to remove exterior wash" — client, 2026-10-12, struck
+             through on a screenshot of this column. As with Bronze Wash, the
+             menu entry goes and the URL does not: the page still renders, still
+             answers its 301, and still carries its card on /mobile-car-wash,
+             which the client asked for on 2026-09-22. */
           { label: "Exterior Plus Wash", href: "/mobile-car-wash/exterior-plus-wash" },
           /* "Alloy Wheel Cleaning" left this column on 2026-10-06 — see Car
              Detailing below. */
