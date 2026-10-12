@@ -73,7 +73,10 @@ export const REDIRECTS: ReadonlyArray<readonly [from: string, to: string]> = [
   ["/engine-bay-steam-cleaning", "/repairs/engine-bay-steam-cleaning"],
   ["/enhancement", "/car-detailing/enhancement-detail"],
   ["/exterior-plus-wash", "/mobile-car-wash/exterior-plus-wash"],
-  ["/exterior-wash", "/mobile-car-wash/exterior-wash"],
+  /* Repointed 2026-10-12 when Exterior Wash was retired: it used to land on
+     `/mobile-car-wash/exterior-wash`, which now redirects again, so this went
+     straight to the destination rather than chaining. */
+  ["/exterior-wash", "/mobile-car-wash/exterior-plus-wash"],
   ["/headlight-restoration", "/repairs/headlight-restoration"],
   ["/mini-car-detail-in-london", "/car-detailing/mini-detail"],
   ["/mini-valet", "/car-valeting/mini-valet"],
@@ -184,6 +187,21 @@ export const REDIRECTS: ReadonlyArray<readonly [from: string, to: string]> = [
      older rows that led to the old URL point straight here, so nothing
      chains. */
   ["/repairs/paint-overspray-removal", "/repairs/car-interior-paint-spill-removal"],
+
+  /* Exterior Wash, retired 2026-10-12. The menu entry went earlier the same
+     day on the client's "just need to remove exterior wash"; asked whether the
+     page should follow, they said "hm not sure, maybe yes since the service is
+     same". The repo owner called it after reading the difference, so this is
+     their decision rather than the client's confirmation.
+
+     The two are NOT the same service — Exterior Plus adds liquid wax, tyre
+     dressing and plastic dressing, and costs £49-£65 against this page's
+     £35-£42 — so a visitor who wanted the cheaper wash now lands on the dearer
+     one. That is the known cost of the choice, recorded here.
+
+     Nothing is lost: the page keeps its entry in `pages.json`, as the other 30
+     retired URLs do. Deleting this one row brings it back exactly as it was. */
+  ["/mobile-car-wash/exterior-wash", "/mobile-car-wash/exterior-plus-wash"],
 
   /*
     The 127 location pages now living under their service hub.

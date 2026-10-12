@@ -51,7 +51,9 @@ export const SERVICE_GROUPS: Record<string, ServiceGroup> = {
     heading: "Other Car Wash Services",
     after: "Why Choose Medusa Auto Detailing?",
     services: [
-      "mobile-car-wash/exterior-wash",
+      /* Exterior Wash was the first card here until 2026-10-12, when the page
+         was retired and 301'd to Exterior Plus. A card pointing at a redirect
+         is a card that costs a hop and sells a page that no longer exists. */
       /* Alloy wheel protection was the second card here until 2026-10-06,
          when the client moved it out of the car wash group altogether: "This
          page is not alloy wheel cleaning its alloy wheel protectors". It is a
