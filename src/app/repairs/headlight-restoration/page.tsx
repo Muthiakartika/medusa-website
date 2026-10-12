@@ -89,10 +89,13 @@ export default function HeadlightRestorationPage() {
             serviceType: "Mobile headlight restoration",
             description: HEADLIGHT.seo.description,
             image: PHOTOS.hero.src,
+            /* "starts from £100. Final pricing can depend on the condition" —
+               a floor, so it is minPrice rather than an exact claim. */
             offer: {
               price: HEADLIGHT.pricing.amount.replace(/[^\d.]/g, ""),
               currency: "GBP",
               description: HEADLIGHT.faq.items[0].a.map((p) => p.replace(/<[^>]+>/g, "")).join(" "),
+              from: true,
             },
           },
           faq: HEADLIGHT.faq.items,

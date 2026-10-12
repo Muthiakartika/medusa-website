@@ -100,7 +100,9 @@ export default function SteamCleaningPage() {
         data={pageSchema(page, {
           service: {
             slug: SLUG,
-            name: STEAM.hero.h1,
+            /* A4: the page's h1 is "Car Interior Steam Cleaning London" and stays
+               so; a Service name carries the service, never the city. */
+            name: "Car Interior Steam Cleaning",
             serviceType: "Car interior steam cleaning",
             description: STEAM.seo.description,
             image: PHOTOS.hero.src,

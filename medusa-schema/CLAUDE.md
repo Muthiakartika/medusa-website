@@ -2,6 +2,20 @@
 
 Read this before writing any JSON-LD for medusaautodetailing.co.uk.
 
+## The work list is `WORK-LIST.md`. Start there.
+
+It is ordered and every item says how to prove it is done. Section A is live and wrong,
+B is the missing graph, C is page and link work, D is blocked on a client answer and must
+not be started, E is outside the repo but on the critical path.
+
+Two things in it override the obvious instinct:
+
+- **Do E1 before B1.** Three mirror domains re-serve this site on their own hostnames with
+  every URL rewritten, so each item you add to the graph is also added to three competing
+  business entities. Restricting the app to the real `Host` is a prerequisite, not a chore.
+- **Do C1 before marking up `/mobile-car-wash/bronze-wash`.** It has zero inbound internal
+  links from anywhere on the site. Markup on a page nothing links to is markup on an orphan.
+
 ## Construct every @id through `ids.ts`
 
 Never build an identifier by template in a route. Area ids are **not uniform**: 12 areas have

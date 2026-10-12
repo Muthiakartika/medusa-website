@@ -93,7 +93,13 @@ export default function CarWaxServicePage() {
             serviceType: "Car waxing",
             description: WAX.seo.description,
             image: PHOTOS.hero.src,
-            offer: { price: "40", currency: "GBP", description: WAX.hero.card.note },
+            /* An add-on to an eligible valet, never a standalone £40 service. */
+            offer: {
+              price: "40",
+              currency: "GBP",
+              description: WAX.hero.card.note,
+              requires: true,
+            },
           },
           faq: WAX.faq.items,
         })}

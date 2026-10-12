@@ -2103,7 +2103,7 @@ now the single entry point and the 15 pages that carried three blocks carry one.
 node medusa-schema/validate.mjs <file.jsonld>
 ```
 
-Fourteen checks, envelope first. It needs `medusa-schema/schemaorg.jsonld` for
+Sixteen checks, envelope first. It needs `medusa-schema/schemaorg.jsonld` for
 the property check and says so when it is missing; that file is gitignored and
 fetched on demand:
 
@@ -2114,12 +2114,11 @@ curl -sL https://schema.org/version/latest/schemaorg-current-https.jsonld -o med
 Run it against **rendered** pages, not against a builder's return value. All
 353 pass, 14 checks each, and every page serves exactly one block.
 
-One fix went into the validator itself: `offers` is an array wherever a page
-sells the service at several levels — three motorcycle valets, four
-vomit-cleaning sizes, three ozone tiers — and an array has no `.price`, so the
-price check failed the three priced pages it existed to pass. The handover's
-own README records the same class of error ("one caught an error in the checker
-rather than the data").
+The 12 October handover reached the same conclusion about the array-shaped
+`offers` bug this repo had already patched, and arrived with two checks more:
+**no placeholder published as a value** and **no exact price on a conditional
+Offer**. Both now pass everywhere. Its `WORK-LIST.md` is the ordered list of
+what is left, and `CLAUDE.md` points at it.
 
 ### What this repo changed in the handover's data, and why
 
@@ -2143,6 +2142,27 @@ always behind.
 `linkedFromBody` on the affected categories is `null` with a `TODO`: the
 measured figure counted a package list this repo has since changed, and
 `hasOfferCatalog` must not be turned on from a stale count.
+
+### The 12 October pass
+
+The handover's own `WORK-LIST.md` re-audited the live site on 2026-10-12 and
+is the authority for what is left. Closed that day, each measured against the
+rendered site rather than reported:
+
+| | Was | Now |
+| --- | --- | --- |
+| **A1** four pages asserting an exact price their own copy contradicts | 6 Offers | a "from" price is `priceSpecification.minPrice`; an add-on's exact figure sits in a `UnitPriceSpecification` whose `description` names what it must be booked with. **No figure changed** — the claim type was wrong, not the number |
+| **A2** one phone number written two ways inside `#business` | `+442033556435` / `+44-2033556435` | identical, and fixed in `data/business.json` too |
+| **A3** `articleSection: ["Uncategorized"]` on all 21 posts | 21 | **0** — `PLACEHOLDER` in `schema.ts` mirrors the validator's own list, so the two cannot disagree. A placeholder passes every presence check, which is how an earlier pass called this fixed |
+| **A4** a `Service` named for a city | `Car Interior Steam Cleaning London` | the city is gone from the node; the page's h1 is untouched |
+| **B4** package `Service` islands | 0 / 14 | **14 / 14** carry `isRelatedTo` up to their category |
+| **B5** category catalogue | 0 / 7 | **6 / 7** |
+| **B6** six boroughs asserting no containment | 6 | **0** — a defect in the handover's `areas.json`, fixed there: all six take `greater-london`, and all 21 boroughs are now `AdministrativeArea` rather than 15 of them `Place` |
+
+`site.ts`'s `reservationsPhone` is now unused — the business node is
+`data/business.json` verbatim — and still carries the hyphenated form. Left
+alone rather than risk another `site.ts` conflict, but it is a trap: the next
+person to see two formats may "fix" the wrong one.
 
 ### Open, and the client's to answer
 
@@ -2171,13 +2191,15 @@ measured figure counted a package list this repo has since changed, and
 
 ### What is deliberately still off
 
-`hasOfferCatalog` on the 7 category pages and `ItemList` on the 19 location
-hubs. Both are gated on page work the handover names, not on anything in the
-markup: **no location hub links its own area pages**, and `/mobile-car-wash`
-links 8 of its 9 packages. A catalogue or a list naming pages the body never
-mentions is a page problem dressed up as markup. `derivedNode` emits the
-`Service` and the `Place` without either, which is exactly what `build.ts`
-does when `includeCatalogue` is false and `listServices` is off.
+**`ItemList` on the 19 location hubs**, and **`hasOfferCatalog` on
+`/mobile-car-wash` alone**. Neither is gated on the markup: not one location
+hub links a service page for its own area, and `/mobile-car-wash` links 8 of
+its 9 packages — `bronze-wash` has **zero inbound links from anywhere on the
+site**, re-measured across all 353 pages. A catalogue or a list naming a page
+the body never mentions is a page problem dressed up as markup. `NO_CATALOGUE`
+in `schema.ts` holds that one slug; delete the entry when the link exists.
+
+The other six categories carry a catalogue as of 2026-10-12.
 
 ### Coverage, as of 2026-10-09
 
@@ -2193,6 +2215,8 @@ its own `service` always wins.
 | `Service` on a service-in-a-place page | **253 / 253** |
 | `Service` on a package page | 14 / 41 |
 | `Place` / `AdministrativeArea` on a location hub | **19 / 19** |
+| `isRelatedTo` on a package `Service` | **14 / 14** |
+| `hasOfferCatalog` on a category | **6 / 7** (see above) |
 | `Article` on a blog post | 21 / 21 (none with `about`, by design) |
 
 Every one of those 253 names is the page's **rendered** h1, checked page by

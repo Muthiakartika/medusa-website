@@ -2,7 +2,7 @@
   {
     "slug": "barnet",
     "name": "Barnet",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": true,
     "services": [
@@ -73,7 +73,7 @@
   {
     "slug": "brent",
     "name": "Brent",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": true,
     "services": [
@@ -97,7 +97,7 @@
   {
     "slug": "bromley",
     "name": "Bromley",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": false,
     "services": [
@@ -206,7 +206,7 @@
   {
     "slug": "croydon",
     "name": "Croydon",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": false,
     "services": [
@@ -218,7 +218,7 @@
   {
     "slug": "ealing",
     "name": "Ealing",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": true,
     "services": [
@@ -277,7 +277,7 @@
   {
     "slug": "enfield",
     "name": "Enfield",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": true,
     "services": [
@@ -407,7 +407,7 @@
   {
     "slug": "harrow",
     "name": "Harrow",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": true,
     "services": [
@@ -479,7 +479,7 @@
   {
     "slug": "hillingdon",
     "name": "Hillingdon",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": true,
     "services": [
@@ -502,7 +502,7 @@
   {
     "slug": "hounslow",
     "name": "Hounslow",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": true,
     "services": [
@@ -526,7 +526,7 @@
   {
     "slug": "islington",
     "name": "Islington",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": true,
     "services": [
@@ -562,7 +562,7 @@
   {
     "slug": "kingston",
     "name": "Kingston",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": false,
     "services": [
@@ -732,7 +732,7 @@
   {
     "slug": "richmond-upon-thames",
     "name": "Richmond upon Thames",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": true,
     "services": [
@@ -888,7 +888,7 @@
   {
     "slug": "sutton",
     "name": "Sutton",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": false,
     "services": [
@@ -936,7 +936,7 @@
   {
     "slug": "wandsworth",
     "name": "Wandsworth",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": false,
     "services": [
@@ -1008,7 +1008,7 @@
   {
     "slug": "westminster",
     "name": "Westminster",
-    "type": "Place",
+    "type": "AdministrativeArea",
     "parent": "greater-london",
     "hasOwnPage": false,
     "services": [
@@ -1054,7 +1054,7 @@
     "slug": "camden",
     "name": "Camden",
     "type": "AdministrativeArea",
-    "parent": null,
+    "parent": "greater-london",
     "hasOwnPage": true,
     "services": [],
     "parentOnly": true
@@ -1063,7 +1063,7 @@
     "slug": "city-of-london",
     "name": "City of London",
     "type": "AdministrativeArea",
-    "parent": null,
+    "parent": "greater-london",
     "hasOwnPage": true,
     "services": [],
     "parentOnly": true
@@ -1072,7 +1072,7 @@
     "slug": "city-of-westminster",
     "name": "City of Westminster",
     "type": "AdministrativeArea",
-    "parent": null,
+    "parent": "greater-london",
     "hasOwnPage": true,
     "services": [],
     "parentOnly": true
@@ -1081,7 +1081,7 @@
     "slug": "hammersmith-and-fulham",
     "name": "Hammersmith and Fulham",
     "type": "AdministrativeArea",
-    "parent": null,
+    "parent": "greater-london",
     "hasOwnPage": true,
     "services": [],
     "parentOnly": true
@@ -1090,7 +1090,7 @@
     "slug": "haringey",
     "name": "Haringey",
     "type": "AdministrativeArea",
-    "parent": null,
+    "parent": "greater-london",
     "hasOwnPage": true,
     "services": [],
     "parentOnly": true
@@ -1099,7 +1099,7 @@
     "slug": "kensington-and-chelsea",
     "name": "Kensington and Chelsea",
     "type": "AdministrativeArea",
-    "parent": null,
+    "parent": "greater-london",
     "hasOwnPage": true,
     "services": [],
     "parentOnly": true

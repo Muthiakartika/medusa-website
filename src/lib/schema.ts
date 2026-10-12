@@ -21,6 +21,7 @@ import areaServices from "@schema/data/area-services.json";
 import areas from "@schema/data/areas.json";
 import business from "@schema/data/business.json";
 import categories from "@schema/data/categories.json";
+import packages from "@schema/data/packages.json";
 import { id } from "@schema/ids";
 
 import type { Page } from "@/lib/blocks";
@@ -110,6 +111,23 @@ function breadcrumbList(page: Page): Json {
   };
 }
 
+/**
+ * WordPress filed every post under its default category, so all 21 carried
+ * `articleSection: ["Uncategorized"]` — a placeholder, not a section, and a
+ * false claim rather than a blank. A placeholder passes every presence check,
+ * which is how an earlier pass reported this fixed when it was not.
+ *
+ * The list mirrors `validate.mjs`'s own, so the two cannot disagree. Omit the
+ * property until the posts have real sections.
+ */
+const PLACEHOLDER =
+  /^(uncategori[sz]ed|undefined|null|n\/?a|tbd|tba|none|unknown|default|lorem ipsum|untitled|test|example|placeholder|xxx|todo)$/i;
+
+const realSections = (section?: string | string[]) =>
+  (Array.isArray(section) ? section : section ? [section] : []).filter(
+    (s) => s.trim() && !PLACEHOLDER.test(s.trim()),
+  );
+
 /** Blog posts get an Article node on top of the WebPage, as on the source. */
 function article(page: Page): Json {
   const pageId = id.webpage(pathOf(page.slug));
@@ -129,7 +147,9 @@ function article(page: Page): Json {
     /* #organization is retired; every publisher points at the business. */
     publisher: { "@id": id.business() },
     ...(meta?.author ? { author: { "@type": "Person", name: meta.author } } : {}),
-    ...(meta?.section?.length ? { articleSection: meta.section } : {}),
+    ...(realSections(meta?.section).length
+      ? { articleSection: realSections(meta?.section) }
+      : {}),
     ...(image ? { image: abs(image) } : {}),
     inLanguage: "en-GB",
   };
@@ -167,6 +187,25 @@ function faqPage(slug: string, items: { q: string; a: string[] }[]): Json {
 const CATEGORY = new Map(categories.map((c) => [c.path, c]));
 const AREA_SERVICE = new Map(areaServices.map((a) => [a.path, a]));
 const AREA = new Map(areas.map((a) => [a.slug, a]));
+const PACKAGE = new Map(packages.map((p) => [`${p.category}/${p.slug}`, p]));
+
+/**
+ * `/mobile-car-wash` links 8 of its 9 packages — `bronze-wash` has zero inbound
+ * links from anywhere on the site — so its catalogue would name a page the body
+ * never mentions. Drop this once that link exists.
+ */
+const NO_CATALOGUE = new Set(["mobile-car-wash"]);
+
+/**
+ * A category's `Service`, written out enough to stand alone wherever it is
+ * referenced. `isRelatedTo` points up to it; the hierarchy runs **down** through
+ * `hasOfferCatalog`. Never `isPartOf` — that is `CreativeWork` in domain and range.
+ */
+function categoryRef(slug: string): Json | null {
+  const c = CATEGORY.get(`/${slug}`);
+  if (!c) return null;
+  return { "@type": "Service", "@id": id.categoryService(c.slug), name: c.name, url: id.webpage(c.path) };
+}
 
 /**
  * An area as a `Place`, or an `AdministrativeArea` where it is one, with the
@@ -213,6 +252,27 @@ function derivedNode(slug: string): Json | null {
 
   const category = CATEGORY.get(path);
   if (category) {
+    /* B5: the catalogue is how the hierarchy runs downward. It lists only what
+       the page links, which is why `/mobile-car-wash` has none — see NO_CATALOGUE. */
+    const catalogue = NO_CATALOGUE.has(category.slug)
+      ? null
+      : {
+          "@type": "OfferCatalog",
+          "@id": id.categoryCatalogue(category.slug),
+          name: `${category.name} packages`,
+          itemListElement: category.packages.map((slug) => {
+            const p = PACKAGE.get(`${category.slug}/${slug}`);
+            if (!p) throw new Error(`catalogue: no package row for ${category.slug}/${slug}`);
+            return {
+              "@type": "Offer",
+              itemOffered: {
+                "@type": "Service",
+                "@id": id.packageService(category.slug, slug),
+                name: p.name,
+              },
+            };
+          }),
+        };
     return {
       "@type": "Service",
       "@id": id.categoryService(category.slug),
@@ -221,6 +281,7 @@ function derivedNode(slug: string): Json | null {
       url: id.webpage(path),
       providerMobility: "dynamic",
       provider: { "@id": id.business() },
+      ...(catalogue ? { hasOfferCatalog: catalogue } : {}),
     };
   }
 
@@ -256,6 +317,31 @@ function derivedNode(slug: string): Json | null {
   return null;
 }
 
+/**
+ * A figure the page states, and what kind of claim it is.
+ *
+ * **`price` is an exact claim.** Four pages asserted one and then contradicted
+ * it in the Offer's own description — prose no parser reads. The figures were
+ * right; the claim type was wrong, and nothing here changes a figure.
+ *
+ * - plain — the page sells this, at this price, on its own.
+ * - `from` — "starts from £100. Final pricing can depend on the condition."
+ *   The figure is a floor, so it goes in `priceSpecification.minPrice`.
+ * - `requires` — an exact price you cannot pay on its own: "+£20, must be
+ *   booked with the Triton Interior Valet". The figure stays exact, inside a
+ *   `UnitPriceSpecification` that **states the dependency in the markup**
+ *   rather than only in prose.
+ */
+export type PriceInput = {
+  price: string;
+  currency: string;
+  description: string;
+  /** the figure is a minimum, not an exact price */
+  from?: boolean;
+  /** the price cannot be paid on its own; `description` states what it needs */
+  requires?: boolean;
+};
+
 export type ServiceInput = {
   slug: string;
   name: string;
@@ -263,10 +349,45 @@ export type ServiceInput = {
   description: string;
   image?: string;
   /** One price, where the page states one. */
-  offer?: { price: string; currency: string; description: string };
+  offer?: PriceInput;
   /** One Offer per package, where the page sells the service at several levels. */
-  offers?: { name: string; price: string; currency: string; description: string }[];
+  offers?: (PriceInput & { name: string })[];
 };
+
+/** An Offer whose price claim matches what the page actually promises. */
+function offerNode(o: PriceInput, url: string, name?: string): Json {
+  if (o.requires) {
+    /* An exact figure you cannot pay on its own. It stays exact, in a unit price
+       rather than a transaction price, and the condition sits beside it rather
+       than in an Offer description no parser reads. */
+    return {
+      "@type": "Offer",
+      ...(name ? { name } : {}),
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: o.price,
+        priceCurrency: o.currency,
+        description: o.description,
+      },
+      url,
+    };
+  }
+  return {
+    "@type": "Offer",
+    ...(name ? { name } : {}),
+    ...(o.from
+      ? {
+          priceSpecification: {
+            "@type": "UnitPriceSpecification",
+            minPrice: o.price,
+            priceCurrency: o.currency,
+          },
+        }
+      : { price: o.price, priceCurrency: o.currency }),
+    description: o.description,
+    url,
+  };
+}
 
 /**
  * A Service node for a page that sells one thing.
@@ -288,23 +409,15 @@ export type ServiceInput = {
 function serviceNode(service: ServiceInput): Json {
   const url = id.webpage(pathOf(service.slug));
   const offers = service.offer
-    ? {
-        "@type": "Offer",
-        price: service.offer.price,
-        priceCurrency: service.offer.currency,
-        description: service.offer.description,
-        url,
-      }
+    ? offerNode(service.offer, url)
     : service.offers?.length
-      ? service.offers.map((o) => ({
-          "@type": "Offer",
-          name: o.name,
-          price: o.price,
-          priceCurrency: o.currency,
-          description: o.description,
-          url,
-        }))
+      ? service.offers.map((o) => offerNode(o, url, o.name))
       : null;
+
+  /* B4: a package Service points up at its category, written out so it stands
+     alone. All 253 area Services already do; these were the only islands. */
+  const parts = service.slug.split("/").filter(Boolean);
+  const parent = parts.length === 2 ? categoryRef(parts[0]) : null;
 
   return {
     "@type": "Service",
@@ -318,6 +431,7 @@ function serviceNode(service: ServiceInput): Json {
        in every page's graph, so this resolves on the page it sits on. Writing
        it out is only required ACROSS pages. */
     provider: { "@id": id.business() },
+    ...(parent ? { isRelatedTo: parent } : {}),
     ...(service.image ? { image: abs(service.image) } : {}),
     ...(offers ? { offers } : {}),
   };

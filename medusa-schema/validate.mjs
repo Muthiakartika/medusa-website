@@ -86,17 +86,60 @@ for (const f of files) {
     !(n.providerMobility && String(n['@type']) !== 'Service')), 'domainIncludes is Service only');
   ck('no Service isPartOf Service', !/"isPartOf":\s*\{\s*"@id":\s*"[^"]*#service"/.test(s), 'use isRelatedTo');
   ck('no Product node', !/"@type":\s*"Product"/.test(s), 'the client sells services, not products');
+  /* A placeholder published as a value is a false claim, not a blank. Normalise every
+     value to an array first: the live articleSection is ["Uncategorized"], and a scalar
+     comparison against it reported the defect as fixed. */
+  const PLACEHOLDER = /^(uncategori[sz]ed|undefined|null|n\/?a|tbd|tba|none|unknown|default|lorem ipsum|untitled|test|example|placeholder|xxx|todo)$/i;
+  const placeholders = [];
+  const scanPlaceholder = (n, owner) => {
+    if (n === null || typeof n !== 'object') return;
+    if (Array.isArray(n)) return n.forEach(x => scanPlaceholder(x, owner));
+    const who = n['@id'] || owner;
+    Object.entries(n).forEach(([k, v]) => {
+      if (k.startsWith('@')) return;
+      (Array.isArray(v) ? v : [v]).forEach(x => {
+        if (typeof x === 'string' && PLACEHOLDER.test(x.trim()))
+          placeholders.push(String(who || n['@type']).replace(SITE, '') + ' . ' + k + ' = ' + JSON.stringify(x));
+      });
+      scanPlaceholder(v, who);
+    });
+  };
+  d['@graph'].forEach(n => scanPlaceholder(n, null));
+  ck('no placeholder published as a value', placeholders.length === 0,
+    [...new Set(placeholders)].join(' | ') || 'omit the property instead');
+
   ck('no AggregateRating or Review on the business', !/aggregateRating|"review"\s*:/i.test(s));
-  /* offers is an array wherever a page sells the service at more than one level
-     (three motorcycle valets, four vomit-cleaning sizes, three ozone tiers), and
-     an array has no .price, so reading one off it failed every priced page it
-     was meant to pass. Check each Offer instead. */
-  const priced = o => !!o && !!(o.price || o.lowPrice ||
-    (o.priceSpecification && (o.priceSpecification.price || o.priceSpecification.lowPrice)));
-  ck('no Offer without a price', !d['@graph'].some(n => {
-    if (!n.offers) return false;
-    return Array.isArray(n.offers) ? !n.offers.every(priced) : !priced(n.offers);
-  }), 'omit offers entirely rather than emitting an empty one');
+  /* offers may be ONE Offer or an ARRAY of them. Treating an array as a single node
+     made this check fail on three pages whose every Offer carried a price, which is
+     exactly how a correct check gets switched off. */
+  const priceless = o => {
+    if (!o) return false;
+    if (Array.isArray(o)) return o.some(priceless);
+    const ps = o.priceSpecification;
+    return !o.price && !o.lowPrice && !(ps && (ps.price || ps.minPrice || ps.lowPrice));
+  };
+  const noPrice = [];
+  const scanOffers = n => {
+    if (n === null || typeof n !== 'object') return;
+    if (Array.isArray(n)) return n.forEach(scanOffers);
+    if (n.offers && priceless(n.offers)) noPrice.push(String(n['@id'] || n['@type']));
+    Object.entries(n).forEach(([k, v]) => { if (k !== '@type' && k !== '@context') scanOffers(v); });
+  };
+  d['@graph'].forEach(scanOffers);
+  ck('no Offer without a price', noPrice.length === 0, noPrice.join(' ') || 'omit offers rather than emitting a priceless one');
+
+  /* An exact price claims an exact price. A "from" price belongs in priceSpecification
+     with minPrice, or an AggregateOffer with lowPrice. */
+  const fromish = [];
+  const scanFrom = n => {
+    if (n === null || typeof n !== 'object') return;
+    if (Array.isArray(n)) return n.forEach(scanFrom);
+    if (n['@type'] === 'Offer' && n.price && /(^|[^a-z])(from|starts?(ing)? (at|from)|cannot be booked|must be added|add-?on)/i.test(String(n.description || '')))
+      fromish.push(String(n.name || n['@id'] || n.price));
+    Object.entries(n).forEach(([k, v]) => { if (k !== '@type' && k !== '@context') scanFrom(v); });
+  };
+  d['@graph'].forEach(scanFrom);
+  ck('no exact price on a conditional Offer', fromish.length === 0, fromish.join(' | ') || 'use priceSpecification.minPrice for a "from" price');
 }
 console.log('\n' + (bad ? bad + ' CHECKS FAILED' : 'all checks passed'));
 process.exit(bad ? 1 : 0);

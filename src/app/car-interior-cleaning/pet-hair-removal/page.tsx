@@ -89,7 +89,14 @@ export default function PetHairRemovalPage() {
             serviceType: "Car pet hair removal",
             description: PET_HAIR.seo.description,
             image: PHOTOS.hero.src,
-            offer: { price: "20", currency: "GBP", description: PET_HAIR.hero.addOn.note },
+            /* +£20, and the page says it "cannot be booked as a standalone £20
+               service": exact, but not payable alone. */
+            offer: {
+              price: "20",
+              currency: "GBP",
+              description: PET_HAIR.hero.addOn.note,
+              requires: true,
+            },
           },
           faq: PET_HAIR.faq.items,
         })}

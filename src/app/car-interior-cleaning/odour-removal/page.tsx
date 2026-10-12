@@ -84,11 +84,14 @@ export default function OdourRemovalPage() {
             serviceType: "Car odour and ozone treatment",
             description: ODOUR.seo.description,
             image: PHOTOS.hero.src,
+            /* Each tier is an exact price that must be added to a Triton, Zeus
+               or Medusa Gold valet, so none is a standalone purchase. */
             offers: ODOUR.tiers.items.map((t) => ({
               name: `${t.name} — ${t.duration}`,
               price: t.price.replace(/[^\d.]/g, ""),
               currency: "GBP",
               description: `${t.lead} ${ODOUR.tiers.mustAdd}`,
+              requires: true,
             })),
           },
           faq: ODOUR.faq.items,

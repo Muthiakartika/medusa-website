@@ -70,9 +70,8 @@
       "steam-cleaning",
       "vomit-cleaning"
     ],
-    "linkedFromBody": null,
-    "totalPackages": 8,
-    "TODO": "linkedFromBody: re-measure against the Next.js build before turning hasOfferCatalog on"
+    "linkedFromBody": 8,
+    "totalPackages": 8
   },
   {
     "slug": "repairs",
