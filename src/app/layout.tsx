@@ -111,12 +111,45 @@ export const metadata: Metadata = {
      before each crawl: that record has to stay. */
 };
 
+/**
+ * Sends a visitor on a mirror domain to the same page on the real one.
+ *
+ * Three domains re-serve this site live (PROJECT.md §14), and they fetch it
+ * under our own hostname, so nothing on the server can tell their traffic
+ * from a visitor's. The browser is the one place the borrowed hostname shows,
+ * so this runs there, inline in <head>, before the first paint.
+ *
+ * - **The hostname is joined at run time.** The mirrors string-replace it in
+ *   every body they relay; written out whole, this would become a check of the
+ *   mirror against itself, and pass.
+ * - **Path, query and hash go with the visitor**, so a UTM tag survives.
+ * - **The hosts it lets alone** are this site's own, local development (by
+ *   name, by LAN address, or through the ngrok tunnel `allowedDevOrigins`
+ *   opens), Vercel previews, and Google Translate's proxy, which is a reader
+ *   asking for this page in another language.
+ * - **`data-cfasync="false"`** keeps Cloudflare's Rocket Loader, on whatever
+ *   zone serves the copy, from deferring it past the paint.
+ *
+ * Friction, not a lock: an operator who notices can strip it.
+ */
+const DOMAIN_GUARD = `(function(){
+var c=["medusaautodetailing","co","uk"].join("."),h=location.hostname;
+if(h===c||h==="www."+c||h==="localhost"||h==="127.0.0.1"||h==="[::1]"||/\\.(vercel\\.app|local|ngrok-free\\.app|translate\\.goog)$/.test(h)||/^(10|192\\.168|172\\.(1[6-9]|2\\d|3[01]))\\./.test(h))return;
+location.replace("https://"+c+location.pathname+location.search+location.hash);
+})();`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en-GB"
       className={`${bungee.variable} ${exo2.variable} ${oswald.variable} ${openSans.variable} ${nunitoSans.variable} ${audiowide.variable} antialiased`}
     >
+      <head>
+        <script
+          data-cfasync="false"
+          dangerouslySetInnerHTML={{ __html: DOMAIN_GUARD }}
+        />
+      </head>
       <body className="flex min-h-screen flex-col bg-ink">{children}</body>
     </html>
   );

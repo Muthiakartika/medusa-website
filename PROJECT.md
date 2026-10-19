@@ -2229,3 +2229,90 @@ true. Check against the served HTML.
 The `@id`s reconcile across pages, which is the point of them:
 `/mobile-car-wash/barnet` serves `…/our-locations/barnet#area`, and
 `/our-locations/barnet` defines that same node. One entity, two pages.
+
+---
+
+## 14. The mirror domains
+
+Three domains re-serve this whole site live, under their own names:
+
+| Domain | Registered | Registrar · registrant | DNS / TLS |
+| --- | --- | --- | --- |
+| `medusaautodetailing.site` | 2026-08-05 | Dynadot · "Super Privacy Service LTD c/o Dynadot" | its own Cloudflare zone (`blakely`/`clayton`), Universal SSL issued the day it was registered |
+| `medusaautodetailing.pro` | 2026-08-09 | the same | its own zone (`cortney`/`todd`) |
+| `medusaautodetailing.info` | 2026-08-14 | the same | its own zone (`curt`/`lovisa`) |
+
+None has an MX record. On 2026-10-19 each homepage was byte-identical to ours
+once its 103 substituted hostnames were reversed, named the real domain zero
+times, gave `info@` its own domain as the contact address, and declared an
+`AutoWash` at its own URL in the JSON-LD. The client's takedown pack
+(`D:\Medusa mirror takedown pack.md`, outside the repo) has the full evidence
+and the abuse filings.
+
+**They are Cloudflare Workers, not servers.** A fresh URL fetched through a
+mirror lands in *our* Cloudflare cache, so the real domain then answers it as a
+`HIT` carrying the same `x-vercel-id`: their upstream fetch goes through our
+zone, under our hostname. And where that fetch leaves from follows the visitor.
+Served from Singapore, it reaches Vercel through `sin1`. Served from Marseille,
+which is where `.info` answers from, it goes through `fra1` and `cdg1`. A proxy
+on a server would reach us from one place every time. Code that runs in
+whichever Cloudflare data centre the visitor lands on is a Worker. They also
+follow our redirects inside the fetch (`/valeting/` is a 200 on a mirror) and
+answer `www.` the same as the apex, which is what `fetch()` in a Worker does.
+
+Two things follow:
+
+- **Restricting the app to the real `Host` does nothing.** `WORK-LIST.md` E1
+  calls it the highest-value fix, but every mirror request reaches Vercel with
+  our own `Host`.
+- **Never answer suspected mirror traffic differently at the origin.** Cloudflare
+  caches the response under the real URL, so whatever the mirror is sent, real
+  visitors get it too, for a day (§7, rule 3).
+
+### What ships here, 2026-10-19
+
+- **A canonical header on every page.** `headers()` in `next.config.ts` sends
+  `Link: <https://medusaautodetailing.co.uk/<path>>; rel="canonical"`. The
+  mirrors rewrite the HTML canonical but pass headers through as they find
+  them, so this is the one canonical on the copy that still points home. It is
+  config rather than a `proxy.ts`, because a proxy would put a function in front
+  of every static page just to repeat the matched path. It is not sent on
+  `/_next`, `/api`, `/assets`, the sitemap or robots.txt. It matches the HTML
+  canonical on all 352 sitemap URLs.
+- **A domain guard in `<head>`.** `DOMAIN_GUARD` in `app/layout.tsx` is an
+  inline script that sends any visitor, Googlebot's renderer included, from a
+  hostname that is not ours to the same path, query and hash on the real
+  domain. It joins the hostname from parts at run time, because written out
+  whole the mirrors would rewrite it into a check that compares the mirror with
+  itself. It leaves alone localhost, LAN addresses, `*.local`, the ngrok tunnel,
+  `*.vercel.app` and Google Translate's proxy.
+
+Tested before shipping against a production build behind a local stand-in
+mirror that string-replaces the domain and relays headers, as the real ones do.
+The copy's HTML canonical named the stand-in, the `Link` header named us, and a
+browser that opened the stand-in landed on
+`https://medusaautodetailing.co.uk/car-detailing/watford?utm_source=…#faq`.
+
+**After a deploy, check it on the real mirrors.** The deploy workflow's purge
+has to have run first (§7):
+
+```bash
+curl -sI https://medusaautodetailing.pro/car-detailing/watford | grep -i "^link"
+```
+
+The answer should name `medusaautodetailing.co.uk`, and opening any mirror page
+in a browser should land on the real domain. If the `Link` header comes back
+naming the mirror, its Worker rewrites headers too. The guard still works in
+that case, but this section is wrong about headers and needs correcting.
+
+### What is left, outside this repo
+
+- **One WAF custom rule on our zone kills all three.** Security → WAF → Custom
+  rules: `(not cf.worker.upstream_zone in {"" "medusaautodetailing.co.uk"})` →
+  *Block*. The field is empty for every ordinary visitor and every crawler, and
+  set to the Worker's own zone for a Worker's subrequest. The evidence above
+  says that is how all three mirrors fetch us. It is a zone setting, made by
+  hand like the Cache Rules in §7, and nothing here can make it.
+- **The filings**, all from the takedown pack: Google's copyright removal form,
+  one Cloudflare abuse report per zone, and one report to Dynadot covering all
+  three. The client files them, or someone with their written authority.

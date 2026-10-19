@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { REDIRECTS } from "./src/lib/redirects";
+import { SITE } from "./src/lib/site";
 
 const nextConfig: NextConfig = {
   /*
@@ -104,6 +105,26 @@ const nextConfig: NextConfig = {
 
   async headers() {
     return [
+      /*
+        Every page names its canonical in a header as well as in the HTML.
+
+        medusaautodetailing.site, .pro and .info re-serve this site live
+        through Cloudflare Workers, swapping our hostname for theirs in every
+        body they relay — the <link rel="canonical"> included, so each copy
+        claims to be the original. They relay response headers as they find
+        them, so this one still points a crawler that reads the copy back at
+        the page it was copied from (PROJECT.md §14).
+
+        Set here rather than in a `proxy.ts`. A proxy would be a function in
+        front of 305 static pages, run only to compute what the matched path
+        already says. On the real site the header and the HTML agree, because
+        both are SITE plus the path.
+      */
+      {
+        source: "/:path((?!_next/|api/|assets/|sitemap\\.xml|robots\\.txt).*)",
+        headers: [{ key: "Link", value: `<${SITE}/:path>; rel="canonical"` }],
+      },
+
       {
         source: "/assets/:path*",
         headers: [
