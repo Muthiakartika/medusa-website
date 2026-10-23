@@ -346,15 +346,18 @@ export const APP = {
 /* ── First-valet discount ─────────────────────────────────────────────── */
 
 /* The live homepage's page-load popup (Popup Anything on Click #2835), word
-   for word from its 18 April 2026 capture. The source ran it on the homepage
-   alone; `PromoPopup` runs it on every page, from the root layout. The offer has changed under the same popup before — "20% OFF",
-   MED20, from November 2025 to February 2026 — so a new one is these lines. */
+   for word from its 15 December 2025 capture. The source ran it on the
+   homepage alone; `PromoPopup` runs it on every page, from the root layout.
+   The source switched it between two offers: 20% and MED20 from November
+   2025 to February 2026, 10% and MED10 either side of that. Repo owner,
+   2026-10-23: "coupunnya 20% off ganti ya" — so it is the 20% one, with the
+   code the source paired it with. */
 export const PROMO = {
-  /** One source line, "10% OFF YOUR FIRST MEDUSA VALET", set in two sizes. */
-  offer: "10% OFF",
+  /** One source line, "20% OFF YOUR FIRST MEDUSA VALET", set in two sizes. */
+  offer: "20% OFF",
   title: "YOUR FIRST MEDUSA VALET",
   lede: "Use promotional code at checkout",
-  code: "MED10",
+  code: "MED20",
   terms: "Not applicable to our Car Wash packages, Mini Valet & Pandora Bronze package",
   /** The source's click-to-copy confirmation, followed by the code. */
   copied: "Promo Code Copied: ",

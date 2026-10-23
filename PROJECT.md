@@ -498,7 +498,9 @@ Three tiers, cheapest first:
    ran a page-load popup (Popup Anything on Click #2835) from at least
    January 2025 to its last WordPress capture on 18 April 2026 — "10% OFF
    YOUR FIRST MEDUSA VALET", code MED10, except November 2025 to February
-   2026, when it was 20% and MED20. It was on the homepage alone, and the
+   2026, when it was 20% and MED20 — which is the offer it shows here,
+   since 2026-10-23 ("coupunnya 20% off ganti ya"), with the source's own
+   words for it. It was on the homepage alone, and the
    mirror of 13 August has none of it. Here it is on every page — "coupun
    muncul di setiap pages ya ketika di load" — rendered from the root
    layout. `components/PromoPopup.tsx`, words in `PROMO` in `lib/site.ts`.
@@ -517,7 +519,7 @@ Three tiers, cheapest first:
    on every reload and on every navigation. The root layout survives a
    `<Link>`, so it is keyed on `usePathname()` rather than on its mount;
    keyed on the mount it would show once per tab. Nothing is stored. It
-   renders nothing on the server, so it is no part of any page's HTML. **Whether MED10 still works at checkout is
+   renders nothing on the server, so it is no part of any page's HTML. **Whether MED20 works at checkout is
    book.medusaautodetailing.co.uk's, and nobody here has checked.**
 
    Encoded with the old ffmpeg on this machine: sharp composites each GIF
