@@ -2,11 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { bandAfter, Sections } from "@/components/Blocks";
 import FaqAccordion from "@/components/FaqAccordion";
+import GifLoop from "@/components/GifLoop";
 import Icon from "@/components/Icon";
 import { LocationIndexSection } from "@/components/LocationIndex";
 import Reveal from "@/components/Reveal";
 import SectionHead from "@/components/SectionHead";
-import type { Page, Section } from "@/lib/blocks";
+import type { Block, Page, Section } from "@/lib/blocks";
 import {
   foldableAreas,
   areaServicesFor,
@@ -448,8 +449,11 @@ export function Steps({
         onGold ? "bg-gold-wash" : "border-t border-white/[0.07]"
       }`}
     >
-      <div className="shell grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
-        <div className="lg:col-span-7">
+      {/* Below `lg` the copy column dissolves into the grid, so the phone can
+          stand between the heading and the steps and the band still closes on
+          its button. */}
+      <div className="shell grid items-center lg:grid-cols-12 lg:gap-16">
+        <div className="max-lg:contents lg:col-span-7">
           {heading?.type === "heading" && (
             <SectionHead
               title={heading.text}
@@ -458,7 +462,7 @@ export function Steps({
             />
           )}
 
-          <ol className="relative mt-11">
+          <ol className="relative mt-11 max-lg:order-2">
             <span
               aria-hidden
               className={`absolute top-2 bottom-10 left-[23px] w-px ${
@@ -502,7 +506,7 @@ export function Steps({
           </ol>
 
           {cta?.type === "button" && (
-            <Reveal delay={4}>
+            <Reveal delay={4} className="max-lg:order-3">
               <a
                 href={cta.href}
                 className={`btn mt-9 rounded-full text-[15px] ${
@@ -517,20 +521,46 @@ export function Steps({
         </div>
 
         {art?.type === "image" && (
-          <Reveal delay={2} className="lg:col-span-5 lg:justify-self-end">
-            <Image
-              src={art.src}
-              alt={art.alt}
-              width={art.w ?? 600}
-              height={art.h ?? 600}
-              unoptimized
-              sizes="(min-width: 1024px) 420px, 70vw"
-              className="mx-auto h-auto w-full max-w-[380px]"
-            />
+          <Reveal delay={2} className="mt-12 max-lg:order-1 lg:col-span-5 lg:mt-0">
+            <StepsPhone art={art} onGold={onGold} />
           </Reveal>
         )}
       </div>
     </section>
+  );
+}
+
+/* The booking phone beside the steps. Under the heading and centred on a
+   phone; from `lg` at the near side of its column, which puts it in the
+   middle of the band's empty half rather than against its far edge — repo
+   owner, 2026-10-23: "videonya taruh di tengah". A soft glow lifts it off
+   the band: gold on ink, a shadow on gold. */
+export function StepsPhone({
+  art,
+  onGold,
+}: {
+  art: Extract<Block, { type: "image" }>;
+  onGold: boolean;
+}) {
+  return (
+    <div className="relative mx-auto w-full max-w-[230px] lg:ml-0 lg:max-w-[318px]">
+      <div
+        aria-hidden
+        className="absolute -inset-x-10 -inset-y-8"
+        style={{
+          background: `radial-gradient(closest-side, ${
+            onGold ? "rgba(0,0,0,0.16)" : "rgba(193,146,49,0.24)"
+          }, transparent)`,
+        }}
+      />
+      <GifLoop
+        src={art.src}
+        alt={art.alt}
+        width={art.w ?? 600}
+        height={art.h ?? 600}
+        className="h-auto w-full"
+      />
+    </div>
   );
 }
 

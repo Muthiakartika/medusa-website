@@ -690,6 +690,11 @@
     bottom: calc(84px + env(safe-area-inset-bottom));
   }
 
+  /* The coupon keeps its 16px above the WhatsApp button wherever that goes. */
+  body:has(.sticky-book[data-shown="true"]) .promo-float {
+    bottom: calc(156px + env(safe-area-inset-bottom));
+  }
+
   body:has(.sticky-book) footer {
     padding-bottom: calc(76px + env(safe-area-inset-bottom));
   }

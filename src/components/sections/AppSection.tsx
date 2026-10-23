@@ -1,4 +1,5 @@
 import Image from "next/image";
+import GifLoop from "@/components/GifLoop";
 import Icon from "@/components/Icon";
 import Reveal from "@/components/Reveal";
 import SectionHead from "@/components/SectionHead";
@@ -26,12 +27,14 @@ export default function AppSection() {
                     "radial-gradient(85% 70% at 50% 50%, rgba(193,146,49,0.26) 0%, transparent 68%)",
                 }}
               />
-              <Image
+              {/* 318px wide is the 640px height the old mock-up stood at;
+                  230px below `lg`, as beside "How It works". */}
+              <GifLoop
                 src={APP.phone}
                 alt="Medusa Auto Detailing mobile app"
-                width={560}
-                height={620}
-                className="relative mx-auto h-auto w-full max-w-[340px]"
+                width={452}
+                height={912}
+                className="mx-auto h-auto w-full max-w-[230px] lg:max-w-[318px]"
               />
             </Reveal>
 

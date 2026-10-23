@@ -315,7 +315,10 @@ export const WHY = {
 
 export const APP = {
   heading: "THE APP THAT CLEANS YOUR CAR",
-  phone: "/assets/2025/03/unnamed-removebg-preview.webp",
+  /* The booking recording, in place of the source's static app mock-up
+     (`/assets/2025/03/unnamed-removebg-preview.webp`) — repo owner,
+     2026-10-23: "gifnya untuk disini". `GifLoop` plays it as a video. */
+  phone: "/assets/2024/03/phone_14_01_Converted__1.gif",
   features: [
     {
       icon: "/assets/2025/03/download-40.png",
@@ -338,6 +341,23 @@ export const APP = {
     apple: "/assets/2025/03/Download_on_the_App_Store_Badge.svg-1-1.webp",
   },
   strip: "Book your car detailing online — fast, easy, and instant!",
+};
+
+/* ── First-valet discount ─────────────────────────────────────────────── */
+
+/* The live homepage's page-load popup (Popup Anything on Click #2835), word
+   for word from its 18 April 2026 capture. The source ran it on the homepage
+   alone; `PromoPopup` runs it on every page, from the root layout. The offer has changed under the same popup before — "20% OFF",
+   MED20, from November 2025 to February 2026 — so a new one is these lines. */
+export const PROMO = {
+  /** One source line, "10% OFF YOUR FIRST MEDUSA VALET", set in two sizes. */
+  offer: "10% OFF",
+  title: "YOUR FIRST MEDUSA VALET",
+  lede: "Use promotional code at checkout",
+  code: "MED10",
+  terms: "Not applicable to our Car Wash packages, Mini Valet & Pandora Bronze package",
+  /** The source's click-to-copy confirmation, followed by the code. */
+  copied: "Promo Code Copied: ",
 };
 
 /* ── Car sizes (the price carousel inside each package card) ──────────── */

@@ -7,6 +7,7 @@ import {
   Open_Sans,
   Oswald,
 } from "next/font/google";
+import PromoPopup from "@/components/PromoPopup";
 import "./globals.css";
 
 /* The live site serves these six families via fonts.bunny.net.
@@ -150,7 +151,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           dangerouslySetInnerHTML={{ __html: DOMAIN_GUARD }}
         />
       </head>
-      <body className="flex min-h-screen flex-col bg-ink">{children}</body>
+      <body className="flex min-h-screen flex-col bg-ink">
+        {children}
+        <PromoPopup />
+      </body>
     </html>
   );
 }

@@ -444,6 +444,89 @@ Three tiers, cheapest first:
    `lib/planned-locations.ts` names, so every index lists the mirror's own
    pages and the built ones together.
 
+   **The booking phone is a video, 2026-10-23.** The phone beside "How It
+   works" on `/our-locations` and its 18 borough hubs is a screen recording of
+   the booking flow, and the source ships it as a GIF — 627 frames, 51.5
+   seconds, **26.4 MB**, downloaded whole by every visitor who scrolled that
+   far. `components/GifLoop.tsx` plays the same frames at the same timing as
+   a **1.4 MB** H.264 MP4; side by side at 1:1, frames of the two cannot be
+   told apart. It is on the homepage too, in place of the app row's static
+   mock-up (below).
+
+   **And it is bigger than the GIF was.** The GIF stands the phone in the
+   middle of a transparent 1000x1000 canvas, so in its 380px box the handset
+   was 172px wide. The repo owner, the same day: "agak besarin". So
+   everything is cut to the phone's own 452x912 box, and the band sizes the
+   phone rather than the canvas: 318px wide from `lg` (642 tall, the height
+   of the steps beside it), 230px below. The column stretches rather than
+   `justify-self-end`, which sized it off its content — and a lazy image has
+   no width until it loads, so the column collapsed to 0px and the image
+   never did.
+
+   **Where it stands.** From `lg`, at the near side of its column
+   (`StepsPhone` in `LocationPage.tsx`, which both `Steps` use): "videonya
+   taruh di tengah", over a 1920px screenshot with the box drawn exactly
+   there — the middle of the band's empty half, rather than against its far
+   edge, at 1137–1455px. Below `lg` the copy column is `display: contents`
+   and `order` puts the phone between the heading and the steps, so the band
+   still closes on BOOK NOW instead of on a picture ("pastikan di mobile
+   lebih bagus"). A soft glow sits behind it: gold on the ink band, a shadow
+   on the gold one.
+
+   Three files beside the GIF in `public/assets/2024/03/`, all cut from it:
+   `-phone.webp`, frame 0 and the in-flow image (so the alt text and the
+   no-JS picture are the GIF's); the `.mp4`; and `-mask.png`, the GIF's own
+   silhouette. A video has no alpha, so the box's corners outside the handset
+   are filled with the rim's colour and masked away again — which is what
+   lets one file sit on the gold band (4 pages), the ink one (15) and the
+   homepage's panel. The video loads only near the screen, as `MapEmbed`
+   does, pauses off it, and stays hidden until it is actually playing, so a
+   refused `play()` (Low Power Mode) leaves the still rather than a play
+   button. The GIF stays as the master, the way the promo video's `.mov`
+   does; `pages.json` still names it, and `LOOPS` in the component is the
+   map from it.
+
+   **The homepage's app row plays it as well.** "THE APP THAT CLEANS YOUR
+   CAR" stood a static app mock-up — "Hi Harrison", streets in San
+   Francisco, an address in Cupertino — and the repo owner wants the
+   recording there: "gifnya untuk disini". `APP.phone` in `lib/site.ts`
+   names the GIF, and the mock-up's file is left in `public/assets`. The
+   phone is 318px wide, which is the 640px height the mock-up stood at, and
+   230px below `lg`.
+
+   **The first-valet discount is back, on every page.** The live homepage
+   ran a page-load popup (Popup Anything on Click #2835) from at least
+   January 2025 to its last WordPress capture on 18 April 2026 — "10% OFF
+   YOUR FIRST MEDUSA VALET", code MED10, except November 2025 to February
+   2026, when it was 20% and MED20. It was on the homepage alone, and the
+   mirror of 13 August has none of it. Here it is on every page — "coupun
+   muncul di setiap pages ya ketika di load" — rendered from the root
+   layout. `components/PromoPopup.tsx`, words in `PROMO` in `lib/site.ts`.
+   What the source did, it does: 0.3s after load,
+   bottom right, no overlay, and a click on the code copies it with the
+   source's own "Promo Code Copied:". What it does not: the source's
+   two-day cookie, white type on gold at 2.6:1, an `alert()`, and sitting on
+   the WhatsApp
+   button. The card is a coupon now — the offer on gold, the code on ink
+   behind a perforation with a round notch at each end — after "redesign
+   coba biar bagusan" — 320px wide, and 264 below `sm` ("untuk di mobile
+   coupunnya juga agak kecilin"). Where a `StickyBookBar` is showing, the
+   WhatsApp button rises above it and `.promo-float` in `globals.css` lifts
+   the coupon with it. **Closing it closes it for that page only** — "muncul
+   lagi di setiap page load, walaupun sudah pernah ditutup" — so it is back
+   on every reload and on every navigation. The root layout survives a
+   `<Link>`, so it is keyed on `usePathname()` rather than on its mount;
+   keyed on the mount it would show once per tab. Nothing is stored. It
+   renders nothing on the server, so it is no part of any page's HTML. **Whether MED10 still works at checkout is
+   book.medusaautodetailing.co.uk's, and nobody here has checked.**
+
+   Encoded with the old ffmpeg on this machine: sharp composites each GIF
+   frame, every delay is a multiple of 50 ms, so frames are repeated to a
+   constant 20 fps (1,030 frames) and piped to libx264 at CRF 26, `veryslow`,
+   `-tune animation`, BT.601 tagged, `+faststart`. Not checked in Safari,
+   which is the one browser that needs `-webkit-mask-image` and the `muted`
+   attribute to autoplay; both are set.
+
    **The footer strip.** Client, 2026-09-18: "all the new location pages can be
    in a scroll in the footer, like each being a location word then clicking into
    the location page… like our seo boost one, but a bit better with claude

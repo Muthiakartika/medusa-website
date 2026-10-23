@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import Icon from "@/components/Icon";
 import JsonLd from "@/components/JsonLd";
 import { LocationIndexSection } from "@/components/LocationIndex";
+import { StepsPhone } from "@/components/LocationPage";
 import Reveal from "@/components/Reveal";
 import Portfolio from "@/components/sections/Portfolio";
 import Testimonials from "@/components/sections/Testimonials";
@@ -404,8 +405,10 @@ function Steps({
         onGold ? "bg-gold-wash" : "border-t border-white/[0.07]"
       }`}
     >
-      <div className="shell grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
-        <div className="lg:col-span-7">
+      {/* Laid out as `LocationPage`'s `Steps` is: below `lg` the phone stands
+          between the heading and the steps. */}
+      <div className="shell grid items-center lg:grid-cols-12 lg:gap-16">
+        <div className="max-lg:contents lg:col-span-7">
           {heading?.type === "heading" && (
             <SectionHead
               title={heading.text}
@@ -414,7 +417,7 @@ function Steps({
             />
           )}
 
-          <ol className="relative mt-11">
+          <ol className="relative mt-11 max-lg:order-2">
             <span
               aria-hidden
               className={`absolute top-2 bottom-10 left-[23px] w-px ${
@@ -453,7 +456,7 @@ function Steps({
           </ol>
 
           {cta?.type === "button" && (
-            <Reveal delay={4}>
+            <Reveal delay={4} className="max-lg:order-3">
               <a
                 href={cta.href}
                 className={`btn mt-9 rounded-full text-[15px] ${
@@ -468,16 +471,8 @@ function Steps({
         </div>
 
         {art?.type === "image" && (
-          <Reveal delay={2} className="lg:col-span-5 lg:justify-self-end">
-            <Image
-              src={art.src}
-              alt={art.alt}
-              width={art.w ?? 600}
-              height={art.h ?? 600}
-              unoptimized
-              sizes="(min-width: 1024px) 420px, 70vw"
-              className="mx-auto h-auto w-full max-w-[380px]"
-            />
+          <Reveal delay={2} className="mt-12 max-lg:order-1 lg:col-span-5 lg:mt-0">
+            <StepsPhone art={art} onGold={onGold} />
           </Reveal>
         )}
       </div>
