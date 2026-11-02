@@ -78,7 +78,7 @@ export default function BookingConfirmedPage() {
               is here to help.
             </p>
 
-            <ul className="mx-auto mt-12 grid max-w-[960px] gap-4 text-left sm:grid-cols-3">
+            <ul className="mx-auto mt-12 grid max-w-[960px] grid-cols-1 gap-4 text-left lg:grid-cols-3">
               {SUPPORT.map((s) => (
                 <li key={s.label}>
                   <a
@@ -86,7 +86,7 @@ export default function BookingConfirmedPage() {
                     {...("external" in s
                       ? { target: "_blank", rel: "noopener noreferrer" }
                       : {})}
-                    className="surface group flex h-full items-start gap-4 p-6 transition-colors hover:bg-[#161616]"
+                    className="surface group flex h-full flex-col items-start gap-4 p-6 transition-colors hover:bg-[#161616]"
                   >
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold/[0.12] text-gold">
                       <Icon name={s.icon} size={20} />
