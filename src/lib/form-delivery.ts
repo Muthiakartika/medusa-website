@@ -13,11 +13,27 @@
  */
 
 import { headers } from "next/headers";
+import { HONEYPOT } from "@/lib/honeypot";
 import { type Attachment, type Enquiry, sendEnquiry } from "@/lib/mail";
 import { CONTACT } from "@/lib/site";
 import { isMisconfigured, verifyTurnstile } from "@/lib/turnstile";
 
 export const FALLBACK = `Please call ${CONTACT.phone} or email ${CONTACT.email} and we will pick it up right away.`;
+
+/* ── The honeypot ─────────────────────────────────────────────────────── */
+
+/**
+ * Whether a filled honeypot stops this submission. Only where Turnstile is
+ * off: with it on, Turnstile tells a person from a bot far better than one
+ * hidden input does, and a filled field next to a passed challenge is a
+ * browser's autofill, not a bot. A stop is logged, because it is the one
+ * gate that otherwise leaves no trace.
+ */
+export function caughtByHoneypot(formData: FormData): boolean {
+  if (!formData.get(HONEYPOT) || process.env.TURNSTILE_SECRET_KEY) return false;
+  console.info("[enquiry] honeypot filled and Turnstile off: treated as a bot, not sent");
+  return true;
+}
 
 /* ── The challenge ────────────────────────────────────────────────────── */
 

@@ -2,7 +2,7 @@
 
 import { type FormField, getForm } from "@/lib/blocks";
 import { cleanLabel, type EnquiryState } from "@/lib/enquiry";
-import { checkTurnstile, deliver, FALLBACK } from "@/lib/form-delivery";
+import { caughtByHoneypot, checkTurnstile, deliver, FALLBACK } from "@/lib/form-delivery";
 import type { Attachment, Enquiry } from "@/lib/mail";
 import { PATH as WHEEL_PAGE } from "@/lib/alloy-wheel-protection";
 import { PATH as SIGNAGE_PAGE } from "@/lib/signage-removal";
@@ -49,8 +49,8 @@ export async function submitEnquiry(
   _prev: EnquiryState,
   formData: FormData,
 ): Promise<EnquiryState> {
-  // Bots fill every input they find; a real browser leaves this one empty.
-  if (formData.get("__company")) return { status: "ok" };
+  // The honeypot, where Turnstile is off (`caughtByHoneypot`).
+  if (caughtByHoneypot(formData)) return { status: "ok" };
 
   const slug = String(formData.get("__slug") ?? "");
   const index = Number(formData.get("__form") ?? 0);
@@ -146,7 +146,7 @@ export async function submitWheelCheck(
   _prev: EnquiryState,
   formData: FormData,
 ): Promise<EnquiryState> {
-  if (formData.get("__company")) return { status: "ok" };
+  if (caughtByHoneypot(formData)) return { status: "ok" };
 
   const read = (name: string) => {
     const raw = formData.get(name);
@@ -228,7 +228,7 @@ export async function submitSignageQuote(
   _prev: EnquiryState,
   formData: FormData,
 ): Promise<EnquiryState> {
-  if (formData.get("__company")) return { status: "ok" };
+  if (caughtByHoneypot(formData)) return { status: "ok" };
 
   const read = (name: string) => {
     const raw = formData.get(name);

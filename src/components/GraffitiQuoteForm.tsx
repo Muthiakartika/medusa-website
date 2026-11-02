@@ -12,6 +12,7 @@ import {
   useState,
 } from "react";
 import { submitGraffitiQuote } from "@/app/repairs/car-graffiti-removal/actions";
+import Honeypot from "@/components/Honeypot";
 import Icon from "@/components/Icon";
 import Turnstile from "@/components/Turnstile";
 import { EMPTY_STATE, type EnquiryState } from "@/lib/enquiry";
@@ -272,11 +273,7 @@ export default function GraffitiQuoteForm({
       aria-label="Car graffiti removal quote"
       className="surface relative p-5 sm:p-8 lg:p-10"
     >
-      {/* Honeypot — hidden from people, tempting to bots. */}
-      <div aria-hidden className="absolute h-0 w-0 overflow-hidden">
-        <label htmlFor={`${uid}-company`}>Company</label>
-        <input id={`${uid}-company`} type="text" name="__company" tabIndex={-1} autoComplete="off" />
-      </div>
+      <Honeypot />
 
       <p className="text-[13px] leading-[20px] font-normal text-white/55">
         Fields marked <span className="text-gold">*</span> are required.

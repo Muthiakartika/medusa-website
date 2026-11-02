@@ -10,7 +10,7 @@ import {
   validateQuote,
 } from "@/lib/caravan-quote";
 import type { EnquiryState } from "@/lib/enquiry";
-import { checkTurnstile, collectPhotos, deliver, FALLBACK } from "@/lib/form-delivery";
+import { caughtByHoneypot, checkTurnstile, collectPhotos, deliver, FALLBACK } from "@/lib/form-delivery";
 
 /**
  * The caravan & motorhome valeting quote form's action — schema, rules and
@@ -28,8 +28,8 @@ import { checkTurnstile, collectPhotos, deliver, FALLBACK } from "@/lib/form-del
  * holds the live SendGrid key, and a test would email the client.
  */
 export async function submitCaravanQuote(_prev: EnquiryState, formData: FormData): Promise<EnquiryState> {
-  /* Honeypot — a person leaves it empty. Answer as if it went. */
-  if (formData.get("__company")) return { status: "ok" };
+  /* Honeypot, where Turnstile is off. Answer as if it went. */
+  if (caughtByHoneypot(formData)) return { status: "ok" };
 
   try {
     const read = (name: string) => {

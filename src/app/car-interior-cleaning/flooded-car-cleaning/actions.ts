@@ -10,7 +10,7 @@ import {
   validateFlood,
 } from "@/lib/flooded-assessment";
 import { PATH } from "@/lib/flooded-car";
-import { checkTurnstile, collectPhotos, deliver, FALLBACK } from "@/lib/form-delivery";
+import { caughtByHoneypot, checkTurnstile, collectPhotos, deliver, FALLBACK } from "@/lib/form-delivery";
 
 /**
  * The flooded car assessment form's action — schema, rules and email in
@@ -24,7 +24,7 @@ import { checkTurnstile, collectPhotos, deliver, FALLBACK } from "@/lib/form-del
  * "Upload Photos* — MANDATORY": `collectPhotos` is asked for at least one.
  */
 export async function submitFloodedAssessment(_prev: EnquiryState, formData: FormData): Promise<EnquiryState> {
-  if (formData.get("__company")) return { status: "ok" };
+  if (caughtByHoneypot(formData)) return { status: "ok" };
 
   try {
     const read = (name: string) => {

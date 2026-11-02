@@ -3,6 +3,7 @@
 import { useActionState, useId } from "react";
 import { useFormStatus } from "react-dom";
 import { submitEnquiry } from "@/app/actions";
+import Honeypot from "@/components/Honeypot";
 import Turnstile from "@/components/Turnstile";
 import type { FormField } from "@/lib/blocks";
 import { cleanLabel, EMPTY_STATE } from "@/lib/enquiry";
@@ -30,17 +31,7 @@ export default function EnquiryForm({
       <input type="hidden" name="__slug" value={slug} />
       <input type="hidden" name="__form" value={index} />
 
-      {/* Honeypot — hidden from people, tempting to bots. */}
-      <div aria-hidden className="absolute h-0 w-0 overflow-hidden">
-        <label htmlFor={`${uid}-company`}>Company</label>
-        <input
-          id={`${uid}-company`}
-          type="text"
-          name="__company"
-          tabIndex={-1}
-          autoComplete="off"
-        />
-      </div>
+      <Honeypot />
 
       <div className="grid gap-5">
         {fields.map((field) => (

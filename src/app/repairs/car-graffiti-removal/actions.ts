@@ -1,7 +1,7 @@
 "use server";
 
 import type { EnquiryState } from "@/lib/enquiry";
-import { checkTurnstile, collectPhotos, deliver } from "@/lib/form-delivery";
+import { caughtByHoneypot, checkTurnstile, collectPhotos, deliver } from "@/lib/form-delivery";
 import { MAX_PHOTOS, PHOTO_BUDGET, QUOTE_FORM_ID, quoteEmail, quoteSubject, validateQuote } from "@/lib/graffiti-quote";
 import { PATH } from "@/lib/graffiti-removal";
 
@@ -22,7 +22,7 @@ import { PATH } from "@/lib/graffiti-removal";
  * is attached only.
  */
 export async function submitGraffitiQuote(_prev: EnquiryState, formData: FormData): Promise<EnquiryState> {
-  if (formData.get("__company")) return { status: "ok" };
+  if (caughtByHoneypot(formData)) return { status: "ok" };
 
   const read = (name: string) => {
     const raw = formData.get(name);

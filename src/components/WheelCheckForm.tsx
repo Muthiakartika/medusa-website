@@ -2,6 +2,7 @@
 
 import { type ChangeEvent, type FormEvent, startTransition, useActionState, useEffect, useId, useRef, useState } from "react";
 import { submitWheelCheck } from "@/app/actions";
+import Honeypot from "@/components/Honeypot";
 import Icon from "@/components/Icon";
 import Turnstile from "@/components/Turnstile";
 import { CONTACT } from "@/lib/site";
@@ -141,11 +142,7 @@ export default function WheelCheckForm({ id }: { id: string }) {
       aria-labelledby={titleId}
       className="surface relative scroll-mt-28 p-6 sm:p-8 lg:p-10"
     >
-      {/* Honeypot — hidden from people, tempting to bots. */}
-      <div aria-hidden className="absolute h-0 w-0 overflow-hidden">
-        <label htmlFor={`${uid}-company`}>Company</label>
-        <input id={`${uid}-company`} type="text" name="__company" tabIndex={-1} autoComplete="off" />
-      </div>
+      <Honeypot />
 
       <p className="font-[family-name:var(--font-ui)] text-[11px] tracking-[0.2em] text-gold uppercase">
         {WHEEL_FORM.eyebrow}

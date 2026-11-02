@@ -2074,6 +2074,28 @@ and a person who mistypes an address has not spent their token on it. A
 failed gate hands back everything that was typed, because React empties an
 uncontrolled form the moment its action settles.
 
+**The honeypot was swallowing real enquiries until 2026-11-02.** It was named
+`__company` and labelled "Company". Its wrapper is 0×0, but the input itself
+is 175×26, so to Chrome's autofill and to password managers it was a company
+field. A visitor who picked their name or email from the suggestions had it
+filled, and the action answered `{ status: "ok" }`: nothing at all under the
+button on the five Contact Form 7 forms, a false **thank-you panel** on the
+six quote forms, no email and no log. The repo owner's own four test
+submissions that day were exactly that: four POSTs, 200, nothing logged. Now:
+
+- **One `<Honeypot />`** (`components/Honeypot.tsx`, name `HONEYPOT` in
+  `lib/honeypot.ts`) replaces the seven copies, named `__leave_empty` and
+  labelled "Leave this field empty", which no autofill heuristic matches.
+- **`caughtByHoneypot` only stops a submission where Turnstile is off.** With
+  it on, as in production, a filled field beside a passed challenge is a
+  person's autofill. A stop is logged, since it is the one gate that leaves
+  no other trace.
+
+A page cached before the change still posts `__company`, which nothing reads
+any more, so it simply passes. Checked on `npm run dev`: the hidden field
+filled, an invalid email and no Turnstile token showed the red "Please
+complete the verification below…" where it used to show nothing.
+
 **Delivery is email, through SendGrid** (`lib/mail.ts`) — one POST to the v3
 REST API rather than `@sendgrid/mail`, the way `lib/cloudflare.ts` talks to
 Cloudflare. It goes to `MAIL_TO`, defaulting to the address the site already
