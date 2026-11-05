@@ -15,6 +15,7 @@ import { submitPaintSpillQuote } from "@/app/repairs/car-interior-paint-spill-re
 import Honeypot from "@/components/Honeypot";
 import Icon from "@/components/Icon";
 import Turnstile from "@/components/Turnstile";
+import { showThanks } from "@/lib/show-thanks";
 import { EMPTY_STATE, type EnquiryState } from "@/lib/enquiry";
 import { TRACK } from "@/lib/paint-spill";
 import {
@@ -118,7 +119,7 @@ export default function PaintSpillQuoteForm({
   }, []);
 
   useEffect(() => {
-    if (state.status === "ok") thanksRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    if (state.status === "ok") showThanks(thanksRef.current);
   }, [state.status]);
 
   const read = (name: string) => live[name] ?? "";

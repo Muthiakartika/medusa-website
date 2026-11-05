@@ -15,6 +15,7 @@ import { submitSignageQuote } from "@/app/actions";
 import Honeypot from "@/components/Honeypot";
 import Icon from "@/components/Icon";
 import Turnstile from "@/components/Turnstile";
+import { showThanks } from "@/lib/show-thanks";
 import { EMPTY_STATE, type EnquiryState } from "@/lib/enquiry";
 import { shrinkPhoto } from "@/lib/photo-shrink";
 import {
@@ -109,7 +110,7 @@ export default function SignageQuoteForm({
   }, []);
 
   useEffect(() => {
-    if (state.status === "ok") thanksRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    if (state.status === "ok") showThanks(thanksRef.current);
   }, [state.status]);
 
   const read = (name: string) => live[name] ?? "";

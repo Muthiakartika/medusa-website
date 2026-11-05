@@ -15,6 +15,7 @@ import { submitCaravanQuote } from "@/app/vehicles/caravan-cleaning/actions";
 import Honeypot from "@/components/Honeypot";
 import Icon from "@/components/Icon";
 import Turnstile from "@/components/Turnstile";
+import { showThanks } from "@/lib/show-thanks";
 import {
   holds,
   isAcceptedPhoto,
@@ -117,7 +118,7 @@ export default function CaravanQuoteForm({
   }, []);
 
   useEffect(() => {
-    if (state.status === "ok") thanksRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    if (state.status === "ok") showThanks(thanksRef.current);
   }, [state.status]);
 
   const readAll = (name: string) => live[name] ?? [];

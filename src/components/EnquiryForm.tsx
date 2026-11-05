@@ -1,12 +1,14 @@
 "use client";
 
-import { useActionState, useId } from "react";
+import { useActionState, useEffect, useId, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { submitEnquiry } from "@/app/actions";
 import Honeypot from "@/components/Honeypot";
+import Icon from "@/components/Icon";
 import Turnstile from "@/components/Turnstile";
 import type { FormField } from "@/lib/blocks";
 import { cleanLabel, EMPTY_STATE } from "@/lib/enquiry";
+import { showThanks } from "@/lib/show-thanks";
 
 export default function EnquiryForm({
   slug,
@@ -21,6 +23,31 @@ export default function EnquiryForm({
 }) {
   const [state, action] = useActionState(submitEnquiry, EMPTY_STATE);
   const uid = useId();
+  const thanksRef = useRef<HTMLDivElement>(null);
+
+  /* A sent enquiry swaps the form for a thank-you panel, as the six quote
+     forms do, and brings it into view (`lib/show-thanks.ts`). */
+  useEffect(() => {
+    if (state.status === "ok") showThanks(thanksRef.current);
+  }, [state]);
+
+  if (state.status === "ok") {
+    return (
+      <div
+        ref={thanksRef}
+        className="surface mt-7 scroll-mt-28 p-8 text-center sm:p-12"
+        role="status"
+        aria-live="polite"
+      >
+        <span className="mx-auto flex h-[60px] w-[60px] items-center justify-center rounded-full bg-gold/12 ring-1 ring-gold/40">
+          <Icon name="check" size={28} strokeWidth={2.2} className="text-gold" />
+        </span>
+        <p className="measure mx-auto mt-6 text-[17px] leading-[28px] font-normal text-white">
+          {state.message}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -55,13 +82,11 @@ export default function EnquiryForm({
 
       <div className="mt-7 flex flex-wrap items-center gap-4">
         <Submit label={submitLabel} />
-        {state.status !== "idle" && state.message && (
+        {state.status === "error" && state.message && (
           <p
             role="status"
             aria-live="polite"
-            className={`text-[15px] leading-[22px] font-normal ${
-              state.status === "ok" ? "text-gold" : "text-[#ff8f8f]"
-            }`}
+            className="text-[15px] leading-[22px] font-normal text-[#ff8f8f]"
           >
             {state.message}
           </p>

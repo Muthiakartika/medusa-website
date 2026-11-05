@@ -8,6 +8,7 @@ import Turnstile from "@/components/Turnstile";
 import { CONTACT } from "@/lib/site";
 import { EMPTY_STATE, type EnquiryState } from "@/lib/enquiry";
 import { shrinkPhoto } from "@/lib/photo-shrink";
+import { showThanks } from "@/lib/show-thanks";
 import { EVENTS, track } from "@/lib/track";
 import {
   isShown,
@@ -63,6 +64,12 @@ export default function WheelCheckForm({ id }: { id: string }) {
     },
     EMPTY_STATE,
   );
+
+  /* The thank-you replaces the form; bring it into view, as the quote forms
+     do (`lib/show-thanks.ts`). */
+  useEffect(() => {
+    if (state.status === "ok") showThanks(document.getElementById(id));
+  }, [state, id]);
 
   const read = (name: string) => live[name] ?? "";
 

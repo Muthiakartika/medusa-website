@@ -2096,6 +2096,25 @@ any more, so it simply passes. Checked on `npm run dev`: the hidden field
 filled, an invalid email and no Turnstile token showed the red "Please
 complete the verification below…" where it used to show nothing.
 
+**Every form ends on a thank-you panel since 2026-11-05.**
+- **The five Contact Form 7 forms** used to answer a sent enquiry with one gold
+  line under the button. They now swap the form for the panel the six quote
+  forms show: `role="status"`, a tick, and the existing "Thank you — your
+  message is on its way…", with no new words.
+- **`showThanks`** (`lib/show-thanks.ts`) brings any of the eleven into view.
+  WHEELUV's panel never scrolled before.
+- **That scroll is what lets Cloudflare Zaraz count the enquiry.** Its
+  Element Visibility trigger only looks on `scroll` and `resize`. Where the
+  panel lands already on screen and nothing moves, `showThanks` dispatches one
+  `scroll` on the document, which is where Zaraz listens.
+
+Tested on `medusa-dev-noemail` (`.claude/launch.json`: mail, webhook and
+Turnstile all off, the server logging "email skipped"):
+- **Normal case**: the panel replaced the form, and the page moved 0 → 640px
+  with six scroll events.
+- **Aligned in advance**: the page stayed at 640, and the one synthetic scroll
+  fired.
+
 **Delivery is email, through SendGrid** (`lib/mail.ts`) — one POST to the v3
 REST API rather than `@sendgrid/mail`, the way `lib/cloudflare.ts` talks to
 Cloudflare. It goes to `MAIL_TO`, defaulting to the address the site already

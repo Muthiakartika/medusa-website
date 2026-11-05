@@ -14,6 +14,20 @@
       "port": 3100
     },
     {
+      "name": "medusa-dev-noemail",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "-p", "3200"],
+      "port": 3200,
+      "env": {
+        "SENDGRID_API_KEY": "",
+        "CONTACT_WEBHOOK_URL": "",
+        "MAIL_TO": "nobody@example.invalid",
+        "MAIL_CC": "",
+        "TURNSTILE_SECRET_KEY": "",
+        "NEXT_PUBLIC_TURNSTILE_SITE_KEY": ""
+      }
+    },
+    {
       "name": "medusa-prod",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["start"],
